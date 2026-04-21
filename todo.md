@@ -121,3 +121,9 @@
 - [x] 确保所有数据流走live真实接口（已验证）
 - [x] 真实分析结果已自动保存为artifact（后端在分析完成后自动保存，可通过/results/rbj2jha访问）
 - [x] 首页展示入口设计为快速示例标签（用户点击后填入输入框并触发真实分析，而非展示假数据）
+
+## 缺陷修复：充值报错
+
+- [x] 修复充值提示 Unknown column 'balance' in 'field list'
+- [x] 统一legacy和tRPC两套代码的credit_transactions列名
+- [x] 创建llm_usage_logs缺失表

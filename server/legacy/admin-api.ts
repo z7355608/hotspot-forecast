@@ -699,9 +699,9 @@ async function handleUpdateUser(
     /* Record credit transaction */
     const txId = randomUUID();
     await execute(
-      `INSERT INTO credit_transactions (id, user_id, type, amount, balance_after, reason, operator)
-       VALUES (?, ?, 'admin_adjust', ?, ?, ?, ?)`,
-      [txId, user.id, creditDiff, body.credits, `管理员调整积分`, session.phone],
+      `INSERT INTO credit_transactions (userOpenId, type, amount, balance, description, createdAt)
+       VALUES (?, 'admin', ?, ?, ?, NOW())`,
+      [user.id, creditDiff, body.credits, `管理员调整积分 (${session.phone})`],
     );
 
     /* Update total_earned or total_spent */
@@ -784,9 +784,9 @@ async function handleCreditTopup(
 
   const txId = randomUUID();
   await execute(
-    `INSERT INTO credit_transactions (id, user_id, type, amount, balance_after, reason, operator)
-     VALUES (?, ?, 'topup', ?, ?, ?, ?)`,
-    [txId, user.id, amount, newBalance, reason, session.phone],
+    `INSERT INTO credit_transactions (userOpenId, type, amount, balance, description, createdAt)
+     VALUES (?, 'purchase', ?, ?, ?, NOW())`,
+    [user.id, amount, newBalance, `${reason} (${session.phone})`],
   );
 
   await appendAuditLog({
@@ -831,17 +831,17 @@ async function handleGetCreditTransactions(
   }
 
   const countRow = await queryOne<CountRow>(
-    "SELECT COUNT(*) AS cnt FROM credit_transactions WHERE user_id = ?",
+    "SELECT COUNT(*) AS cnt FROM credit_transactions WHERE userOpenId = ?",
     [user.id],
   );
   const total = countRow?.cnt || 0;
   const offset = (page - 1) * pageSize;
 
   const txRows = await query<(RowDataPacket & {
-    id: string; type: string; amount: number; balance_after: number;
-    reason: string; operator: string; created_at: Date;
+    id: number; type: string; amount: number; balance: number;
+    description: string; relatedId: string | null; createdAt: Date;
   })[]>(
-    "SELECT * FROM credit_transactions WHERE user_id = ? ORDER BY created_at DESC LIMIT ? OFFSET ?",
+    "SELECT * FROM credit_transactions WHERE userOpenId = ? ORDER BY createdAt DESC LIMIT ? OFFSET ?",
     [user.id, pageSize, offset],
   );
 
@@ -849,10 +849,10 @@ async function handleGetCreditTransactions(
     id: t.id,
     type: t.type,
     amount: t.amount,
-    balanceAfter: t.balance_after,
-    reason: t.reason,
-    operator: t.operator,
-    createdAt: t.created_at?.toISOString() || null,
+    balanceAfter: t.balance,
+    reason: t.description,
+    operator: "",
+    createdAt: t.createdAt?.toISOString() || null,
   }));
 
   sendJson(response, 200, { transactions, total, page, pageSize });

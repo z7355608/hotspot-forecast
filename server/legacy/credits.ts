@@ -151,9 +151,9 @@ export async function deductCredits(
   // 写入流水
   const txId = randomUUID();
   await execute(
-    `INSERT INTO credit_transactions (id, user_id, type, amount, balance_after, reason, operator)
-     VALUES (?, ?, 'consume', ?, ?, ?, 'llm_gateway')`,
-    [txId, userId, -amount, balanceAfter, reason],
+    `INSERT INTO credit_transactions (userOpenId, type, amount, balance, description, createdAt)
+     VALUES (?, 'consume', ?, ?, ?, NOW())`,
+    [userId, -amount, balanceAfter, reason],
   );
 
   log.info(`deduct userId=${userId} amount=${amount} balance=${balanceAfter} reason="${reason}"`);
@@ -194,9 +194,9 @@ export async function refundCredits(
 
   const txId = randomUUID();
   await execute(
-    `INSERT INTO credit_transactions (id, user_id, type, amount, balance_after, reason, operator)
-     VALUES (?, ?, 'refund', ?, ?, ?, 'llm_gateway')`,
-    [txId, userId, amount, balanceAfter, `退款: ${reason} (原流水: ${originalTxId})`],
+    `INSERT INTO credit_transactions (userOpenId, type, amount, balance, description, createdAt)
+     VALUES (?, 'refund', ?, ?, ?, NOW())`,
+    [userId, amount, balanceAfter, `退款: ${reason} (原流水: ${originalTxId})`],
   );
 
   log.info(`refund userId=${userId} amount=${amount} balance=${balanceAfter}`);
