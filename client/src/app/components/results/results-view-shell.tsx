@@ -320,8 +320,20 @@ export function ResultsView({
   // 监听 renderer 发出的 open-cta-editor 事件（触发 CozeEditorDrawer 编辑器）
   useEffect(() => {
     const handler = (e: Event) => {
-      const actionIndex = (e as CustomEvent).detail?.actionIndex ?? 0;
-      const action = ctaActions[actionIndex];
+      const detail = (e as CustomEvent).detail ?? {};
+      let action: (typeof ctaActions)[number] | undefined;
+      // 优先通过 ctaId 匹配，确保不同 score 下 CTA 顺序变化时仍能正确触发
+      if (detail.ctaId) {
+        action = ctaActions.find((a) => a.id === detail.ctaId);
+      }
+      // 兑容旧的 actionIndex 方式
+      if (!action && detail.actionIndex != null) {
+        action = ctaActions[detail.actionIndex];
+      }
+      // 如果都没匹配到，默认用第一个
+      if (!action && ctaActions.length > 0) {
+        action = ctaActions[0];
+      }
       if (action) {
         handleCtaWithEditor(action);
       }
@@ -785,126 +797,7 @@ export function ResultsView({
         </div>
       ) : (
       <>
-      {/* ========== Hero Header ========== */}
-      {!hasTrendOpps && (
-      <div className="rounded-3xl border border-gray-100 bg-white shadow-sm">
-        <div className="border-b border-gray-50 px-5 pb-6 pt-7 sm:px-7">
-          {/* 标签区 */}
-          <div className="mb-3 flex flex-wrap items-center gap-2">
-            <span className="rounded bg-gray-900 px-2 py-0.5 text-xs text-white">
-              {taskMeta.label}
-            </span>
-            {isOpportunity && (
-              <span className={`rounded px-2 py-0.5 text-xs ${windowMeta.tone}`}>
-                {windowMeta.label}
-              </span>
-            )}
-            {isOpportunity && (
-              <span className="rounded bg-gray-100 px-2 py-0.5 text-xs text-gray-500">
-                {opportunityLabel}
-              </span>
-            )}
-            <span className="rounded bg-gray-100 px-2 py-0.5 text-xs text-gray-500">
-              {TASK_CONFIDENCE_META[result.taskIntentConfidence]}
-            </span>
-            <span className="rounded bg-gray-100 px-2 py-0.5 text-xs text-gray-500">
-              {ENTRY_SOURCE_META[result.entrySource]}
-            </span>
-            {isOpportunity && (
-              <>
-                <span className="rounded bg-gray-100 px-2 py-0.5 text-xs text-gray-500">
-                  {result.confidenceLabel}置信
-                </span>
-                <span className="rounded bg-gray-100 px-2 py-0.5 text-xs text-gray-500">
-                  {inputFocus.label}
-                </span>
-                <span className="rounded bg-gray-100 px-2 py-0.5 text-xs text-gray-500">
-                  {getMomentumLabelText(result.marketEvidence.momentumLabel)}
-                </span>
-              </>
-            )}
-            <span className="rounded bg-gray-100 px-2 py-0.5 text-xs text-gray-500">
-              {canWatch ? "支持观察" : "保存型产物"}
-            </span>
-            <span className="rounded bg-gray-100 px-2 py-0.5 text-xs text-gray-500">
-              {resultModel.name}
-            </span>
-            <span className="rounded bg-gray-100 px-2 py-0.5 text-xs text-gray-400">
-              {result.platform.join(" / ")}
-            </span>
-          </div>
-
-          {/* 标题 + 摘要 + 指标卡 */}
-          <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr),280px]">
-            <div className="min-w-0">
-              <div className="mb-2 text-sm text-gray-500">{taskMeta.description}</div>
-              <h2 className="line-clamp-2 break-words text-2xl leading-tight text-gray-900">
-                {result.title}
-              </h2>
-              <p className="mt-3 break-words text-sm leading-relaxed text-gray-700">
-                {result.summary}
-              </p>
-
-              {isOpportunity ? (
-                <>
-                  <p className="mt-3 break-words text-sm leading-relaxed text-gray-500">
-                    {windowMeta.body}
-                  </p>
-                  <p className="mt-2 break-words text-sm leading-relaxed text-gray-500">
-                    {inputFocus.body}
-                  </p>
-                </>
-              ) : (
-                <>
-                  {/* BUG-2 修复：替换无意义的调试文案，改为有价值的任务说明 */}
-                  {result.taskIntent === "topic_strategy" ? (
-                    <p className="mt-3 break-words text-sm leading-relaxed text-gray-500">
-                      基于多平台数据采集和 AI 分析，为你生成了经过验证的选题方向和可执行选题。每个方向都经过了低粉爆款案例、评论区需求、同行对标等多维度交叉验证。
-                    </p>
-                  ) : (
-                    <p className="mt-3 break-words text-sm leading-relaxed text-gray-500">
-                      基于你的输入和平台数据，生成了一份可直接使用的分析报告。
-                    </p>
-                  )}
-                </>
-              )}
-
-              {isOpportunity && result.missIfWait && (
-                <div className="mt-4 rounded-2xl border border-emerald-100 bg-emerald-50/70 px-4 py-3">
-                  <div className="mb-1 text-xs text-emerald-700">如果现在不做，可能会错过</div>
-                  <p className="break-words text-sm leading-relaxed text-emerald-900">
-                    {result.missIfWait}
-                  </p>
-                </div>
-              )}
-
-              <div className="mt-4 rounded-2xl bg-gray-50 px-4 py-3">
-                <div className="mb-1 text-[11px] text-gray-400">
-                  {isOpportunity ? "分析范围" : "当前分析范围"}
-                </div>
-                <p className="break-words text-sm leading-relaxed text-gray-700">
-                  {result.decisionBoundary}
-                </p>
-              </div>
-            </div>
-
-            {/* Hero 指标卡（从 Registry 获取） */}
-            <div className="grid grid-cols-2 gap-3 lg:grid-cols-1">
-              {heroMetricCards.map((item) => (
-                <div
-                  key={item.label}
-                  className={`rounded-2xl bg-gray-50 px-4 py-4 ${item.span ?? ""}`}
-                >
-                  <div className="text-[11px] text-gray-400">{item.label}</div>
-                  <div className="mt-1 break-words text-sm text-gray-900">{item.value}</div>
-                  <div className="mt-1 break-words text-xs text-gray-500">{item.detail}</div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </div>
-      )}
+      {/* Hero Header 已移入渲染器第一层，此处不再重复 */}
 
       {/* ========== 任务专属内容（Dumb Renderer） ========== */}
       {RendererComponent ? (

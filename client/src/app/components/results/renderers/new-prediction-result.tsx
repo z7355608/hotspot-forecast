@@ -572,37 +572,30 @@ function NewPredictionResultBody({ result }: ArtifactRendererProps) {
                 </div>
               </div>
 
-              {/* 立即执行按钮：触发 CozeEditorDrawer 编辑器 */}
-              <div className="flex gap-3">
-                <button
-                  type="button"
-                  onClick={() => {
-                    // 触发编辑器：传递第一个 CTA action（生成开拍方案）
-                    window.dispatchEvent(new CustomEvent("open-cta-editor", {
-                      detail: { actionIndex: 0 },
-                    }));
-                  }}
-                  className="inline-flex items-center gap-2 px-5 py-2.5 rounded-[14px] bg-gray-900 text-white text-[14px] font-medium hover:bg-gray-700 transition-colors"
-                >
-                  <Zap className="w-4 h-4" />
-                  {result.bestActionNow.ctaLabel}
-                </button>
-                {result.recommendedNextTasks?.[0] && (
-                  <button
-                    type="button"
-                    onClick={() => {
-                      // 触发编辑器：传递第二个 CTA action
-                      window.dispatchEvent(new CustomEvent("open-cta-editor", {
-                        detail: { actionIndex: 1 },
-                      }));
-                    }}
-                    className="inline-flex items-center gap-2 px-5 py-2.5 rounded-[14px] border border-[#E5E7EB] text-[14px] text-[#374151] hover:bg-[#F9FAFB] transition-colors"
-                  >
-                    {result.recommendedNextTasks[0].actionLabel}
-                    <ArrowRight className="w-4 h-4" />
-                  </button>
-                )}
-              </div>
+              {/* Agent 建议的下一步任务 */}
+              {result.recommendedNextTasks?.length > 0 && (
+                <div className="space-y-2">
+                  <div className="text-[12px] text-[#6B7280] mb-1">Agent 建议的下一步</div>
+                  {result.recommendedNextTasks.slice(0, 2).map((task, i) => (
+                    <div key={i} className="flex items-center justify-between px-4 py-3 rounded-[14px] border border-[#F3F4F6] bg-[#F9FAFB] hover:bg-[#F3F4F6] transition-colors cursor-pointer"
+                      onClick={() => {
+                        window.dispatchEvent(new CustomEvent("open-deep-dive", {
+                          detail: { prompt: `基于这次爆款预测，继续帮我做「${task.title}」。要求：${task.reason}` },
+                        }));
+                      }}
+                    >
+                      <div className="flex-1 min-w-0">
+                        <div className="text-[13px] text-[#1E2939] font-medium">{task.title}</div>
+                        <div className="text-[11px] text-[#6B7280] mt-0.5 truncate">{task.reason}</div>
+                      </div>
+                      <span className="shrink-0 ml-3 inline-flex items-center gap-1 px-3 py-1.5 rounded-[10px] bg-white border border-[#E5E7EB] text-[12px] text-[#374151] hover:bg-[#F3F4F6] transition-colors">
+                        {task.actionLabel}
+                        <ArrowRight className="w-3 h-3" />
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
 
             {/* 右侧：爆款概率仪表盘 */}
@@ -696,55 +689,70 @@ function NewPredictionResultBody({ result }: ArtifactRendererProps) {
           )}
         </div>
 
-        {/* 右：下一步建议 */}
+        {/* 右：下一步动作（触发 CozeEditorDrawer 编辑器） */}
         <div className="bg-white rounded-[24px] border border-[#F3F4F6] shadow-[0px_1px_3px_rgba(0,0,0,0.06)] px-6 py-6">
           <div className="flex items-center gap-2 mb-4">
             <div className="flex items-center justify-center w-6 h-6 bg-[#8979FF] rounded-full">
-              <ArrowRight className="w-3 h-3 text-white" />
+              <Rocket className="w-3 h-3 text-white" />
             </div>
-            <span className="text-[14px] text-[#1E2939] font-medium">下一步建议</span>
+            <span className="text-[14px] text-[#1E2939] font-medium">下一步动作</span>
           </div>
 
-          <div className="space-y-3">
-            {/* 是否建议马上拍 */}
-            <div className="rounded-[14px] border border-[#F3F4F6] bg-[#F9FAFB] p-4">
-              <div className="flex items-center gap-2 mb-2">
-                <Zap className="w-4 h-4 text-[#059669]" />
-                <span className="text-[13px] text-[#1E2939] font-medium">
-                  {result.verdict === "go_now" ? "建议马上拍" : result.verdict === "test_small" ? "建议小成本试拍" : "建议继续观察"}
-                </span>
+          <div className="space-y-2">
+            {/* 动态生成 CTA 按钮，通过 id 匹配 getCtaActions 返回的动作 */}
+            {[
+              { id: "shoot_plan", icon: Rocket, label: result.bestActionNow.ctaLabel, desc: result.bestActionNow.description || result.bestActionNow.reason, highlight: result.verdict === "go_now" },
+              ...(lowFollowerEvidence.length > 0 ? [{ id: "breakdown_low", icon: Flame, label: "拆解低粉爆款", desc: `已发现 ${lowFollowerEvidence.length} 个低粉高互动样本，拆解可复用的爆款结构`, highlight: false }] : []),
+              { id: "watch_7d", icon: Eye, label: "加入 7 天监控", desc: "系统每天自动复查赛道数据，有异动立刻通知你", highlight: false },
+            ].map((cta, i) => {
+              const Icon = cta.icon;
+              return (
+                <button
+                  key={i}
+                  type="button"
+                  onClick={() => {
+                    // 通过 ctaId 匹配，而非固定 index，确保不同 score 下顺序变化时仍能正确触发
+                    window.dispatchEvent(new CustomEvent("open-cta-editor", {
+                      detail: { ctaId: cta.id },
+                    }));
+                  }}
+                  className={`w-full flex items-start gap-3 px-4 py-3.5 rounded-[14px] border text-left transition-all duration-200 ${
+                    cta.highlight
+                      ? "border-[#8979FF] bg-[#F9F8FF] hover:bg-[#F3F0FF]"
+                      : "border-[#F3F4F6] bg-[#F9FAFB] hover:bg-[#F3F4F6]"
+                  }`}
+                >
+                  <div className={`shrink-0 mt-0.5 flex items-center justify-center w-7 h-7 rounded-full ${
+                    cta.highlight ? "bg-[#8979FF]" : "bg-[#E5E7EB]"
+                  }`}>
+                    <Icon className={`w-3.5 h-3.5 ${cta.highlight ? "text-white" : "text-[#6B7280]"}`} />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className={`text-[13px] font-medium ${cta.highlight ? "text-[#8979FF]" : "text-[#1E2939]"}`}>
+                      {cta.label}
+                    </div>
+                    <div className="text-[11px] text-[#6B7280] mt-0.5 leading-[16px]">
+                      {cta.desc}
+                    </div>
+                  </div>
+                  <ArrowRight className="shrink-0 mt-1 w-4 h-4 text-[#99A1AF]" />
+                </button>
+              );
+            })}
+          </div>
+
+          {/* 如果现在不做会错过什么 */}
+          {result.missIfWait && (
+            <div className="mt-3 rounded-[14px] border border-[#D1FAE5] bg-[#ECFDF5] p-3">
+              <div className="flex items-center gap-1.5 mb-1">
+                <Clock className="w-3.5 h-3.5 text-[#059669]" />
+                <span className="text-[12px] text-[#059669] font-medium">如果现在不做</span>
               </div>
-              <p className="text-[12px] text-[#6B7280] leading-[18px]">
-                {result.bestActionNow.reason || result.bestActionNow.description}
+              <p className="text-[11px] text-[#065F46] leading-[16px]">
+                {result.missIfWait}
               </p>
             </div>
-
-            {/* 是否建议脚本拆解 */}
-            {lowFollowerEvidence.length > 0 && (
-              <div className="rounded-[14px] border border-[#F3F4F6] bg-[#F9FAFB] p-4">
-                <div className="flex items-center gap-2 mb-2">
-                  <FileText className="w-4 h-4 text-[#8979FF]" />
-                  <span className="text-[13px] text-[#1E2939] font-medium">建议先拆解低粉爆款</span>
-                </div>
-                <p className="text-[12px] text-[#6B7280] leading-[18px]">
-                  已发现 {lowFollowerEvidence.length} 个低粉高互动样本，建议先拆解学习再开拍
-                </p>
-              </div>
-            )}
-
-            {/* 如果现在不做会错过什么 */}
-            {result.missIfWait && (
-              <div className="rounded-[14px] border border-[#D1FAE5] bg-[#ECFDF5] p-4">
-                <div className="flex items-center gap-2 mb-2">
-                  <Clock className="w-4 h-4 text-[#059669]" />
-                  <span className="text-[13px] text-[#059669] font-medium">如果现在不做</span>
-                </div>
-                <p className="text-[12px] text-[#065F46] leading-[18px]">
-                  {result.missIfWait}
-                </p>
-              </div>
-            )}
-          </div>
+          )}
         </div>
       </div>
 
