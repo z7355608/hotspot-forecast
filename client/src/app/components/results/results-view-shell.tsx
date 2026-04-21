@@ -48,7 +48,6 @@ import {
 } from "./results-view-meta";
 import { PlaceholderFollowUp } from "./results-shared";
 import { PaywallModal, type PaywallContext } from "../PaywallModal";
-import { FomoTeaser } from "../FomoTeaser";
 import { CozeEditorDrawer } from "../CozeEditorDrawer";
 import { generateCtaMarkdown, generateFollowUpMarkdown } from "../../lib/cta-markdown-generator";
 import { generateDirectResultMarkdown } from "../../lib/direct-result-markdown";
@@ -335,7 +334,7 @@ export function ResultsView({
         action = ctaActions[0];
       }
       if (action) {
-        handleCtaWithEditor(action);
+        handleCtaWithEditor(action, detail.directionContext);
       }
     };
     window.addEventListener("open-cta-editor", handler);
@@ -396,8 +395,8 @@ export function ResultsView({
     return { ok: true };
   };
 
-  /** CTA 按鈕点击后弹出编辑器 */
-  const handleCtaWithEditor = (ctaAction: CtaActionConfig) => {
+  /** CTA 按鈕点击后弹出编辑器，可接收选中方向的上下文 */
+  const handleCtaWithEditor = (ctaAction: CtaActionConfig, directionContext?: { title: string; description: string; tag?: string }) => {
     // watch_7d 特殊处理：直接加入智能监控，而不是生成观察计划文档
     if (ctaAction.id === "watch_7d") {
       handleEnsureWatch();
@@ -408,17 +407,22 @@ export function ResultsView({
     const consumeResult = handleConsume(chargedCost, ctaAction.prompt);
     if (!consumeResult.ok) return;
 
-    setEditorTitle(ctaAction.title);
-    setEditorSubtitle(ctaAction.description);
+    setEditorTitle(directionContext ? `${ctaAction.title}：${directionContext.title}` : ctaAction.title);
+    setEditorSubtitle(directionContext?.description || ctaAction.description);
     setEditorExpanded(false);
 
     if (dataMode === "live") {
       // live 模式：构建真实 SSE 请求体，向后端发起流式调用
       const payload = result.taskPayload;
+      // 将选中方向的上下文融入 prompt，实现方向选择与 CTA 的联动
+      const dirPromptSuffix = directionContext
+        ? `\n用户选择的拍摄方向：「${directionContext.title}」。${directionContext.description ? `方向说明：${directionContext.description}` : ""}。请围绕这个方向生成内容。`
+        : "";
       const context: Record<string, unknown> = {
-        userPrompt: ctaAction.prompt,
+        userPrompt: ctaAction.prompt + dirPromptSuffix,
         resultTitle: result.title,
         resultQuery: result.query,
+        selectedDirection: directionContext ?? null,
       };
       // 注入样本上下文（breakdown_sample 类型）
       if (payload?.kind === "breakdown_sample") {
@@ -533,8 +537,9 @@ export function ResultsView({
       });
       setEditorMarkdown(""); // 清空 mock markdown
     } else {
-      // mock 模式：本地生成 markdown
-      const md = generateCtaMarkdown(ctaAction.id, ctaAction.title, ctaAction.prompt, result);
+      // mock 模式：本地生成 markdown，将选中方向融入 prompt
+      const dirSuffix = directionContext ? `（围绕「${directionContext.title}」方向）` : "";
+      const md = generateCtaMarkdown(ctaAction.id, ctaAction.title, ctaAction.prompt + dirSuffix, result);
       setEditorMarkdown(md);
       setEditorStreamPayload(null); // 确保清空
     }
@@ -825,62 +830,7 @@ export function ResultsView({
 
       {/* Agent建议下一步 + CTA动作面板已移除：已融入渲染器内部 */}
 
-      {/* ========== FOMO 模糊化增值内容 ========== */}
-      <FomoTeaser
-        variant="inline"
-        requiredCredits={35}
-        contextLabel={`解锁「${result.title || result.opportunityTitle}」的完整执行建议`}
-      />
-
-      {/* ========== 运营视角展开 ========== */}
-      {result.operatorPanel && (
-        <div className="rounded-3xl border border-gray-100 bg-white shadow-sm">
-          <button
-            type="button"
-            onClick={() => setShowOperatorPanel((value) => !value)}
-            className="flex w-full items-center justify-between px-5 py-4 text-left sm:px-7"
-          >
-            <div>
-              <div className="text-sm text-gray-800">详细信息</div>
-              <div className="mt-1 text-xs text-gray-400">
-                数据来源、对标账号、注意事项
-              </div>
-            </div>
-            <span className="text-xs text-gray-500">
-              {showOperatorPanel ? "收起" : "展开"}
-            </span>
-          </button>
-
-          {showOperatorPanel && (
-            <div className="border-t border-gray-50 px-5 py-5 sm:px-7">
-              <div className="rounded-2xl bg-gray-50 px-4 py-4">
-                <div className="mb-2 text-xs text-gray-400">预测摘要</div>
-                <p className="break-words text-sm leading-relaxed text-gray-700">
-                  {result.operatorPanel.reportSummary}
-                </p>
-              </div>
-
-              <div className="mt-4 grid grid-cols-1 gap-4 lg:grid-cols-2">
-                {operatorSections.map((section) => (
-                  <div
-                    key={section.title}
-                    className="rounded-2xl border border-gray-100 bg-white px-4 py-4"
-                  >
-                    <div className="mb-2 text-xs text-gray-400">{section.title}</div>
-                    <div className="space-y-1.5">
-                      {section.items.map((item, index) => (
-                        <p key={`${section.title}-${index}`} className="break-words text-xs leading-relaxed text-gray-700">
-                          {item}
-                        </p>
-                      ))}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-        </div>
-      )}
+      {/* FOMO 和运营视角板块已删除 */}
 
       {/* ========== 深挖 Follow-Up ========== */}
       {result.followUps.map((item) => (

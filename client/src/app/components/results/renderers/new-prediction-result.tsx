@@ -552,13 +552,29 @@ function NewPredictionResultBody({ result }: ArtifactRendererProps) {
           {/* 主内容区：左文字 + 右概率仪表盘 */}
           <div className="flex items-start justify-between gap-6">
             <div className="flex-1 min-w-0">
-              {/* 今日建议拍什么 */}
+              {/* 今日建议拍什么 — 优先展示具体可拍内容，而非泛赛道名 */}
               <div className="text-[13px] text-[#6B7280] mb-2">今日建议拍什么</div>
-              <h2 className="text-[24px] text-[#101828] leading-[34px] font-semibold mb-3">
-                {result.opportunityTitle || result.query}
+              <h2 className="text-[24px] text-[#101828] leading-[34px] font-semibold mb-1">
+                {result.primaryCard?.title || result.opportunityTitle || result.query}
               </h2>
+              {/* 具体选题示例标签 */}
+              {(() => {
+                const tp = result.taskPayload;
+                const topics = (tp && "trendOpportunities" in tp) ? (tp as { trendOpportunities?: Array<{ executableTopics?: Array<{ title: string }> }> }).trendOpportunities?.[0]?.executableTopics : undefined;
+                if (!topics?.length) return null;
+                return (
+                  <div className="flex flex-wrap gap-1.5 mb-3">
+                    {topics.slice(0, 3).map((t, i) => (
+                      <span key={i} className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] bg-[#F3F0FF] text-[#7C6BDB]">
+                        <Lightbulb className="w-3 h-3" />
+                        {typeof t === "string" ? t : t.title}
+                      </span>
+                    ))}
+                  </div>
+                );
+              })()}
               <p className="text-[15px] text-[#374151] leading-[26px] mb-5">
-                {result.summary}
+                {result.primaryCard?.description || result.bestActionNow?.reason || result.summary}
               </p>
 
               {/* 推荐级别说明 */}
@@ -711,9 +727,13 @@ function NewPredictionResultBody({ result }: ArtifactRendererProps) {
                   key={i}
                   type="button"
                   onClick={() => {
-                    // 通过 ctaId 匹配，而非固定 index，确保不同 score 下顺序变化时仍能正确触发
+                    // 通过 ctaId 匹配 + 传入当前选中方向的上下文，实现方向选择与 CTA 的真正联动
+                    const dir = directions[selectedDirection];
                     window.dispatchEvent(new CustomEvent("open-cta-editor", {
-                      detail: { ctaId: cta.id },
+                      detail: {
+                        ctaId: cta.id,
+                        directionContext: dir ? { title: dir.title, description: dir.description, tag: dir.tag } : undefined,
+                      },
                     }));
                   }}
                   className={`w-full flex items-start gap-3 px-4 py-3.5 rounded-[14px] border text-left transition-all duration-200 ${

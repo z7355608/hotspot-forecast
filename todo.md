@@ -103,3 +103,10 @@
 - [x] 修正渲染器"下一步动作"面板CTA按钮：改为通过ctaId匹配getCtaActions，避免不同score下actionIndex错配
 - [x] Shell层open-cta-editor事件处理改为优先ctaId匹配，兼容旧actionIndex
 - [x] 确认Agent建议任务卡片点击后正确触发open-deep-dive深挖面板
+
+## 用户视觉编辑反馈 v2
+
+- [x] 删除Shell层838行附近的板块（FOMO/运营视角区域）
+- [x] 修复FomoTeaser积分充值按钮报错（FomoTeaser已删除，问题自动解决）
+- [x] 改造“建议拍摄方向”：选择方向后通过directionContext与CTA动作面板联动，注入prompt和编辑器标题
+- [x] 标题从泛赛道名改为具体爆款内容：优先展示primaryCard.title + executableTopics选题标签
