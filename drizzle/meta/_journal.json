@@ -1,0 +1,48 @@
+{
+  "version": "7",
+  "dialect": "mysql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "5",
+      "when": 1774856121024,
+      "tag": "0000_bitter_marten_broadcloak",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "5",
+      "when": 1775001389088,
+      "tag": "0001_luxuriant_wild_pack",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "5",
+      "when": 1775039072126,
+      "tag": "0002_slim_praxagora",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "5",
+      "when": 1775272557339,
+      "tag": "0003_friendly_sleeper",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "5",
+      "when": 1775360436550,
+      "tag": "0004_flowery_beyonder",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "5",
+      "when": 1775697166433,
+      "tag": "0005_square_shinobi_shaw",
+      "breakpoints": true
+    }
+  ]
+}

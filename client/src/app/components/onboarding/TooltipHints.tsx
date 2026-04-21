@@ -31,7 +31,7 @@ export function FirstTimeTooltip({
   const track = useTrack();
   const seen = tooltipsSeen[id];
   const [show, setShow] = useState(false);
-  const timerRef = useRef<ReturnType<typeof setTimeout>>();
+  const timerRef = useRef<ReturnType<typeof setTimeout>>(undefined);
 
   useEffect(() => {
     if (seen) return;

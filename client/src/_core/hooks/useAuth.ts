@@ -1,43 +1,43 @@
 import { getLoginUrl } from "@/const";
-import { useCallback, useMemo, useState } from "react";
+import { trpc } from "@/lib/trpc";
+import { useCallback, useMemo } from "react";
 
 type UseAuthOptions = {
   redirectOnUnauthenticated?: boolean;
   redirectPath?: string;
 };
 
-// Mock user data for static deployment / preview environment
-const MOCK_USER = {
-  id: "preview-user",
-  name: "预览用户",
-  username: "预览用户",
-  email: "preview@example.com",
-  credits: 1000,
-  tier: "pro" as const,
-  avatar: null,
-};
-
 export function useAuth(options?: UseAuthOptions) {
-  // Always use mock authentication in static deployment
-  const [mockUser] = useState(MOCK_USER);
+  const { data: user, isLoading: loading, error: queryError, refetch } = trpc.auth.me.useQuery(
+    undefined,
+    {
+      retry: false,
+      staleTime: 60_000,
+    }
+  );
+
+  const logoutMutation = trpc.auth.logout.useMutation({
+    onSuccess: () => {
+      window.location.href = getLoginUrl();
+    },
+  });
 
   const logout = useCallback(async () => {
-    console.log("Logout called in preview mode");
-  }, []);
+    await logoutMutation.mutateAsync();
+  }, [logoutMutation]);
 
   const state = useMemo(() => {
     return {
-      user: mockUser,
-      loading: false,
-      error: null,
-      isAuthenticated: Boolean(mockUser),
+      user: user ?? null,
+      loading,
+      error: queryError,
+      isAuthenticated: Boolean(user),
     };
-  }, [mockUser]);
+  }, [user, loading, queryError]);
 
-  // No redirect in Figma Make environment
   return {
     ...state,
-    refresh: () => Promise.resolve({ data: mockUser }),
+    refresh: refetch,
     logout,
   };
 }

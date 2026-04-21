@@ -1,0 +1,1 @@
+ALTER TABLE `prediction_cache` MODIFY COLUMN `resultJson` mediumtext NOT NULL;

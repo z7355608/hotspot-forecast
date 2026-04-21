@@ -64,7 +64,7 @@ export function ChecklistCard() {
     new Set(checklistItems.filter((i) => i.done).map((i) => i.id)),
   );
   const [recentlyCompleted, setRecentlyCompleted] = useState<string | null>(null);
-  const recentTimerRef = useRef<ReturnType<typeof setTimeout>>();
+  const recentTimerRef = useRef<ReturnType<typeof setTimeout>>(undefined);
 
   useEffect(() => {
     const nowDone = new Set(checklistItems.filter((i) => i.done).map((i) => i.id));
@@ -82,7 +82,7 @@ export function ChecklistCard() {
   }, [checklistItems]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Celebrate + auto-dismiss when all complete (only fires once per session)
-  const celebratedRef = useRef(false);
+  const celebratedRef = useRef<boolean>(false);
   useEffect(() => {
     if (allDone && !dismissed && !celebratedRef.current) {
       celebratedRef.current = true;
