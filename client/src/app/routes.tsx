@@ -17,7 +17,6 @@ import { TermsPage } from "./pages/TermsPage";
 import { ToolboxPage } from "./pages/ToolboxPage";
 import { PerformancePage } from "./pages/PerformancePage";
 import { PrivacyPage } from "./pages/PrivacyPage";
-import { PredictionResultDemo } from "./pages/PredictionResultDemo";
 import { ResultsDemoPage } from "./pages/ResultsDemoPage";
 
 export const router = createBrowserRouter([
@@ -26,7 +25,6 @@ export const router = createBrowserRouter([
   { path: "/login", Component: LoginPage },
   { path: "/terms", Component: TermsPage },
   { path: "/privacy", Component: PrivacyPage },
-  { path: "/demo/prediction-result", Component: PredictionResultDemo },
 
   /* ─── App shell (sidebar + header) ─── */
   {

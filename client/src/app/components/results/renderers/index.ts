@@ -5,7 +5,7 @@
  * 新增任务类型时，只需在此文件添加一行 import。
  */
 
-import "./opportunity-prediction-renderer";
+import "./new-prediction-result";  // 新 Figma 设计风格的爆款预测结果页
 import "./trend-watch-renderer";
 import "./viral-breakdown-renderer";
 import "./topic-strategy-renderer";
