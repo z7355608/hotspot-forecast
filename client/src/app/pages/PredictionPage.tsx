@@ -23,7 +23,7 @@ interface PredictionCard {
   reason: string;          // 核心爆因判断
   methodologies: Methodology[];
   platformColor: string;
-  window: string;          // 机会窗口
+  window: string;          // 推荐级别
   difficulty: '低' | '中' | '高';
 }
 

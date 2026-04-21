@@ -142,7 +142,7 @@ export function PromptTemplates({
           onClick={() => navigate("/results/demo")}
           className="flex items-center gap-1 text-[12px] text-[#8979FF] hover:text-[#6B5ED6] transition-colors"
         >
-          <span>看看示例分析长什么样</span>
+          <span>看看爆款预测示例</span>
           <ExternalLink className="w-3 h-3" />
         </button>
       </div>

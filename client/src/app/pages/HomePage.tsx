@@ -153,9 +153,8 @@ export function HomePage() {
       {homeState === "input" ? (
         <>
           <LevelUpModal />
-          <DashboardInsights onQuickAction={handleQuickAction} />
           <HeroSection
-            onViewPlan={() => navigate("/credits")}
+            onViewPlan={() => navigate("/results/demo")}
             onStartTrial={() => setFocusTrigger((value) => value + 1)}
           />
           <AIWorkbench
@@ -165,6 +164,7 @@ export function HomePage() {
           />
           {/* Module B — Prompt template suggestions */}
           <PromptTemplates onSelect={handleTemplateSelect} />
+          <DashboardInsights onQuickAction={handleQuickAction} />
           <ValueCarousel />
         </>
       ) : (

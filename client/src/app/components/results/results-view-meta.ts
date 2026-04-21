@@ -3,24 +3,24 @@ import type { ResultRecord } from "../../store/app-data";
 
 export const WINDOW_META = {
   strong_now: {
-    label: "黄金窗口",
+    label: "强烈推荐",
     tone: "bg-emerald-50 text-emerald-700",
-    body: "窗口正在形成，现在入场正是最佳时机，抢先一步就是优势。",
+    body: "数据信号强烈，爆款概率高，建议立即行动。",
   },
   validate_first: {
-    label: "机会窗口",
+    label: "值得一试",
     tone: "bg-amber-50 text-amber-700",
-    body: "机会已经出现，用一条内容快速验证，验证通过就可以放大。",
+    body: "有明确爆款信号，建议小成本快速验证。",
   },
   observe: {
-    label: "潜力窗口",
+    label: "持续关注",
     tone: "bg-sky-50 text-sky-700",
-    body: "赛道正在酝酿，提前布局积累素材，等信号明确即可快速出击。",
+    body: "趋势正在形成，建议先储备素材，等信号更强时出击。",
   },
   avoid: {
-    label: "冷却期",
+    label: "暂不建议",
     tone: "bg-gray-100 text-gray-700",
-    body: "当前赛道热度回落，适合储备选题和素材，等待下一波机会。",
+    body: "当前信号不足，建议观望或换方向。",
   },
 } as const;
 
@@ -40,20 +40,20 @@ export const WHY_NOW_TONE = {
 
 export const INPUT_FOCUS_META = {
   prompt: {
-    label: "方向探索",
-    body: "探索市场机会，找到最值得下注的方向。",
+    label: "爆款预测",
+    body: "输入关键词，预测当前最值得拍的方向和爆款概率。",
   },
   content_url: {
-    label: "结构迁移",
-    body: "这次输入聚焦结构判断，重点是哪些内容部件已经被市场验证可复用。",
+    label: "竞品分析",
+    body: "粘贴竞品链接，分析哪些内容结构已被验证可复用。",
   },
   account: {
-    label: "账号适配",
-    body: "这次判断聚焦谁最适合抓住这波机会，找到你的最佳切入角度。",
+    label: "账号诊断",
+    body: "粘贴你的账号链接，找到最适合你的可拍方向。",
   },
   uploaded_asset: {
-    label: "素材承接",
-    body: "基于你的素材，帮你找到最佳发布策略和内容结构。",
+    label: "素材分析",
+    body: "基于你的素材，找到最佳发布策略和内容方向。",
   },
 } as const;
 
@@ -139,10 +139,14 @@ export function getDeepDiveConfig(result: ResultRecord) {
       };
     case "opportunity_prediction":
       return {
-        title: "继续深挖这次机会",
+        title: "继续深挖这次预测",
         description: "基于真实样本数据，继续展开具体问题。",
-        placeholder: "给我这次机会的开拍方案",
-        quickActions: DEFAULT_QUICK_ACTIONS,
+        placeholder: "给我这次预测的开拍方案",
+        quickActions: [
+          { label: "给我这次预测的开拍方案", cost: 10 },
+          { label: "明确效果评估标准和升级信号", cost: 10 },
+          { label: "帮我分析这个赛道的竞争格局", cost: 10 },
+        ],
       };
     default:
       return {

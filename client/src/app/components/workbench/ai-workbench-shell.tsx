@@ -662,7 +662,7 @@ export function AIWorkbench({
               placeholder={
                 selectedSkill
                   ? "说说想要这个技能要帮你做什么"
-                  : "例如：穿搭赛道现在发什么会火？我有 3000 粉，想知道具体可以做哪些选题"
+                  : "输入行业关键词、粘贴竞品链接或你的账号链接，立即获取爆款预测"
               }
               className={`min-h-[60px] w-full resize-none bg-transparent text-base placeholder-gray-400 focus:outline-none ${
                 inputValue.includes("[[") ? "text-transparent caret-gray-900 select-none" : "text-gray-900"

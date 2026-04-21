@@ -415,7 +415,7 @@ export function ResultsView({
           contentOutline: payload.contentOutline,
         });
       }
-      // 注入机会判断上下文（opportunity_prediction 类型，或包含 trendOpportunities）
+      // 注入爆款预测上下文（opportunity_prediction 类型，或包含 trendOpportunities）
       if (payload?.kind === "opportunity_prediction" || result.taskIntent === "opportunity_prediction" || hasTrendOpps) {
         // 注入真实搜索到的内容样本
         const topContents = (result.supportingContents || []).slice(0, 5).map(c => ({
@@ -712,7 +712,7 @@ export function ResultsView({
       <div className="rounded-3xl border border-gray-100 bg-white px-5 py-4 shadow-sm sm:px-7">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
           <div className="min-w-0">
-            <div className="text-sm text-gray-800">保存 / 观察这次判断</div>
+            <div className="text-sm text-gray-800">保存 / 观察这次预测</div>
             <div className="mt-1 text-xs leading-relaxed text-gray-400">
               {canWatch
                 ? "保存后可随时回看这次分析结果；加入观察后，系统会定期帮你跟踪这个赛道的数据变化，有新变化时及时通知你。"
@@ -1075,7 +1075,7 @@ export function ResultsView({
           {showOperatorPanel && (
             <div className="border-t border-gray-50 px-5 py-5 sm:px-7">
               <div className="rounded-2xl bg-gray-50 px-4 py-4">
-                <div className="mb-2 text-xs text-gray-400">判断摘要</div>
+                <div className="mb-2 text-xs text-gray-400">预测摘要</div>
                 <p className="break-words text-sm leading-relaxed text-gray-700">
                   {result.operatorPanel.reportSummary}
                 </p>

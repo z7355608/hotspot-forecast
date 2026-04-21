@@ -28,7 +28,7 @@ export const TASK_INTENT_META: Record<
   opportunity_prediction: {
     label: "爆款预测",
     shortLabel: "预测",
-    description: "预测赛道爆款机会，给出 3-5 个可执行选题和切入方式。",
+    description: "预测当前最值得拍的方向，给出爆款概率和可拍方向。",
     artifactType: "opportunity_memo",
     watchable: true,
     shareable: true,

@@ -254,7 +254,7 @@ function generateTopicStrategy(result: ResultRecord, dateStr: string): string {
 
 ---
 
-## 一、赛道机会判断
+## 一、赛道爆款预测
 
 当前${track}赛道处于 **上升期**，低粉爆款频率增加说明平台正在给新账号更多推荐机会。
 
