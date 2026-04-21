@@ -317,6 +317,19 @@ export function ResultsView({
     return () => window.removeEventListener("open-deep-dive", handler);
   }, []);
 
+  // 监听 renderer 发出的 open-cta-editor 事件（触发 CozeEditorDrawer 编辑器）
+  useEffect(() => {
+    const handler = (e: Event) => {
+      const actionIndex = (e as CustomEvent).detail?.actionIndex ?? 0;
+      const action = ctaActions[actionIndex];
+      if (action) {
+        handleCtaWithEditor(action);
+      }
+    };
+    window.addEventListener("open-cta-editor", handler);
+    return () => window.removeEventListener("open-cta-editor", handler);
+  }, [ctaActions]);
+
   /* ---- Handlers ---- */
   const handleConsume = (cost: number, label: string) => {
     const action = addResultFollowUp(result.id, label, cost);
@@ -708,83 +721,7 @@ export function ResultsView({
         }}
       />
 
-      {/* ========== 保存 / 观察面板 ========== */}
-      <div className="rounded-3xl border border-gray-100 bg-white px-5 py-4 shadow-sm sm:px-7">
-        <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-          <div className="min-w-0">
-            <div className="text-sm text-gray-800">保存 / 观察这次预测</div>
-            <div className="mt-1 text-xs leading-relaxed text-gray-400">
-              {canWatch
-                ? "保存后可随时回看这次分析结果；加入观察后，系统会定期帮你跟踪这个赛道的数据变化，有新变化时及时通知你。"
-                : "保存后可随时回看这次分析结果，后续从历史记录继续深入分析。"}
-            </div>
-            <div className="mt-3 flex flex-wrap gap-2">
-              <span className="rounded-full bg-gray-50 px-2.5 py-1 text-[11px] text-gray-500">
-                {artifactStatus ? "已保存" : "未保存"}
-              </span>
-              <span className="rounded-full bg-gray-50 px-2.5 py-1 text-[11px] text-gray-500">
-                {canWatch
-                  ? getWatchStatusLabel(watchTask?.status ?? artifactStatus?.watchStatus)
-                  : "仅保存"}
-              </span>
-              <span className="rounded-full bg-gray-50 px-2.5 py-1 text-[11px] text-gray-500">
-                最近复查：{formatDateTime(artifactStatus?.lastWatchRunAt ?? watchTask?.lastRunAt)}
-              </span>
-              <span className="rounded-full bg-gray-50 px-2.5 py-1 text-[11px] text-gray-500">
-                {getExecutionStatusLabel(
-                  artifactStatus?.lastExecutionStatus ?? watchTask?.lastExecutionStatus,
-                )}
-              </span>
-            </div>
-          </div>
-
-          <div className="flex flex-col gap-2 sm:flex-row">
-            <button
-              type="button"
-              onClick={handleSaveArtifact}
-              disabled={artifactAction !== null || Boolean(artifactStatus)}
-              className="flex items-center justify-center gap-2 rounded-2xl border border-gray-200 px-4 py-2.5 text-sm text-gray-700 transition-colors hover:bg-gray-50 disabled:cursor-not-allowed disabled:border-gray-100 disabled:text-gray-300"
-            >
-              <Bookmark className="h-4 w-4" />
-              {artifactStatus ? "已保存这次结果" : artifactAction === "save" ? "保存中..." : "保存这次结果"}
-            </button>
-            {canWatch ? (
-              <button
-                type="button"
-                onClick={handleEnsureWatch}
-                disabled={artifactAction !== null || Boolean(artifactStatus?.watchTaskId)}
-                className="flex items-center justify-center gap-2 rounded-2xl bg-gray-900 px-4 py-2.5 text-sm text-white transition-colors hover:bg-gray-700 disabled:cursor-not-allowed disabled:bg-gray-300"
-              >
-                <Eye className="h-4 w-4" />
-                {artifactStatus?.watchTaskId ? "已经加入观察" : artifactAction === "watch" ? "加入中..." : "加入观察"}
-              </button>
-            ) : null}
-            {canWatch && artifactStatus?.watchTaskId && (
-              <button
-                type="button"
-                onClick={handleRunWatch}
-                disabled={artifactAction !== null}
-                className="flex items-center justify-center gap-2 rounded-2xl border border-gray-200 px-4 py-2.5 text-sm text-gray-700 transition-colors hover:bg-gray-50 disabled:cursor-not-allowed disabled:border-gray-100 disabled:text-gray-300"
-              >
-                <RefreshCw className={`h-4 w-4 ${artifactAction === "run" ? "animate-spin" : ""}`} />
-                {artifactAction === "run" ? "复查中..." : "立即复查"}
-              </button>
-            )}
-          </div>
-        </div>
-
-        {watchTask?.degradeReason && (
-          <p className="mt-3 rounded-2xl bg-amber-50 px-3 py-2 text-xs leading-relaxed text-amber-800">
-            上次复查降级说明：{watchTask.degradeReason}
-          </p>
-        )}
-
-        {artifactError && (
-          <p className="mt-3 rounded-2xl bg-red-50 px-3 py-2 text-xs leading-relaxed text-red-700">
-            {artifactError}
-          </p>
-        )}
-      </div>
+      {/* 保存/观察面板已移除：不再在结果页展示 */}
 
       {/* ========== 直接需求模式：用编辑器展示而非结构化卡片 ========== */}
       {isDirectMode ? (
@@ -993,58 +930,7 @@ export function ResultsView({
       </>
       )}
 
-      {/* ========== 推荐下一步任务（trendOpps 存在时隐藏） ========== */}
-      {!hasTrendOpps && result.recommendedNextTasks.length > 0 && (
-        <div className="rounded-3xl border border-gray-100 bg-white px-5 py-5 shadow-sm sm:px-7">
-          <div className="mb-4 flex items-center gap-2">
-            <div className="flex h-5 w-5 items-center justify-center rounded-full bg-gray-900">
-              <ChevronRight className="h-3 w-3 text-white" />
-            </div>
-            <span className="text-sm text-gray-800">Agent 建议下一步</span>
-          </div>
-          <div className="grid gap-4 lg:grid-cols-2">
-            {result.recommendedNextTasks.map((item) => (
-              <div
-                key={`${result.id}-${item.taskIntent}-${item.title}`}
-                className="rounded-2xl border border-gray-100 bg-gray-50 px-4 py-4"
-              >
-                <div className="mb-2 flex flex-wrap items-center gap-2">
-                  <span className="rounded-full bg-white px-2 py-1 text-[11px] text-gray-500">
-                    {TASK_INTENT_META[item.taskIntent].label}
-                  </span>
-                  <span className="text-[11px] text-gray-300">推荐串联</span>
-                </div>
-                <div className="text-sm text-gray-900">{item.title}</div>
-                <p className="mt-2 break-words text-xs leading-relaxed text-gray-600">
-                  {item.reason}
-                </p>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setDeepDivePrompt(`基于这次${taskMeta.label}，继续帮我做「${item.title}」。要求：${item.reason}`);
-                    setShowDeepDive(true);
-                  }}
-                  className="mt-4 flex items-center gap-2 rounded-xl bg-gray-900 px-4 py-2 text-sm text-white transition-colors hover:bg-gray-700"
-                >
-                  {item.actionLabel}
-                  <ChevronRight className="h-4 w-4" />
-                </button>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* ========== CTA 动作面板（从 Registry 获取配置） ========== */}
-      {ctaActions.length > 0 && (
-        <RegistryCtaActionsPanel
-          actions={ctaActions}
-          credits={state.credits}
-          modelId={state.selectedModel}
-          onConsume={handleConsume}
-          onCtaAction={handleCtaWithEditor}
-        />
-      )}
+      {/* Agent建议下一步 + CTA动作面板已移除：已融入渲染器内部 */}
 
       {/* ========== FOMO 模糊化增值内容 ========== */}
       <FomoTeaser

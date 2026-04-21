@@ -572,13 +572,14 @@ function NewPredictionResultBody({ result }: ArtifactRendererProps) {
                 </div>
               </div>
 
-              {/* 立即执行按钮 */}
+              {/* 立即执行按钮：触发 CozeEditorDrawer 编辑器 */}
               <div className="flex gap-3">
                 <button
                   type="button"
                   onClick={() => {
-                    window.dispatchEvent(new CustomEvent("open-deep-dive", {
-                      detail: { prompt: result.bestActionNow.ctaLabel },
+                    // 触发编辑器：传递第一个 CTA action（生成开拍方案）
+                    window.dispatchEvent(new CustomEvent("open-cta-editor", {
+                      detail: { actionIndex: 0 },
                     }));
                   }}
                   className="inline-flex items-center gap-2 px-5 py-2.5 rounded-[14px] bg-gray-900 text-white text-[14px] font-medium hover:bg-gray-700 transition-colors"
@@ -590,8 +591,9 @@ function NewPredictionResultBody({ result }: ArtifactRendererProps) {
                   <button
                     type="button"
                     onClick={() => {
-                      window.dispatchEvent(new CustomEvent("open-deep-dive", {
-                        detail: { prompt: result.recommendedNextTasks[0].actionLabel },
+                      // 触发编辑器：传递第二个 CTA action
+                      window.dispatchEvent(new CustomEvent("open-cta-editor", {
+                        detail: { actionIndex: 1 },
                       }));
                     }}
                     className="inline-flex items-center gap-2 px-5 py-2.5 rounded-[14px] border border-[#E5E7EB] text-[14px] text-[#374151] hover:bg-[#F9FAFB] transition-colors"
