@@ -648,7 +648,7 @@ export function createCards(params: {
         : verdict === "observe"
           ? inputKind === "account"
             ? "这个号先观察"
-            : "先盯这波"
+            : "先观察趋势"
           : inputKind === "content_url"
             ? "这条先别抄"
             : "这波先别做";

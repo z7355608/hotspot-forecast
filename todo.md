@@ -127,3 +127,21 @@
 - [x] 修复充值提示 Unknown column 'balance' in 'field list'
 - [x] 统一legacy和tRPC两套代码的credit_transactions列名
 - [x] 创建llm_usage_logs缺失表
+
+## 用户反馈 5 项问题修复
+
+- [ ] 问题1：manus.space域名访问时一直提示“正在验证登录状态”卡住（待排查cookie跨域配置）
+- [x] 问题2：开通会员功能不可用（subscriptions表id改为auto_increment，移除手动UUID）
+- [x] 问题3：全面检查所有数据库表字段与代码SQL一致性
+  - [x] 7个表id从 varchar(36) 重建INT AUTO_INCREMENT
+  - [x] content_calendar补充缺失列（track, topicTitle, contentAngle等）
+  - [x] analysis_timing补充缺失列（promptSnippet, totalMs, intentMs等）
+  - [x] weekly_topic_subscription代码中enabled→isActive列名统一
+- [x] 问题4：“先盯这波”改为“先观察趋势”
+- [x] 问题5：/results/rgzer6k 数据来源为localStorage快照（非假数据，是之前真实分析的缓存，换浏览器会丢失）
+
+## Gap修复
+
+- [x] 验证“开通会员”完整流程：curl测试subscribe mutation成功，subscriptions写入+积分赠送600+getSubscription返回正确会员信息
+- [x] 补充系统化数据库一致性检查：创建22个缺失表，现有41个表全部存在，已通过curl验证关键写入路径（subscribe/checkin/credit_transactions）
+- [x] /results/rgzer6k数据来源确认：localStorage快照，非假数据

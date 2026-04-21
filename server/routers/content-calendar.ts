@@ -245,7 +245,7 @@ export const contentCalendarRouter = router({
       if (existing) {
         // 更新已有订阅
         await execute(
-          `UPDATE weekly_topic_subscription SET platforms = ?, accountStage = ?, enabled = 1 WHERE id = ?`,
+          `UPDATE weekly_topic_subscription SET platforms = ?, accountStage = ?, isActive = 1 WHERE id = ?`,
           [input.platforms ?? null, input.accountStage ?? null, existing.id]
         );
         return { ok: true, id: existing.id, action: "updated" as const };
@@ -264,7 +264,7 @@ export const contentCalendarRouter = router({
     .mutation(async ({ ctx, input }) => {
       const userOpenId = ctx.user!.openId;
       await execute(
-        `UPDATE weekly_topic_subscription SET enabled = 0 WHERE userOpenId = ? AND track = ?`,
+        `UPDATE weekly_topic_subscription SET isActive = 0 WHERE userOpenId = ? AND track = ?`,
         [userOpenId, input.track]
       );
       return { ok: true };
@@ -287,10 +287,10 @@ export const contentCalendarRouter = router({
     .query(async ({ ctx, input }) => {
       const userOpenId = ctx.user!.openId;
       const row = await queryOne<RowDataPacket>(
-        `SELECT id, enabled FROM weekly_topic_subscription WHERE userOpenId = ? AND track = ?`,
+        `SELECT id, isActive FROM weekly_topic_subscription WHERE userOpenId = ? AND track = ?`,
         [userOpenId, input.track]
       );
-      return { subscribed: !!row && row.enabled === 1 };
+      return { subscribed: !!row && row.isActive === 1 };
     }),
 
   /* ── P2-9: 效果追踪 ── */

@@ -294,7 +294,7 @@ function buildCardTitleAndCta(params: {
           : { title: "先盯这几个信号", ctaLabel: "看观察重点" }
         : safeActionLevel === "watch_first"
           ? variant === "primary"
-            ? { title: "先盯这波", ctaLabel: "看观察重点" }
+            ? { title: "先观察趋势", ctaLabel: "看观察重点" }
             : { title: "先补这几个证据", ctaLabel: "看还差什么" }
           : variant === "primary"
             ? { title: "这波先别做", ctaLabel: "看不做原因" }
