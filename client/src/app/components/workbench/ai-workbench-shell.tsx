@@ -137,9 +137,7 @@ export function AIWorkbench({
   const [entrySource, setEntrySource] = useState<PredictionRequestEntrySource>("manual");
   const [entryTemplateId, setEntryTemplateId] = useState<string | undefined>(undefined);
   const [activeTemplate, setActiveTemplate] = useState<PromptTemplate | null>(null);
-  const [showCustomInput, setShowCustomInput] = useState(false);
-  const [customInputValue, setCustomInputValue] = useState("");
-  const customInputRef = useRef<HTMLInputElement>(null);
+
   const [exampleVariantIndex, setExampleVariantIndex] = useState(0);
   const [mentionQuery, setMentionQuery] = useState("");
   const [mentionStart, setMentionStart] = useState<number | null>(null);
@@ -1085,79 +1083,7 @@ export function AIWorkbench({
             </button>
             );
           })}
-          {/* 自定义赛道词快捷入口 */}
-          {showCustomInput ? (
-            <span className="flex shrink-0 items-center gap-1 rounded-xl border border-pink-200 bg-pink-50 px-3 py-2">
-              <input
-                ref={customInputRef}
-                type="text"
-                value={customInputValue}
-                onChange={(e) => setCustomInputValue(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") {
-                    e.preventDefault();
-                    const word = customInputValue.trim();
-                    if (!word) { setShowCustomInput(false); return; }
-                    const tpl = PROMPT_TEMPLATES.find((t) => t.id === "opportunity-forecast");
-                    if (tpl) {
-                      // 将自定义词注入模板第一个 chip 位置
-                      const customParts = tpl.parts.map((p) =>
-                        p.type === "chip" ? { ...p, values: [word, ...p.values] } : p
-                      );
-                      applyPromptTemplate({ ...tpl, parts: customParts });
-                    }
-                    setCustomInputValue("");
-                    setShowCustomInput(false);
-                  }
-                  if (e.key === "Escape") {
-                    setShowCustomInput(false);
-                    setCustomInputValue("");
-                  }
-                }}
-                onBlur={() => {
-                  if (!customInputValue.trim()) {
-                    setShowCustomInput(false);
-                    setCustomInputValue("");
-                  }
-                }}
-                placeholder="输入赛道词…"
-                className="w-20 bg-transparent text-sm text-pink-700 placeholder-pink-300 outline-none"
-                autoFocus
-              />
-              <button
-                type="button"
-                onMouseDown={(e) => {
-                  e.preventDefault();
-                  const word = customInputValue.trim();
-                  if (!word) { setShowCustomInput(false); return; }
-                  const tpl = PROMPT_TEMPLATES.find((t) => t.id === "opportunity-forecast");
-                  if (tpl) {
-                    const customParts = tpl.parts.map((p) =>
-                      p.type === "chip" ? { ...p, values: [word, ...p.values] } : p
-                    );
-                    applyPromptTemplate({ ...tpl, parts: customParts });
-                  }
-                  setCustomInputValue("");
-                  setShowCustomInput(false);
-                }}
-                className="flex h-5 w-5 items-center justify-center rounded-full bg-pink-400 text-white hover:bg-pink-500"
-              >
-                <Check className="h-3 w-3" />
-              </button>
-            </span>
-          ) : (
-            <button
-              type="button"
-              onClick={() => {
-                setShowCustomInput(true);
-                setTimeout(() => customInputRef.current?.focus(), 50);
-              }}
-              className="flex shrink-0 whitespace-nowrap items-center gap-1.5 rounded-xl border border-dashed border-gray-300 bg-white px-3 py-2 text-sm text-gray-400 transition-colors hover:border-pink-300 hover:text-pink-500"
-            >
-              <Plus className="h-3.5 w-3.5" />
-              <span>自定义赛道</span>
-            </button>
-          )}
+
         </div>
       </div>
 
