@@ -561,7 +561,7 @@ export function AIWorkbench({
             <span className="rounded-full bg-gray-100 px-2.5 py-1 text-gray-500">
               不知道从哪里开始？
             </span>
-            <span>先点下面的首问模板，或直接输入你最想判断的问题。</span>
+            <span>先点下面的首问模板，或直接输入你最想预测的行业关键词。</span>
           </div>
           {selectedSkill && (
             <div className="mb-3 flex items-center gap-2">

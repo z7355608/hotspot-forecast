@@ -2,11 +2,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { AIWorkbench } from "../components/AIWorkbench";
 import { AnalysisView } from "../components/AnalysisView";
-import { DashboardInsights } from "../components/DashboardInsights";
-import { HeroSection } from "../components/HeroSection";
 import { LevelUpModal } from "../components/LevelUpModal";
-import { ValueCarousel } from "../components/ValueCarousel";
-import { PromptTemplates } from "../components/onboarding/PromptTemplates";
 import { useAppStore } from "../store/app-store";
 import type {
   PredictionRequestDraft,
@@ -14,6 +10,8 @@ import type {
 } from "../store/prediction-types";
 import type { ProgressEvent } from "../lib/live-predictions-api";
 import { useOnboarding, useTrack } from "../lib/onboarding-context";
+import { LiveDemoPreview } from "../components/LiveDemoPreview";
+import { Sparkles, ArrowDown, Zap } from "lucide-react";
 
 type HomeState = "input" | "analyzing";
 
@@ -28,7 +26,6 @@ export function HomePage() {
   const [fading, setFading] = useState(false);
   const [focusTrigger, setFocusTrigger] = useState(0);
 
-  // 保存请求上下文，传给 AnalysisView 实现动态步骤
   const [submittedEntrySource, setSubmittedEntrySource] =
     useState<PredictionRequestEntrySource | undefined>();
   const [submittedTemplateId, setSubmittedTemplateId] = useState<
@@ -44,6 +41,7 @@ export function HomePage() {
   const [progressEvents, setProgressEvents] = useState<ProgressEvent[]>([]);
   const [fromCache, setFromCache] = useState(false);
   const pendingQuickPromptRef = useRef<string | null>(null);
+  const workbenchRef = useRef<HTMLDivElement>(null);
 
   const fadeTransition = useCallback((callback: () => void) => {
     setFading(true);
@@ -81,7 +79,6 @@ export function HomePage() {
           throw new Error(action.error ?? "分析失败");
         }
         setActiveResultId(action.resultId!);
-        // Mark checklist item
         markChecklistDone("first_query");
         track("analysis_submitted", { prompt: request.prompt });
       })();
@@ -120,20 +117,17 @@ export function HomePage() {
     });
   }, [fadeTransition]);
 
-  const handleQuickAction = useCallback(
+  /** 快速示例：填入输入框并聚焦 */
+  const handleQuickExample = useCallback(
     (prompt: string) => {
       pendingQuickPromptRef.current = prompt;
-      setFocusTrigger((value) => value + 1);
+      setFocusTrigger((v) => v + 1);
+      // 平滑滚动到输入框
+      workbenchRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+      track("quick_example_clicked", { prompt });
     },
-    [],
+    [track],
   );
-
-  /** Fill input from PromptTemplates click */
-  const handleTemplateSelect = useCallback((prompt: string) => {
-    pendingQuickPromptRef.current = prompt;
-    setFocusTrigger((v) => v + 1);
-    track("prompt_template_selected", { prompt });
-  }, [track]);
 
   const [searchParams, setSearchParams] = useSearchParams();
   useEffect(() => {
@@ -153,19 +147,71 @@ export function HomePage() {
       {homeState === "input" ? (
         <>
           <LevelUpModal />
-          <HeroSection
-            onViewPlan={() => navigate("/results/demo")}
-            onStartTrial={() => setFocusTrigger((value) => value + 1)}
+
+          {/* ═══════════════════════════════════════════════════════
+              首屏：只做三件事 — 价值描述 + 输入框 + 示例演示
+              ═══════════════════════════════════════════════════════ */}
+
+          {/* 1. 价值描述 — 极简 Hero */}
+          <div className="mx-auto max-w-3xl px-4 pt-10 sm:px-6 sm:pt-16">
+            <div className="space-y-4 text-center">
+              <div className="inline-flex items-center gap-1.5 rounded-full bg-gray-900 px-3 py-1 text-xs text-white animate-fade-in">
+                <Sparkles className="h-3 w-3" />
+                AI 爆款预测
+              </div>
+              <h1 className="text-[28px] font-bold tracking-tight text-gray-900 sm:text-[36px] leading-tight">
+                你今天最值得拍什么
+                <br />
+                <span className="text-gray-400">我们直接告诉你</span>
+              </h1>
+              <p className="mx-auto max-w-lg text-[15px] leading-relaxed text-gray-400">
+                输入行业关键词、竞品链接或你的账号链接
+                <br className="hidden sm:block" />
+                立即获取当前高概率爆款选题
+              </p>
+            </div>
+
+            {/* 向下引导箭头 */}
+            <div className="flex justify-center pt-4 pb-2 animate-bounce-slow">
+              <ArrowDown className="h-4 w-4 text-gray-300" />
+            </div>
+          </div>
+
+          {/* 2. 输入框 — 核心交互 */}
+          <div ref={workbenchRef}>
+            <AIWorkbench
+              onSubmit={handleSubmit}
+              focusTrigger={focusTrigger}
+              pendingPromptRef={pendingQuickPromptRef}
+            />
+          </div>
+
+          {/* 3. 快速示例标签 — 替代原来的 PromptTemplates 大面板 */}
+          <div className="mx-auto max-w-3xl px-4 sm:px-6 pb-2 pt-1">
+            <div className="flex flex-wrap items-center justify-center gap-2">
+              <span className="text-[11px] text-gray-300 mr-1">试试看：</span>
+              {QUICK_EXAMPLES.map((ex) => (
+                <button
+                  key={ex.label}
+                  type="button"
+                  onClick={() => handleQuickExample(ex.prompt)}
+                  className="inline-flex items-center gap-1 rounded-full border border-gray-100 bg-white px-3 py-1.5 text-[12px] text-gray-500 transition-all hover:border-gray-300 hover:text-gray-700 hover:shadow-sm active:scale-95"
+                >
+                  <Zap className="h-3 w-3 text-amber-400" />
+                  {ex.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* 4. 内嵌式样例演示 — 让用户秒懂"输入什么→得到什么" */}
+          <LiveDemoPreview
+            onTryIt={() => {
+              setFocusTrigger((v) => v + 1);
+              workbenchRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+            }}
+            onViewFull={() => navigate("/results/demo")}
           />
-          <AIWorkbench
-            onSubmit={handleSubmit}
-            focusTrigger={focusTrigger}
-            pendingPromptRef={pendingQuickPromptRef}
-          />
-          {/* Module B — Prompt template suggestions */}
-          <PromptTemplates onSelect={handleTemplateSelect} />
-          <DashboardInsights onQuickAction={handleQuickAction} />
-          <ValueCarousel />
         </>
       ) : (
         <AnalysisView
@@ -185,3 +231,13 @@ export function HomePage() {
     </div>
   );
 }
+
+/* ------------------------------------------------------------------ */
+/*  快速示例数据 — 3 个就够，降低选择成本                                 */
+/* ------------------------------------------------------------------ */
+
+const QUICK_EXAMPLES = [
+  { label: "穿搭赛道", prompt: "穿搭赛道现在发什么最容易爆？帮我找出具体可执行的选题" },
+  { label: "美食探店", prompt: "美食探店赛道最近7天有哪些低粉爆款？帮我分析可复制的方向" },
+  { label: "职场干货", prompt: "职场干货赛道的爆款概率分析，适合5000粉新号" },
+];
