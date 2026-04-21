@@ -470,13 +470,7 @@ export function HistoryPage() {
                   开始第一次分析
                   <ArrowRight className="h-3.5 w-3.5" />
                 </button>
-                <button
-                  type="button"
-                  onClick={() => navigate("/results/demo")}
-                  className="flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-5 py-2.5 text-sm text-gray-600 hover:bg-gray-50 transition-colors"
-                >
-                  看看示例结果
-                </button>
+
               </div>
             </div>
           )}

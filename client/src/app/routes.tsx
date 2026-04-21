@@ -17,7 +17,6 @@ import { TermsPage } from "./pages/TermsPage";
 import { ToolboxPage } from "./pages/ToolboxPage";
 import { PerformancePage } from "./pages/PerformancePage";
 import { PrivacyPage } from "./pages/PrivacyPage";
-import { ResultsDemoPage } from "./pages/ResultsDemoPage";
 
 export const router = createBrowserRouter([
   /* ─── Public pages (no sidebar / header) ─── */
@@ -32,7 +31,6 @@ export const router = createBrowserRouter([
     Component: Root,
     children: [
       { index: true, Component: HomePage },
-      { path: "results/demo", Component: ResultsDemoPage },
       { path: "results/:id", Component: ResultsPage },
       { path: "history", Component: HistoryPage },
       { path: "credits", Component: CreditsPage },

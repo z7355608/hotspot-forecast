@@ -263,8 +263,7 @@ export function WelcomeFlow() {
     setTimeout(() => {
       completeWelcome(role, platforms, goal);
       if (goal === "viral") navigate("/low-follower-opportunities");
-      else if (goal === "predict") navigate("/results/demo");
-      // "topics" and "explore" stay on "/" — handled by HomePage
+      // "predict", "topics" and "explore" stay on "/" — handled by HomePage
     }, 320);
   };
 

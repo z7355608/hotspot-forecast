@@ -1029,7 +1029,7 @@ function NewPredictionResultBody({ result }: ArtifactRendererProps) {
 }
 
 /* ------------------------------------------------------------------ */
-/*  导出 Demo 版本（用于 /results/demo 路由）                            */
+/*  导出                                                                 */
 /* ------------------------------------------------------------------ */
 export { NewPredictionResultBody };
 export default NewPredictionResultBody;

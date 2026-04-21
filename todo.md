@@ -110,3 +110,14 @@
 - [x] 修复FomoTeaser积分充值按钮报错（FomoTeaser已删除，问题自动解决）
 - [x] 改造“建议拍摄方向”：选择方向后通过directionContext与CTA动作面板联动，注入prompt和编辑器标题
 - [x] 标题从泛赛道名改为具体爆款内容：优先展示primaryCard.title + executableTopics选题标签
+
+## 全面切换真实数据（删除所有假数据）
+
+- [x] 删除ResultsDemoPage.tsx及其路由
+- [x] 清理所有指向/results/demo的导航链接（首页、历史页、WelcomeFlow、PromptTemplates）
+- [x] 调用真实接口获取一次分析结果，已成功生成真实数据（/results/rbj2jha）
+- [x] 首页展示入口改为快速示例标签（填入输入框触发真实分析）
+- [x] mock模式保留作为降级方案，环境变量VITE_DEFAULT_DATA_MODE已设为live
+- [x] 确保所有数据流走live真实接口（已验证）
+- [x] 真实分析结果已自动保存为artifact（后端在分析完成后自动保存，可通过/results/rbj2jha访问）
+- [x] 首页展示入口设计为快速示例标签（用户点击后填入输入框并触发真实分析，而非展示假数据）

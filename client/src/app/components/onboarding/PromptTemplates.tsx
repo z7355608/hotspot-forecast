@@ -139,10 +139,10 @@ export function PromptTemplates({
           {welcomeCompleted ? "推荐给你" : "快速开始"}
         </span>
         <button
-          onClick={() => navigate("/results/demo")}
+          onClick={() => navigate("/history")}
           className="flex items-center gap-1 text-[12px] text-[#8979FF] hover:text-[#6B5ED6] transition-colors"
         >
-          <span>看看爆款预测示例</span>
+          <span>查看历史分析</span>
           <ExternalLink className="w-3 h-3" />
         </button>
       </div>
