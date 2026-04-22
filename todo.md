@@ -145,3 +145,19 @@
 - [x] 验证“开通会员”完整流程：curl测试subscribe mutation成功，subscriptions写入+积分赠送600+getSubscription返回正确会员信息
 - [x] 补充系统化数据库一致性检查：创建22个缺失表，现有41个表全部存在，已通过curl验证关键写入路径（subscribe/checkin/credit_transactions）
 - [x] /results/rgzer6k数据来源确认：localStorage快照，非假数据
+
+## TikHub API 搜索和榜单集成优化
+
+- [x] 验证 TikHub v2 搜索 API 可用性（POST /api/v1/douyin/search/fetch_general_search_v2）
+- [x] 验证 TikHub 搜索建议 API（fetch_search_suggest）和话题建议 API（fetch_challenge_suggest）
+- [x] 验证 TikHub 低粉爆款榜 API（fetch_hot_total_low_fan_list，POST 方法）
+- [x] 验证 TikHub 热搜榜 API（fetch_hot_total_search_list，POST 方法）
+- [x] 验证 TikHub 热词榜 API（fetch_hot_total_hot_word_list，POST 方法）
+- [x] 从 DEFAULT_DISABLED_ENDPOINTS 中移除已验证可用的 billboard 路由
+- [x] 在 DOUYIN_ROUTES 中添加 low_fan_billboard、hot_search_billboard、hot_word_billboard 路由
+- [x] 在 getTaskPlan 中将 billboard capabilities 加入 topic_watch 和 validation_watch 的 optional 列表
+- [x] 添加 validatePayload 和 getFallbackFlag 对新 billboard capabilities 的支持
+- [x] 在 live-predictions.ts 中添加联想词扩展逻辑（Phase 1：搜索建议 + 话题建议 API）
+- [x] 在 live-predictions.ts 中添加 extractLowFanBillboardContents 函数处理低粉爆款榜数据
+- [x] 在 live-predictions.ts 中添加 billboard 数据提取处理（hot_search_billboard、hot_word_billboard 计入 hotSeedCount）
+- [x] 编写 billboard-integration.test.ts 测试（11 个测试全部通过）

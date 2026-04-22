@@ -61,13 +61,15 @@ interface RunWatchTaskResult {
   run: StoredWatchTaskRun;
 }
 
+// 已验证可用的 billboard 路由不再禁用：
+// - fetch_hot_total_search_list (POST, 200)
+// - fetch_hot_total_low_fan_list (POST, 200)
+// - fetch_hot_total_hot_word_list (POST, 200)
+// 仍然禁用的路由：
 const DEFAULT_DISABLED_ENDPOINTS = new Set([
-  "/api/v1/douyin/billboard/fetch_hot_total_search_list",
   "/api/v1/douyin/billboard/fetch_hot_total_topic_list",
   "/api/v1/douyin/billboard/fetch_hot_total_video_list",
-  "/api/v1/douyin/billboard/fetch_hot_total_low_fan_list",
   "/api/v1/douyin/billboard/fetch_hot_total_high_search_list",
-  "/api/v1/douyin/billboard/fetch_hot_total_hot_word_list",
   "/api/v1/douyin/billboard/fetch_hot_rise_list",
   "/api/v1/douyin/billboard/fetch_hot_total_list",
   "/api/v1/douyin/billboard/fetch_hot_item_trends_list",
@@ -190,6 +192,28 @@ const DOUYIN_ROUTES: RouteSpec[] = [
     method: "POST",
     path: "/api/v1/douyin/search/fetch_search_suggest",
     buildParams: ({ keyword }) => (keyword ? { keyword } : null),
+  },
+  // === Billboard 榜单路由（已验证可用，POST 方法） ===
+  {
+    capability: "low_fan_billboard",
+    tier: "L1",
+    method: "POST",
+    path: "/api/v1/douyin/billboard/fetch_hot_total_low_fan_list",
+    buildParams: () => ({}),
+  },
+  {
+    capability: "hot_search_billboard",
+    tier: "L1",
+    method: "POST",
+    path: "/api/v1/douyin/billboard/fetch_hot_total_search_list",
+    buildParams: () => ({}),
+  },
+  {
+    capability: "hot_word_billboard",
+    tier: "L1",
+    method: "POST",
+    path: "/api/v1/douyin/billboard/fetch_hot_total_hot_word_list",
+    buildParams: () => ({}),
   },
   {
     capability: "account_profile",
@@ -534,6 +558,9 @@ function getTaskPlan(platform: SupportedPlatform, taskType: WatchTaskType) {
         optional: [
           "topic_discovery",
           "hot_seed",
+          "low_fan_billboard",
+          "hot_search_billboard",
+          "hot_word_billboard",
           "content_detail",
           "comments",
           "trend_growth",
@@ -543,7 +570,7 @@ function getTaskPlan(platform: SupportedPlatform, taskType: WatchTaskType) {
     }
     return {
       required: ["keyword_content_search"] as string[],
-      optional: ["topic_discovery", "hot_seed", "content_detail", "comments", "cookie_enrich"] as string[],
+      optional: ["topic_discovery", "hot_seed", "low_fan_billboard", "hot_search_billboard", "hot_word_billboard", "content_detail", "comments", "cookie_enrich"] as string[],
     };
   }
 
@@ -660,6 +687,27 @@ function validatePayload(capability: string, payload: unknown): string[] {
       hasAnyObjectKey(payload, ["has_more", "max_cursor", "pcursor"])
       ? []
       : ["missing_posts"];
+  }
+  if (capability === "low_fan_billboard") {
+    // 低粉爆款榜: data.data.objs[]
+    return hasNonEmptyArray(payload, ["objs"]) ||
+      hasAnyObjectKey(payload, ["data"])
+      ? []
+      : ["missing_low_fan_data"];
+  }
+  if (capability === "hot_search_billboard") {
+    // 热搜榜: data.data.search_list[]
+    return hasNonEmptyArray(payload, ["search_list"]) ||
+      hasAnyObjectKey(payload, ["data"])
+      ? []
+      : ["missing_hot_search_data"];
+  }
+  if (capability === "hot_word_billboard") {
+    // 热词榜: data.data.word_list[]
+    return hasNonEmptyArray(payload, ["word_list"]) ||
+      hasAnyObjectKey(payload, ["data"])
+      ? []
+      : ["missing_hot_word_data"];
   }
   if (capability === "trend_growth" || capability === "cookie_enrich" || capability === "cookie_verify") {
     return hasAnyObjectKey(payload, ["data", "result", "extra"]) ? [] : ["missing_cookie_data"];
@@ -805,6 +853,9 @@ function getFallbackFlag(capability: string): DegradeFlag | null {
   }
   if (capability === "hot_seed") {
     return "fallback_hotlist_route";
+  }
+  if (capability === "low_fan_billboard" || capability === "hot_search_billboard" || capability === "hot_word_billboard") {
+    return "fallback_billboard_route";
   }
   if (capability === "trend_growth") {
     return "fallback_billboard_route";

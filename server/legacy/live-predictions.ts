@@ -31,7 +31,7 @@ import type {
   TrendOpportunity,
 } from "../../client/src/app/store/prediction-types.js";
 import { callLLM } from "./llm-gateway.js";
-import { getTikHub } from "./tikhub.js";
+import { getTikHub, postTikHub } from "./tikhub.js";
 import {
   runLowFollowerAlgorithm,
   type RawContentItem,
@@ -100,6 +100,70 @@ export type ProgressEvent =
       accountSamples: AccountSampleItem[];
       highlights: string[];
     };
+
+/**
+ * 低粉爆款榜数据提取
+ * 数据结构: data.data.objs[] 包含 item_id, item_title, nick_name, fans_cnt, play_cnt, like_cnt 等
+ */
+function extractLowFanBillboardContents(
+  payload: unknown,
+  platform: SupportedPlatform,
+): ExtractedContent[] {
+  const contents: ExtractedContent[] = [];
+  if (!payload || typeof payload !== "object") return contents;
+  
+  // 递归查找 objs 数组
+  const findObjs = (obj: unknown): unknown[] => {
+    if (!obj || typeof obj !== "object") return [];
+    if (Array.isArray(obj)) return obj;
+    const record = obj as Record<string, unknown>;
+    if (Array.isArray(record.objs) && record.objs.length > 0) return record.objs;
+    for (const value of Object.values(record)) {
+      if (value && typeof value === "object") {
+        const found = findObjs(value);
+        if (found.length > 0) return found;
+      }
+    }
+    return [];
+  };
+
+  const objs = findObjs(payload);
+  for (const item of objs) {
+    if (!item || typeof item !== "object") continue;
+    const rec = item as Record<string, unknown>;
+    const contentId = String(rec.item_id || "");
+    const title = String(rec.item_title || "");
+    if (!contentId || !title || title.length < 3) continue;
+    
+    const viewCount = typeof rec.play_cnt === "number" ? rec.play_cnt : null;
+    const likeCount = typeof rec.like_cnt === "number" ? rec.like_cnt : null;
+    const followerCount = typeof rec.fans_cnt === "number" ? rec.fans_cnt : null;
+    const authorName = String(rec.nick_name || "未知作者");
+    const publishTime = typeof rec.publish_time === "number" ? rec.publish_time : null;
+    const coverUrl = typeof rec.item_cover_url === "string" ? rec.item_cover_url : null;
+    const contentUrl = platform === "douyin" ? `https://www.douyin.com/video/${contentId}` : undefined;
+
+    contents.push({
+      contentId,
+      title,
+      authorName,
+      platform: PLATFORM_NAMES[platform],
+      publishedAt: publishTime ? new Date(publishTime * 1000).toISOString() : nowIso(),
+      contentUrl,
+      coverUrl,
+      viewCount,
+      likeCount,
+      commentCount: null,
+      shareCount: null,
+      collectCount: null,
+      structureSummary: title.slice(0, 48),
+      keywordTokens: title.split(/[\s，,、#]+/).filter(Boolean).slice(0, 5),
+      whyIncluded: "低粉爆款榜入选",
+      authorFollowerCount: followerCount,
+    });
+  }
+  return contents;
+}
 
 export async function runLivePrediction(
   draft: PredictionRequestDraft,
@@ -192,6 +256,61 @@ export async function runLivePrediction(
 
   const effectiveSeedTopic = searchKeywords[0] ?? originalSeedTopic;
   baseArtifacts.normalizedBrief.seedTopic = effectiveSeedTopic;
+
+  // ── Phase 1: 联想词扩展（通过 TikHub 搜索建议和话题建议 API 获取真实趋势关键词）──
+  const primaryKeyword = searchKeywords[0];
+  if (primaryKeyword && searchKeywords.length <= 2) {
+    try {
+      const [suggestResp, challengeResp] = await Promise.allSettled([
+        postTikHub<Record<string, unknown>>(
+          "/api/v1/douyin/search/fetch_search_suggest",
+          { keyword: primaryKeyword },
+        ),
+        postTikHub<Record<string, unknown>>(
+          "/api/v1/douyin/search/fetch_challenge_suggest",
+          { keyword: primaryKeyword },
+        ),
+      ]);
+
+      const expandedKeywords = new Set(searchKeywords);
+
+      // 搜索建议词
+      if (suggestResp.status === "fulfilled" && suggestResp.value.ok) {
+        const suggestPayload = suggestResp.value.payload as Record<string, unknown>;
+        const suggestData = suggestPayload?.data as Record<string, unknown> | undefined;
+        const sugList = suggestData?.sug_list;
+        if (Array.isArray(sugList)) {
+          for (const sug of sugList.slice(0, 5)) {
+            const content = (sug as Record<string, unknown>)?.content;
+            if (typeof content === "string" && content.trim().length >= 2) {
+              expandedKeywords.add(content.trim());
+            }
+          }
+        }
+      }
+
+      // 话题建议词
+      if (challengeResp.status === "fulfilled" && challengeResp.value.ok) {
+        const challengePayload = challengeResp.value.payload as Record<string, unknown>;
+        const challengeData = challengePayload?.data as Record<string, unknown> | undefined;
+        const challengeList = challengeData?.challenge_list;
+        if (Array.isArray(challengeList)) {
+          for (const ch of challengeList.slice(0, 5)) {
+            const chaName = (ch as Record<string, unknown>)?.cha_name;
+            if (typeof chaName === "string" && chaName.trim().length >= 2) {
+              expandedKeywords.add(chaName.trim());
+            }
+          }
+        }
+      }
+
+      // 限制最多 5 个关键词，避免过多 API 调用
+      searchKeywords = [...expandedKeywords].slice(0, 5);
+      log.info(`联想词扩展后关键词: [${searchKeywords.join(", ")}] (共 ${searchKeywords.length} 个)`);
+    } catch (err) {
+      log.warn({ err }, "联想词扩展失败，使用原始关键词继续");
+    }
+  }
 
   const runs: PlatformRunSummary[] = [];
 
@@ -428,6 +547,15 @@ export async function runLivePrediction(
       }
       if (capability === "comments") {
         commentCount += countComments(payload);
+      }
+      // 低粉爆款榜数据提取：data.data.objs[] 结构与标准 aweme_info 不同，需要单独处理
+      if (capability === "low_fan_billboard" && payload && typeof payload === "object") {
+        const objs = extractLowFanBillboardContents(payload, run.platform);
+        allContents.push(...objs);
+        log.info(`低粉爆款榜提取: ${objs.length} 条内容`);
+      }
+      if (capability === "hot_search_billboard" || capability === "hot_word_billboard") {
+        hotSeedCount += countHotSeed(payload);
       }
     }
   }
