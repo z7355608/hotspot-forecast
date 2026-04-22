@@ -69,7 +69,7 @@ function getCtaActions(result: ResultRecord): CtaAction[] {
         highlight: false,
       };
 
-      // 根据爆款概率动态排序和高亮
+      // 根据爆发指数动态排序和高亮
       if (score >= 75) {
         // 强烈推荐：开拍方案优先
         shootPlan.highlight = true;

@@ -276,8 +276,8 @@ function buildModalContent(
     iconBg:
       dataChange.direction === "up" ? "bg-emerald-50" : "bg-amber-50",
     title: "赛道异动提醒",
-    subtitle: `「${dataChange.track}」爆款概率发生变化`,
-    body: `爆款概率从 ${dataChange.oldScore} ${dataChange.direction === "up" ? "涨到" : "降到"} ${dataChange.newScore}。${dataChange.insight}。`,
+    subtitle: `「${dataChange.track}」爆发指数发生变化`,
+    body: `爆发指数从 ${dataChange.oldScore} ${dataChange.direction === "up" ? "涨到" : "降到"} ${dataChange.newScore}。${dataChange.insight}。`,
     highlight: `${dataChange.oldScore} → ${dataChange.newScore}`,
     ctaLabel:
       dataChange.direction === "up" ? "抓住机会" : "重新评估",

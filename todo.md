@@ -209,3 +209,33 @@
 - [x] 恢复首页"看看效果"按钮
 - [x] 移除"查看完整报告"按钮（/results/demo路由已不存在）
 - [x] 浏览器验证弹窗正常显示（4种输入类型tab、打字机效果、概率条动画、CTA按钮）
+
+## 商业化交付标准重构（5大核心问题）
+
+### P1: 数据清洗与筛选机制重构（最高优先级）
+- [x] 新增LLM语义相关性过滤模块（server/legacy/semantic-filter.ts）
+- [x] 在live-predictions.ts中扩大初始搜索数据量（从8条→30条）
+- [x] 对supportingContents执行LLM语义过滤，只保留与赛道高度相关的内容
+- [x] 对supportingAccounts执行关联过滤（只保留相关内容的作者账号）
+- [x] 对评论数据执行语义过滤，剔除无关评论和高频词
+- [x] 确保热门作品参考、低粉爆款归因、市场数据支撑模块数据100%属于目标赛道
+
+### P2: 信任校准与文案优化
+- [x] 将"爆款概率"替换为"爆发指数"，避免绝对化表达
+- [x] 添加置信度说明（基于样本量动态生成）
+- [x] 修改score上限为95，避免出现100%绝对值
+- [x] 全局替换所有"爆款概率"文案为"爆发指数"（15个文件已修改）
+
+### P3: 深度归因分析优化
+- [x] 低粉爆款归因模块的4个样本展示LLM动态生成的差异化拆解结论（50字以内）
+- [x] 在live-predictions.ts中调用analyzeSampleReplicability并将结果传递到前端
+- [x] 前端低粉归因卡片展示LLM生成的suggestion而非通用模板文案
+
+### P4: 异常数据展示修复
+- [x] 修复growth7d计算公式：添加上限300、下限为0
+- [x] 修复lowFollowerAnomalyRatio计算：添加上限80、除以零保护
+- [x] 前端展示修复：growth7d和lowFollowerAnomalyRatio不再乘以100（后端已输出百分比整数）
+- [x] direct-result-markdown.ts中lowFollowerAnomalyRatio不再乘以100
+
+### P5: UI细节优化
+- [x] 修复雷达图标签文字截断问题：扩大viewBox尺寸（285x234→340x290）、标签字符限制从6提高到8、添加whitespace-nowrap、移除Math.random()使用确定性值

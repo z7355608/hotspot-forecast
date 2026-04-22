@@ -527,7 +527,7 @@ export interface TrendOpportunity {
   opportunityName: string;
   /** 阶段标签 */
   stage: TrendOpportunityStage;
-  /** 爆款概率 0-100 */
+  /** 爆发指数 0-95 */
   opportunityScore: number;
   /** 时机分 0-100 */
   timingScore: number;

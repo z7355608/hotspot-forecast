@@ -28,7 +28,7 @@ export const TASK_INTENT_META: Record<
   opportunity_prediction: {
     label: "爆款预测",
     shortLabel: "预测",
-    description: "预测当前最值得拍的方向，给出爆款概率和可拍方向。",
+    description: "预测当前最值得拍的方向，给出爆发指数和可拍方向。",
     artifactType: "opportunity_memo",
     watchable: true,
     shareable: true,

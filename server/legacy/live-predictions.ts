@@ -72,6 +72,8 @@ import {
 import { fetchCommentInsight } from "./comment-collector.js";
 import { runTopicStrategyBranch } from "./topic-strategy-bridge.js";
 import { runViralBreakdownBranch, shouldUseViralBreakdownBranch } from "./viral-breakdown-branch.js";
+import { filterContentsByRelevance, filterKeywordsByRelevance } from "./semantic-filter.js";
+import { analyzeSampleReplicability } from "./low-follower-advisor.js";
 
 export type ContentSampleItem = {
   title: string;
@@ -620,8 +622,48 @@ export async function runLivePrediction(
     }
   }
 
-   const supportingAccounts = rawAccounts.slice(0, 6);
-  const supportingContents = dedupeById(allContents, "contentId").slice(0, 8);
+   const supportingAccounts = rawAccounts.slice(0, 10);
+  // ── 语义相关性过滤：扩大候选池，用 LLM 过滤噪音 ──
+  const allDedupedContents = dedupeById(allContents, "contentId");
+  const candidateContents = allDedupedContents.slice(0, 30); // 扩大候选池
+  let supportingContents: ExtractedContent[];
+  if (candidateContents.length > 0 && effectiveSeedTopic && effectiveSeedTopic.length >= 2) {
+    try {
+      const candidates = candidateContents.map((c) => ({
+        id: c.contentId,
+        title: c.title ?? "",
+        authorName: c.authorName,
+        tags: c.keywordTokens,
+      }));
+      const { passedIds } = await filterContentsByRelevance(candidates, effectiveSeedTopic, 7);
+      const filtered = candidateContents.filter((c) => passedIds.has(c.contentId));
+      // 如果过滤后数量太少（<3），降低阈值重试
+      if (filtered.length < 3 && candidateContents.length >= 3) {
+        const { passedIds: relaxedIds } = await filterContentsByRelevance(candidates, effectiveSeedTopic, 5);
+        const relaxedFiltered = candidateContents.filter((c) => relaxedIds.has(c.contentId));
+        supportingContents = relaxedFiltered.slice(0, 10);
+        log.info(`语义过滤（宽松阈值5）: ${candidateContents.length} → ${relaxedFiltered.length} 条`);
+      } else {
+        supportingContents = filtered.slice(0, 10);
+        log.info(`语义过滤: ${candidateContents.length} → ${filtered.length} 条`);
+      }
+    } catch (err) {
+      log.warn({ err }, "语义过滤失败，使用原始数据");
+      supportingContents = candidateContents.slice(0, 10);
+    }
+  } else {
+    supportingContents = candidateContents.slice(0, 10);
+  }
+  // 关联过滤：只保留相关内容的作者账号
+  const relevantAuthorNames = new Set(supportingContents.map((c) => c.authorName));
+  const filteredAccounts = supportingAccounts.filter(
+    (a) => relevantAuthorNames.has(a.displayName ?? "") || relevantAuthorNames.has(a.handle ?? "")
+  );
+  // 如果关联过滤后账号太少，保留原始账号
+  if (filteredAccounts.length >= 2) {
+    supportingAccounts.length = 0;
+    supportingAccounts.push(...filteredAccounts.slice(0, 6));
+  }
   // 向前端推送已采集数据样本，让用户在等待 LLM 分析期间就能看到真实数据
   if (onProgress) {
     const contentSamples: ContentSampleItem[] = supportingContents.slice(0, 4).map((c) => ({
@@ -698,9 +740,70 @@ export async function runLivePrediction(
   const commentInsight = await fetchCommentInsight(supportingContents, commentCount);
   if (commentInsight) {
     commentCount = Math.max(commentCount, commentInsight.totalCommentsCollected);
+    // ── 评论高频词语义过滤：剔除与赛道无关的噪音词 ──
+    if (commentInsight.highFreqKeywords.length > 0 && effectiveSeedTopic && effectiveSeedTopic.length >= 2) {
+      try {
+        const filteredKeywords = await filterKeywordsByRelevance(
+          commentInsight.highFreqKeywords,
+          effectiveSeedTopic,
+        );
+        log.info(`评论高频词过滤: ${commentInsight.highFreqKeywords.length} → ${filteredKeywords.length} 个`);
+        commentInsight.highFreqKeywords = filteredKeywords;
+      } catch (err) {
+        log.warn({ err }, "评论高频词语义过滤失败，保留原始数据");
+      }
+    }
   }
 
   const lowFollowerEvidence = mapLowFollowerEvidence(supportingContents);
+
+  // ── P3: 低粉归因 LLM 动态生成差异化拆解结论 ──
+  if (lowFollowerEvidence.length > 0) {
+    try {
+      // 构造 LowFollowerSample 格式的数据供 analyzeSampleReplicability 使用
+      const samplesForAnalysis = lowFollowerEvidence.map((ev) => ({
+        contentId: ev.id,
+        authorId: ev.account,
+        authorName: ev.account,
+        title: ev.title,
+        platform: ev.platform === "抖音" ? "douyin" : ev.platform === "小红书" ? "xiaohongshu" : ev.platform === "快手" ? "kuaishou" : ev.platform === "B站" ? "bilibili" : "douyin",
+        followerCount: ev.fansCount || 0,
+        viewCount: 0,
+        interactionCount: (ev.likeCount ?? 0) + (ev.commentCount ?? 0) + (ev.shareCount ?? 0) + (ev.collectCount ?? 0),
+        weightedInteraction: 0,
+        fanEfficiencyRatio: 0,
+        engagementRate: 0,
+        viewToFollowerRatio: 0,
+        engagementBenchmarkMultiplier: 0,
+        anomalyScore: ev.anomaly,
+        publishedAt: ev.publishedAt ?? null,
+        ageDays: 0,
+        contentUrl: ev.contentUrl ?? null,
+        coverUrl: ev.coverUrl ?? null,
+        tags: ev.trackTags ?? [],
+        isStrictAnomaly: true,
+        detectedAt: new Date().toISOString(),
+        likeCount: ev.likeCount ?? 0,
+        commentCount: ev.commentCount ?? 0,
+        shareCount: ev.shareCount ?? 0,
+        saveCount: ev.collectCount ?? 0,
+      })) as any[];
+
+      const analyses = await analyzeSampleReplicability(samplesForAnalysis, effectiveSeedTopic);
+      // 用 LLM 生成的 whyItWorked 覆盖硬编码的 suggestion
+      for (const analysis of analyses) {
+        const match = lowFollowerEvidence.find(
+          (ev) => ev.id === analysis.sampleId || ev.title === analysis.title,
+        );
+        if (match && analysis.whyItWorked) {
+          match.suggestion = analysis.whyItWorked;
+        }
+      }
+      log.info(`低粉归因 LLM 拆解完成: ${analyses.length} 条差异化结论`);
+    } catch (err) {
+      log.warn({ err }, "低粉归因 LLM 拆解失败，保留默认 suggestion");
+    }
+  }
 
   // ── 低粉爆款 V2 算法运行 + 入库 ──
   // 注意：rawContentsForAlgo 使用 authorName 作为 authorId，
@@ -788,11 +891,17 @@ export async function runLivePrediction(
   const newCreatorCount = supportingAccounts.filter(
     (item) => item.followerCount !== null && item.followerCount <= 10_000,
   ).length;
-  const lowFollowerAnomalyRatio =
+  // ── 异常数据平滑处理：避免出现 "10000%" 等不合理数值 ──
+  const rawLowFollowerAnomalyRatio =
     supportingContents.length > 0
-      ? clamp((lowFollowerEvidence.length / supportingContents.length) * 100)
+      ? (lowFollowerEvidence.length / supportingContents.length) * 100
       : 0;
-  const growth7d = clamp(hotSeedCount * 8 + supportingContents.length * 6 + supportingAccounts.length * 5);
+  // 异常占比上限 80%（低粉爆款数 > 总内容数的 80% 不合理）
+  const lowFollowerAnomalyRatio = Math.min(Math.round(rawLowFollowerAnomalyRatio), 80);
+
+  const rawGrowth7d = hotSeedCount * 8 + supportingContents.length * 6 + supportingAccounts.length * 5;
+  // 增长率上限 300%（超过此值显示为“数据积累中”）
+  const growth7d = Math.min(clamp(rawGrowth7d), 300);
   const evidenceGaps = [
     supportingAccounts.length === 0 ? "当前缺少足够的支持账号样本。" : null,
     supportingContents.length === 0 ? "当前缺少足够的支持内容样本。" : null,
@@ -907,8 +1016,9 @@ export async function runLivePrediction(
       hotSeedCount * 3 -
       evidenceGaps.length * 10,
   );
+  // score 上限 95，避免出现 "100" 等绝对化数值
   const verdictScoreCap =
-    verdict === "go_now" ? 100 :
+    verdict === "go_now" ? 95 :
     verdict === "test_small" ? 79 :
     verdict === "observe" ? 64 : 49;
   const opportunityScore = Math.min(rawScore, verdictScoreCap);

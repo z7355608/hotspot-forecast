@@ -1,0 +1,51 @@
+{
+  "watch_d9fd9af5-6713-42ad-ade9-3596606d7718": {
+    "taskId": "watch_d9fd9af5-6713-42ad-ade9-3596606d7718",
+    "artifactId": "artifact_837335b1-0b2a-410f-81d2-43d7b69d5c23",
+    "platform": "douyin",
+    "taskType": "topic_watch",
+    "priority": "high",
+    "scheduleTier": "daily",
+    "status": "pending",
+    "queryPayload": {
+      "query": "健身减脂 赛道现在发什么会火？帮我找出具体可执行的选题",
+      "seedTopic": "健身减脂",
+      "topicCluster": "健身减脂 · 机会判断",
+      "inputKind": "prompt",
+      "keyword": "健身减脂",
+      "handle": "45963909241",
+      "platformUserId": "MS4wLjABAAAAdLgrV--yf6_SaPgtzogqtg9w_VjPICc1MIWgzy1H04o",
+      "uniqueId": "45963909241",
+      "secUserId": "MS4wLjABAAAAdLgrV--yf6_SaPgtzogqtg9w_VjPICc1MIWgzy1H04o",
+      "contentId": "7629245289187430644",
+      "awemeId": "7629245289187430644",
+      "supportingAccountIds": [
+        "MS4wLjABAAAAdLgrV--yf6_SaPgtzogqtg9w_VjPICc1MIWgzy1H04o",
+        "MS4wLjABAAAAetNdo3J5G2kuUf8lbmEUQOFtFrQ8UfweQlffw_XUN1I",
+        "MS4wLjABAAAAiUdvw45M2tr8Ehw5SK4IEUAd30rIZrYG-bEJVZH7ZdM",
+        "MS4wLjABAAAAAW9gmKwvp1xXEMImhPWX5P2v3brd74QptOoZLU1zPYE",
+        "MS4wLjABAAAAEDAKIYQM1iPuaom7BjVhDHNRP5YizJtPL3vUBVfhg_M",
+        "MS4wLjABAAAABdz2V2kfHA3UvMwTCilzOxS0TXhi18MS4RqmdNWpg0Y"
+      ],
+      "supportingContentIds": [
+        "7629245289187430644",
+        "7630079244249900706",
+        "7630415310427786505",
+        "7630151261258149574",
+        "7630309668002357666",
+        "7630428015650617990",
+        "7630082456259061883",
+        "7630396849970493553"
+      ],
+      "lowFollowerSampleIds": [
+        "live_low_7629245289187430644",
+        "live_low_7630079244249900706",
+        "live_low_7630415310427786505",
+        "live_low_7630309668002357666"
+      ]
+    },
+    "createdAt": "2026-04-22T03:31:50.904Z",
+    "updatedAt": "2026-04-22T03:31:50.904Z",
+    "nextRunAt": "2026-04-23T03:31:50.904Z"
+  }
+}

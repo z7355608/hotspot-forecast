@@ -150,7 +150,7 @@ export function generateDirectResultMarkdown(result: ResultRecord): string {
     sections.push(`| 新创作者 | ${me.newCreatorCount} |`);
     sections.push(`| 同类内容 | ${me.similarContentCount} |`);
     sections.push(`| 7日增长 | ${me.growth7d}% |`);
-    sections.push(`| 低粉异常比 | ${(me.lowFollowerAnomalyRatio * 100).toFixed(1)}% |`);
+    sections.push(`| 低粉异常比 | ${me.lowFollowerAnomalyRatio}% |`);
     sections.push("");
     if (me.timingLabel) {
       sections.push(`> ${me.timingLabel}`);

@@ -3,7 +3,7 @@
  * ===============================
  * 爆款预测结果页 — 三层结构：结果先行 → 动作建议 → 归因展开
  * 
- * 第一层：今日建议拍什么 + 爆款概率 + 推荐级别 + 立即执行按钮
+ * 第一层：今日建议拍什么 + 爆发指数 + 推荐级别 + 立即执行按钮
  * 第二层：下一步建议（拍摄方式 / 继续观察 / 脚本拆解）
  * 第三层：归因展开（数据支撑、账号样本、增长趋势、评论信号、低粉爆款、算法维度）——默认折叠
  */
@@ -121,7 +121,7 @@ function isAbnormalContent(content: PredictionSupportingContent): boolean {
 }
 
 /* ------------------------------------------------------------------ */
-/*  爆款概率圆形仪表盘 — 强视觉冲击力                                    */
+/*  爆发指数圆形仪表盘 — 强视觉冲击力                                    */
 /* ------------------------------------------------------------------ */
 function ProbabilityGauge({ value, size = 180 }: { value: number; size?: number }) {
   const [displayValue, setDisplayValue] = useState(0);
@@ -174,7 +174,7 @@ function ProbabilityGauge({ value, size = 180 }: { value: number; size?: number 
       </svg>
       <div className="absolute inset-0 flex flex-col items-center justify-center z-20">
         <span className="text-[42px] font-bold tracking-tight" style={{ color: colors.main }}>{displayValue}</span>
-        <span className="text-[13px] text-[#6B7280] mt-0.5">爆款概率</span>
+        <span className="text-[13px] text-[#6B7280] mt-0.5">爆发指数</span>
       </div>
     </div>
   );
@@ -184,10 +184,12 @@ function ProbabilityGauge({ value, size = 180 }: { value: number; size?: number 
 /*  季节性雷达图 - 基于 whyNowItems 数据                                */
 /* ------------------------------------------------------------------ */
 function WhyNowRadarChart({ items }: { items: PredictionWhyNowItem[] }) {
-  const cx = 142.5; const cy = 116; const innerR = 40; const outerR = 96;
+  // 扩大画布和容器尺寸，给标签留足空间
+  const svgW = 340; const svgH = 290;
+  const cx = svgW / 2; const cy = svgH / 2; const innerR = 36; const outerR = 80;
 
   const segments = items.slice(0, 6).map((item, i) => ({
-    label: item.sourceLabel.length > 6 ? item.sourceLabel.slice(0, 6) : item.sourceLabel,
+    label: item.sourceLabel.length > 8 ? item.sourceLabel.slice(0, 8) : item.sourceLabel,
     angle: -90 + (i * 360) / Math.max(items.length, 3),
   }));
 
@@ -195,10 +197,11 @@ function WhyNowRadarChart({ items }: { items: PredictionWhyNowItem[] }) {
     segments.push({ label: "—", angle: -90 + (segments.length * 360) / 3 });
   }
 
-  const values = items.slice(0, segments.length).map((item) =>
-    item.tone === "positive" ? 0.85 + Math.random() * 0.15 :
-    item.tone === "warning" ? 0.3 + Math.random() * 0.2 :
-    0.5 + Math.random() * 0.2
+  // 使用确定性的值而非 Math.random()，避免每次渲染不一致
+  const values = items.slice(0, segments.length).map((item, i) =>
+    item.tone === "positive" ? 0.85 + (i % 3) * 0.05 :
+    item.tone === "warning" ? 0.35 + (i % 3) * 0.05 :
+    0.55 + (i % 3) * 0.05
   );
   while (values.length < segments.length) values.push(0.5);
 
@@ -212,8 +215,8 @@ function WhyNowRadarChart({ items }: { items: PredictionWhyNowItem[] }) {
   const radarPath = radarPoints.map((p, i) => `${i === 0 ? "M" : "L"} ${p.x} ${p.y}`).join(" ") + " Z";
 
   return (
-    <div className="relative w-[270px] h-[234px] mx-auto">
-      <svg viewBox="0 0 285 234" className="w-full h-full">
+    <div className="relative mx-auto" style={{ width: `${svgW}px`, height: `${svgH}px` }}>
+      <svg viewBox={`0 0 ${svgW} ${svgH}`} className="w-full h-full" overflow="visible">
         {[0.25, 0.5, 0.75, 1].map((level) => (
           <circle key={level} cx={cx} cy={cy} r={innerR + level * (outerR - innerR)}
             fill="none" stroke="#DBDEE4" strokeWidth="1" opacity="0.6" />
@@ -229,12 +232,12 @@ function WhyNowRadarChart({ items }: { items: PredictionWhyNowItem[] }) {
         {(() => { const p = radarPoints[peakIdx]; return p ? (<><circle cx={p.x} cy={p.y} r="7" fill="rgba(137,121,255,0.25)" /><circle cx={p.x} cy={p.y} r="4" fill="#8979FF" /></>) : null; })()}
       </svg>
       {segments.map(({ label, angle }, i) => {
-        const rad = (angle * Math.PI) / 180; const lr = 118;
+        const rad = (angle * Math.PI) / 180; const lr = outerR + 36;
         const x = cx + lr * Math.cos(rad); const y = cy + lr * Math.sin(rad);
         const isPeak = i === peakIdx;
         return (
-          <div key={`${label}-${i}`} className={`absolute text-center ${isPeak ? "text-[#8979FF]" : "text-[#54555A]"}`}
-            style={{ left: `${(x/285)*100}%`, top: `${(y/234)*100}%`, transform: "translate(-50%,-50%)", fontSize: "11px", fontWeight: isPeak ? 600 : 400 }}>
+          <div key={`${label}-${i}`} className={`absolute text-center whitespace-nowrap ${isPeak ? "text-[#8979FF]" : "text-[#54555A]"}`}
+            style={{ left: `${(x/svgW)*100}%`, top: `${(y/svgH)*100}%`, transform: "translate(-50%,-50%)", fontSize: "11px", fontWeight: isPeak ? 600 : 400, maxWidth: "80px", lineHeight: "1.3" }}>
             {label}{isPeak && <div style={{ fontSize: "9px", marginTop: "1px" }}>关键</div>}
           </div>
         );
@@ -563,7 +566,7 @@ function NewPredictionResultBody({ result }: ArtifactRendererProps) {
     <div className="space-y-4">
 
       {/* ================================================================ */}
-      {/* 第一层：结果先行 — 今日建议拍什么 + 爆款概率 + 推荐级别 + 执行按钮 */}
+      {/* 第一层：结果先行 — 今日建议拍什么 + 爆发指数 + 推荐级别 + 执行按钮 */}
       {/* ================================================================ */}
       <div className="bg-white rounded-[24px] border border-[#F3F4F6] shadow-[0px_2px_8px_rgba(0,0,0,0.08)] overflow-hidden">
         <div className="px-7 py-8">
@@ -651,7 +654,7 @@ function NewPredictionResultBody({ result }: ArtifactRendererProps) {
               )}
             </div>
 
-            {/* 右侧：爆款概率仪表盘 */}
+            {/* 右侧：爆发指数仪表盘 */}
             <div className="shrink-0 flex flex-col items-center">
               <ProbabilityGauge value={result.score ?? 50} />
             </div>
@@ -949,14 +952,14 @@ function NewPredictionResultBody({ result }: ArtifactRendererProps) {
                     <div className="bg-[#F9FAFB] rounded-[14px] p-3.5">
                       <div className="text-[11px] text-[#364153] mb-2">近7天增长</div>
                       <div className="flex items-center gap-1.5">
-                        <span className="text-[16px] text-[#006443]">{Math.round(market.growth7d * 100)}%</span>
+                        <span className="text-[16px] text-[#006443]">{market.growth7d}%</span>
                         <TrendingUp className="w-4 h-4 text-[#006443]" />
                       </div>
                     </div>
                     <div className="bg-[#F9FAFB] rounded-[14px] p-3.5">
                       <div className="text-[11px] text-[#364153] mb-2">低粉异常占比</div>
                       <div className="flex items-center gap-1.5">
-                        <span className="text-[16px] text-[#BA1A1A]">{Math.round(market.lowFollowerAnomalyRatio * 100)}%</span>
+                        <span className="text-[16px] text-[#BA1A1A]">{market.lowFollowerAnomalyRatio}%</span>
                         <AlertCircle className="w-4 h-4 text-[#BA1A1A]" />
                       </div>
                     </div>
@@ -1077,11 +1080,13 @@ export default NewPredictionResultBody;
 
 function getHeroMetrics(result: ResultRecord): HeroMetricCard[] {
   const recommendLevel = getRecommendLevel(result.verdict);
+  const sampleCount = (result.supportingContents?.length ?? 0) + (result.supportingAccounts?.length ?? 0);
+  const confidenceNote = result.confidenceLabel === "高" ? `基于${sampleCount}条样本，置信度高` : result.confidenceLabel === "中" ? `基于${sampleCount}条样本，置信度中` : `样本量偏少（${sampleCount}条），置信度低`;
   return [
     {
-      label: "爆款概率",
+      label: "爆发指数",
       value: `${result.score}`,
-      detail: recommendLevel.label,
+      detail: `${recommendLevel.label} · ${confidenceNote}`,
     },
     {
       label: "当前最优动作",

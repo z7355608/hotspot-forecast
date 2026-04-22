@@ -63,7 +63,7 @@ const ALL_PROMPTS: PromptCard[] = [
   {
     id: "p6",
     label: "我的下一条视频能爆吗？",
-    prompt: "预测一条关于「职场新人Excel入门」主题的视频在抖音的爆款概率",
+    prompt: "预测一条关于「职场新人Excel入门」主题的视频在抖音的爆发指数",
     tag: "预测",
     tagColor: "#36B37E",
   },

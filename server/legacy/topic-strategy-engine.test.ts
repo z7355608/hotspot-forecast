@@ -384,10 +384,10 @@ describe("Topic Strategy V2 — Regression Tests", () => {
     expect(result).toHaveProperty("rawPrompt", "美妆护肤赛道分析");
   });
 
-  // TEST-19: 现有 opportunity_prediction renderer 不受影响
-  it("TEST-19: opportunity-prediction-renderer module imports without error", async () => {
+  // TEST-19: new-prediction-result renderer (替代已删除的 opportunity-prediction-renderer)
+  it("TEST-19: new-prediction-result module imports without error", async () => {
     const mod = await import(
-      "../../client/src/app/components/results/renderers/opportunity-prediction-renderer"
+      "../../client/src/app/components/results/renderers/new-prediction-result"
     );
     expect(mod).toBeDefined();
   });

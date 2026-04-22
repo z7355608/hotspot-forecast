@@ -316,5 +316,5 @@ function DemoDialog({
 const QUICK_EXAMPLES = [
   { label: "穿搭赛道", prompt: "穿搭赛道现在发什么最容易爆？帮我找出具体可执行的选题" },
   { label: "美食探店", prompt: "美食探店赛道最近7天有哪些低粉爆款？帮我分析可复制的方向" },
-  { label: "职场干货", prompt: "职场干货赛道的爆款概率分析，适合5000粉新号" },
+  { label: "职场干货", prompt: "职场干货赛道的爆发指数分析，适合5000粉新号" },
 ];

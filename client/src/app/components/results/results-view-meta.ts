@@ -5,7 +5,7 @@ export const WINDOW_META = {
   strong_now: {
     label: "强烈推荐",
     tone: "bg-emerald-50 text-emerald-700",
-    body: "数据信号强烈，爆款概率高，建议立即行动。",
+    body: "多维度数据信号一致，爆发指数较高，建议优先行动。",
   },
   validate_first: {
     label: "值得一试",
@@ -41,7 +41,7 @@ export const WHY_NOW_TONE = {
 export const INPUT_FOCUS_META = {
   prompt: {
     label: "爆款预测",
-    body: "输入关键词，预测当前最值得拍的方向和爆款概率。",
+    body: "输入关键词，预测当前最值得拍的方向和爆发指数。",
   },
   content_url: {
     label: "竞品分析",
