@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { startTransition, useCallback, useEffect, useRef, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { AIWorkbench } from "../components/AIWorkbench";
 import { AnalysisView } from "../components/AnalysisView";
@@ -68,7 +68,9 @@ export function HomePage() {
 
       const onProgress = (event: ProgressEvent) => {
         if (event.type === "cache_hit") setFromCache(true);
-        setProgressEvents((prev) => [...prev, event]);
+        startTransition(() => {
+          setProgressEvents((prev) => [...prev, event]);
+        });
       };
 
       const promise = (async () => {

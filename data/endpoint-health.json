@@ -1,0 +1,101 @@
+{
+  "POST /api/v1/douyin/search/fetch_general_search_v1": {
+    "path": "/api/v1/douyin/search/fetch_general_search_v1",
+    "method": "POST",
+    "capability": "keyword_content_search",
+    "sampleParams": {
+      "keyword": "美食探店低粉爆款",
+      "cursor": 0,
+      "sort_type": "0",
+      "publish_time": "7",
+      "filter_duration": "0",
+      "content_type": "0",
+      "search_id": "",
+      "backtrace": ""
+    },
+    "httpStatus": 200,
+    "businessCode": 200,
+    "requestId": "f21d2e32-4858-432d-b3b3-4bb897a3b511",
+    "stable": true,
+    "tier": "L1",
+    "verifiedAt": "2026-04-22T02:19:35.718Z",
+    "consecutiveFails": 0
+  },
+  "POST /api/v1/douyin/search/fetch_challenge_search_v2": {
+    "path": "/api/v1/douyin/search/fetch_challenge_search_v2",
+    "method": "POST",
+    "capability": "topic_discovery",
+    "sampleParams": {
+      "keyword": "美食探店低粉爆款",
+      "cursor": 0,
+      "sort_type": "0",
+      "publish_time": "7",
+      "filter_duration": "0",
+      "content_type": "0",
+      "search_id": "",
+      "backtrace": ""
+    },
+    "httpStatus": 200,
+    "businessCode": 200,
+    "requestId": "8a856198-8099-463c-ae17-ab0297e0d259",
+    "stable": true,
+    "tier": "L1",
+    "verifiedAt": "2026-04-22T02:19:38.378Z",
+    "consecutiveFails": 0
+  },
+  "GET /api/v1/douyin/app/v3/fetch_hot_search_list": {
+    "path": "/api/v1/douyin/app/v3/fetch_hot_search_list",
+    "method": "GET",
+    "capability": "hot_seed",
+    "sampleParams": {
+      "board_type": "0",
+      "board_sub_type": ""
+    },
+    "httpStatus": 200,
+    "businessCode": 200,
+    "requestId": "53458458-f210-48f4-b083-8bb872b5bc78",
+    "stable": true,
+    "tier": "L1",
+    "verifiedAt": "2026-04-22T02:19:40.193Z",
+    "consecutiveFails": 0
+  },
+  "POST /api/v1/douyin/billboard/fetch_hot_total_low_fan_list": {
+    "path": "/api/v1/douyin/billboard/fetch_hot_total_low_fan_list",
+    "method": "POST",
+    "capability": "low_fan_billboard",
+    "sampleParams": {},
+    "httpStatus": 200,
+    "businessCode": 200,
+    "requestId": "5a42ec00-33f6-4bea-abbd-74213ec62257",
+    "stable": true,
+    "tier": "L1",
+    "verifiedAt": "2026-04-22T02:19:40.945Z",
+    "consecutiveFails": 0
+  },
+  "POST /api/v1/douyin/billboard/fetch_hot_total_search_list": {
+    "path": "/api/v1/douyin/billboard/fetch_hot_total_search_list",
+    "method": "POST",
+    "capability": "hot_search_billboard",
+    "sampleParams": {},
+    "httpStatus": 200,
+    "businessCode": 200,
+    "requestId": "955d78a3-005d-4f05-b74d-ebe789aaa72f",
+    "stable": true,
+    "tier": "L1",
+    "verifiedAt": "2026-04-22T02:19:41.795Z",
+    "consecutiveFails": 0
+  },
+  "POST /api/v1/douyin/billboard/fetch_hot_total_hot_word_list": {
+    "path": "/api/v1/douyin/billboard/fetch_hot_total_hot_word_list",
+    "method": "POST",
+    "capability": "hot_word_billboard",
+    "sampleParams": {},
+    "httpStatus": 200,
+    "businessCode": 200,
+    "requestId": "aaab69ef-6013-442f-83bf-f62e5284aeb8",
+    "stable": true,
+    "tier": "L1",
+    "verifiedAt": "2026-04-22T02:19:42.468Z",
+    "consecutiveFails": 0
+  }
+}

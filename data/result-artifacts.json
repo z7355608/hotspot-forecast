@@ -1,0 +1,1085 @@
+{
+  "artifact_911daefd-263e-4dfd-8412-deeeffd762b2": {
+    "artifactId": "artifact_911daefd-263e-4dfd-8412-deeeffd762b2",
+    "clientResultId": "run_6998adf3-4cde-486c-b4b4-de3cf6baa074",
+    "taskIntent": "breakdown_sample",
+    "artifactType": "opportunity_memo",
+    "createdAt": "2026-04-22T02:20:11.333Z",
+    "updatedAt": "2026-04-22T02:20:11.333Z",
+    "query": "美食探店赛道最近7天有哪些低粉爆款？帮我分析可复制的方向",
+    "type": "爆款预测",
+    "title": "美食探店 · 机会判断",
+    "summary": "「外滩上海菜、人均几十超值上海菜#比会吃更惠吃#心动榜餐厅#抖音新春吃喝玩乐节#寻味烟火气#心动团圆饭、今天去吃少见的黄皮脆皮鸡…、#深圳美食、#深圳探店」方向已有 8 条真实内容跑通，林木木、深圳美食部落、小苹果探店记等已验证可行性，可以直接进入执行。",
+    "platform": [
+      "抖音"
+    ],
+    "score": 100,
+    "scoreLabel": "强推",
+    "verdict": "go_now",
+    "windowStrength": "strong_now",
+    "confidenceLabel": "中",
+    "opportunityTitle": "美食探店 · 机会判断",
+    "coreBet": "「外滩上海菜、人均几十超值上海菜#比会吃更惠吃#心动榜餐厅#抖音新春吃喝玩乐节#寻味烟火气#心动团圆饭、今天去吃少见的黄皮脆皮鸡…、#深圳美食、#深圳探店」方向已有 8 条真实内容跑通，林木木、深圳美食部落、小苹果探店记等已验证可行性，可以直接进入执行。",
+    "watchable": true,
+    "shareable": true,
+    "snapshot": {
+      "id": "run_6998adf3-4cde-486c-b4b4-de3cf6baa074",
+      "dataMode": "live",
+      "taskIntent": "breakdown_sample",
+      "taskIntentConfidence": "high",
+      "entrySource": "manual",
+      "title": "美食探店 · 机会判断",
+      "summary": "「外滩上海菜、人均几十超值上海菜#比会吃更惠吃#心动榜餐厅#抖音新春吃喝玩乐节#寻味烟火气#心动团圆饭、今天去吃少见的黄皮脆皮鸡…、#深圳美食、#深圳探店」方向已有 8 条真实内容跑通，林木木、深圳美食部落、小苹果探店记等已验证可行性，可以直接进入执行。",
+      "primaryCtaLabel": "继续到选题策略",
+      "query": "美食探店赛道最近7天有哪些低粉爆款？帮我分析可复制的方向",
+      "modelId": "doubao",
+      "createdAt": "2026-04-22T02:20:11.111Z",
+      "updatedAt": "2026-04-22T02:20:11.111Z",
+      "type": "爆款预测",
+      "platform": [
+        "抖音"
+      ],
+      "score": 100,
+      "scoreLabel": "强推",
+      "verdict": "go_now",
+      "confidenceLabel": "中",
+      "opportunityTitle": "美食探店 · 机会判断",
+      "opportunityType": "search_window",
+      "windowStrength": "strong_now",
+      "coreBet": "「外滩上海菜、人均几十超值上海菜#比会吃更惠吃#心动榜餐厅#抖音新春吃喝玩乐节#寻味烟火气#心动团圆饭、今天去吃少见的黄皮脆皮鸡…、#深圳美食、#深圳探店」方向已有 8 条真实内容跑通，林木木、深圳美食部落、小苹果探店记等已验证可行性，可以直接进入执行。",
+      "decisionBoundary": "8 条内容 + 6 个账号已补齐，「美食探店」可以直接进入执行。",
+      "marketEvidence": {
+        "evidenceWindowLabel": "实时抓取 · 4月21日",
+        "momentumLabel": "accelerating",
+        "kolCount": 5,
+        "kocCount": 1,
+        "newCreatorCount": 0,
+        "similarContentCount": 8,
+        "growth7d": 100,
+        "lowFollowerAnomalyRatio": 0,
+        "timingLabel": "已采集 8 条内容、6 个账号，建议先做小样验证。",
+        "tierBreakdown": {
+          "headKol": 1,
+          "standardKol": 4,
+          "strongKoc": 1,
+          "standardKoc": 0
+        }
+      },
+      "supportingAccounts": [
+        {
+          "accountId": "MS4wLjABAAAAV4N2851A57AWgSux9-q2uViGtc9AtJ3E5uws66WL7JzGVtvuW_sgOtTpSIJYc7aZ",
+          "displayName": "林木木",
+          "handle": "lzy8898779",
+          "platform": "抖音",
+          "profileUrl": "https://www.douyin.com/user/MS4wLjABAAAAV4N2851A57AWgSux9-q2uViGtc9AtJ3E5uws66WL7JzGVtvuW_sgOtTpSIJYc7aZ",
+          "tierLabel": "head_kol",
+          "followerCount": 1016085,
+          "followingCount": 32,
+          "totalLikeCount": 3652947,
+          "avgEngagementRate30d": null,
+          "breakoutHitRate30d": null,
+          "recentTopicClusters": [],
+          "whyIncluded": ""
+        },
+        {
+          "accountId": "MS4wLjABAAAAESt595KGczJ6uzNxz15gBs3Er6Qmz3t1MVPSCYyO_yA",
+          "displayName": "深圳美食部落",
+          "handle": "Szblog",
+          "platform": "抖音",
+          "profileUrl": "https://www.douyin.com/user/MS4wLjABAAAAESt595KGczJ6uzNxz15gBs3Er6Qmz3t1MVPSCYyO_yA",
+          "tierLabel": "standard_kol",
+          "followerCount": 521882,
+          "followingCount": 88,
+          "totalLikeCount": 4690586,
+          "avgEngagementRate30d": null,
+          "breakoutHitRate30d": null,
+          "recentTopicClusters": [],
+          "whyIncluded": ""
+        },
+        {
+          "accountId": "MS4wLjABAAAA0gbokvdG8NRIPxas0RdLumy7P-UEzCY_THOsmRHVH529KorUYgD-zv7H1yee9t5c",
+          "displayName": "小苹果探店记",
+          "handle": "XPG_8888",
+          "platform": "抖音",
+          "profileUrl": "https://www.douyin.com/user/MS4wLjABAAAA0gbokvdG8NRIPxas0RdLumy7P-UEzCY_THOsmRHVH529KorUYgD-zv7H1yee9t5c",
+          "tierLabel": "standard_kol",
+          "followerCount": 216106,
+          "followingCount": 800,
+          "totalLikeCount": 1078936,
+          "avgEngagementRate30d": null,
+          "breakoutHitRate30d": null,
+          "recentTopicClusters": [],
+          "whyIncluded": ""
+        },
+        {
+          "accountId": "MS4wLjABAAAA2Hl2Ae7y_V8PbyIMFeLNy6cFh2ZuhYMOVneKCE7zmxWYSjxobUIRg6_ti2zKMfRf",
+          "displayName": "小林日记",
+          "handle": "91436156281",
+          "platform": "抖音",
+          "profileUrl": "https://www.douyin.com/user/MS4wLjABAAAA2Hl2Ae7y_V8PbyIMFeLNy6cFh2ZuhYMOVneKCE7zmxWYSjxobUIRg6_ti2zKMfRf",
+          "tierLabel": "standard_kol",
+          "followerCount": 118486,
+          "followingCount": 76,
+          "totalLikeCount": 1143427,
+          "avgEngagementRate30d": null,
+          "breakoutHitRate30d": null,
+          "recentTopicClusters": [],
+          "whyIncluded": ""
+        },
+        {
+          "accountId": "MS4wLjABAAAAlKIwK1id4iRCfKz5YWmTxzk1i53kbuU1sU1ZCnLOvEs",
+          "displayName": "饿魔老张",
+          "handle": "emlz666",
+          "platform": "抖音",
+          "profileUrl": "https://www.douyin.com/user/MS4wLjABAAAAlKIwK1id4iRCfKz5YWmTxzk1i53kbuU1sU1ZCnLOvEs",
+          "tierLabel": "standard_kol",
+          "followerCount": 324616,
+          "followingCount": 200,
+          "totalLikeCount": 3132917,
+          "avgEngagementRate30d": null,
+          "breakoutHitRate30d": null,
+          "recentTopicClusters": [],
+          "whyIncluded": ""
+        },
+        {
+          "accountId": "MS4wLjABAAAAjuZ464Sn9FZHaWr7j7X3EUoX_RJ-_JGvvKRI68hPHM8",
+          "displayName": "舌尖上的肥弟",
+          "handle": "nidefeidi",
+          "platform": "抖音",
+          "profileUrl": "https://www.douyin.com/user/MS4wLjABAAAAjuZ464Sn9FZHaWr7j7X3EUoX_RJ-_JGvvKRI68hPHM8",
+          "tierLabel": "strong_koc",
+          "followerCount": 50785,
+          "followingCount": 549,
+          "totalLikeCount": 618564,
+          "avgEngagementRate30d": null,
+          "breakoutHitRate30d": null,
+          "recentTopicClusters": [],
+          "whyIncluded": ""
+        }
+      ],
+      "supportingContents": [
+        {
+          "contentId": "7630753193622204849",
+          "title": "外滩上海菜 人均几十超值上海菜#比会吃更惠吃#心动榜餐厅#抖音新春吃喝玩乐节#寻味烟火气#心动团圆饭",
+          "authorName": "林木木",
+          "platform": "抖音",
+          "publishedAt": "2026-04-20T08:19:38.000Z",
+          "contentUrl": "https://www.douyin.com/video/7630753193622204849",
+          "coverUrl": "https://p26-sign.douyinpic.com/tos-cn-p-0015c000-ce/ogDhlZfBCCteTFOBQJeCAt8JEyIJ4Iwg72T7z5~tplv-dy-360p.webp?biz_tag=aweme_video&card_type=153&column_n=0&from=327834062&l=20260422101928F7608E532F5CFC90DB97&lk3s=138a59ce&s=PackSourceEnum_SEARCH_SIN&sc=origin_cover&se=false&x-expires=1778032800&x-signature=0lcEjCFHcmPMmwwWz0p7%2FZzsW%2FY%3D",
+          "viewCount": 0,
+          "likeCount": 2194,
+          "commentCount": 52,
+          "shareCount": 31,
+          "collectCount": 76,
+          "structureSummary": "外滩上海菜 人均几十超值上海菜#比会吃更惠吃#心动榜餐厅#抖音新春吃喝玩乐节#寻味烟火气#心动团",
+          "keywordTokens": [
+            "外滩上海菜",
+            "人均几十超值上海菜#比会吃更惠吃#心动榜餐厅#抖音新春吃喝玩乐节#寻味烟火气#心动团圆饭"
+          ],
+          "whyIncluded": "",
+          "authorFollowerCount": 1016085
+        },
+        {
+          "contentId": "7630775720804994323",
+          "title": "今天去吃少见的黄皮脆皮鸡… #深圳美食 #深圳探店 #吃透深圳 #找深圳美食看深圳美食部落 #人间烟火",
+          "authorName": "深圳美食部落",
+          "platform": "抖音",
+          "publishedAt": "2026-04-20T09:47:09.000Z",
+          "contentUrl": "https://www.douyin.com/video/7630775720804994323",
+          "coverUrl": "https://p26-sign.douyinpic.com/tos-cn-p-0015/ooDztdHYgIYyDm4Ce9nDlGiElg0VIsfeAATLf2~tplv-dy-360p.webp?biz_tag=aweme_video&card_type=153&column_n=0&from=327834062&l=20260422101928F7608E532F5CFC90DB97&lk3s=138a59ce&s=PackSourceEnum_SEARCH_SIN&sc=origin_cover&se=false&x-expires=1778032800&x-signature=DGcZYodQryq8S%2FqrEkTvJ%2FzjFyU%3D",
+          "viewCount": 0,
+          "likeCount": 132,
+          "commentCount": 16,
+          "shareCount": 26,
+          "collectCount": 30,
+          "structureSummary": "今天去吃少见的黄皮脆皮鸡… #深圳美食 #深圳探店 #吃透深圳 #找深圳美食看深圳美食部落 #人",
+          "keywordTokens": [
+            "今天去吃少见的黄皮脆皮鸡…",
+            "#深圳美食",
+            "#深圳探店",
+            "#吃透深圳",
+            "#找深圳美食看深圳美食部落"
+          ],
+          "whyIncluded": "",
+          "authorFollowerCount": 521882
+        },
+        {
+          "contentId": "7631052138848810361",
+          "title": "苏家塘，70多吃干锅牛肉，玉米粑粑包着吃，简直不要太爽， #真实原切牛肉 #干锅牛肉 #干锅牛肉火锅 #苏家塘美食 #新鲜切牛肉",
+          "authorName": "小苹果探店记",
+          "platform": "抖音",
+          "publishedAt": "2026-04-21T03:39:42.000Z",
+          "contentUrl": "https://www.douyin.com/video/7631052138848810361",
+          "coverUrl": "https://p26-sign.douyinpic.com/tos-cn-p-0015c000-ce/oQ9jPEQfAr6IVCYpnveFEBL5IC6fsLQmzwD8AR~tplv-dy-360p.webp?biz_tag=aweme_video&card_type=153&column_n=0&from=327834062&l=20260422101928F7608E532F5CFC90DB97&lk3s=138a59ce&s=PackSourceEnum_SEARCH_SIN&sc=origin_cover&se=false&x-expires=1778032800&x-signature=PkwUwWqcTWVEvhY7dYoZE6Bn%2BGk%3D",
+          "viewCount": 0,
+          "likeCount": 125,
+          "commentCount": 11,
+          "shareCount": 131,
+          "collectCount": 47,
+          "structureSummary": "苏家塘，70多吃干锅牛肉，玉米粑粑包着吃，简直不要太爽， #真实原切牛肉 #干锅牛肉 #干锅牛肉",
+          "keywordTokens": [
+            "苏家塘",
+            "70多吃干锅牛肉",
+            "玉米粑粑包着吃",
+            "简直不要太爽",
+            "#真实原切牛肉"
+          ],
+          "whyIncluded": "",
+          "authorFollowerCount": 216106
+        },
+        {
+          "contentId": "7630380643829966710",
+          "title": "在深圳园林式餐厅吃黑松露烧鹅 #深圳美食 #深圳探店 #深圳旅游 #烧鹅 #青年创作者扶持计划",
+          "authorName": "小林日记",
+          "platform": "抖音",
+          "publishedAt": "2026-04-20T08:00:00.000Z",
+          "contentUrl": "https://www.douyin.com/video/7630380643829966710",
+          "coverUrl": "https://p3-sign.douyinpic.com/tos-cn-p-0015/oAzA3sDzF7785jk2f9AQAB6ADpCQQNCfgpI1vE~tplv-dy-360p.webp?biz_tag=aweme_video&card_type=153&column_n=0&from=327834062&l=20260422101928F7608E532F5CFC90DB97&lk3s=138a59ce&s=PackSourceEnum_SEARCH_SIN&sc=origin_cover&se=false&x-expires=1778032800&x-signature=PYIoRbyOKreBS15dWI99YOLVBws%3D",
+          "viewCount": 0,
+          "likeCount": 3637,
+          "commentCount": 105,
+          "shareCount": 513,
+          "collectCount": 649,
+          "structureSummary": "在深圳园林式餐厅吃黑松露烧鹅 #深圳美食 #深圳探店 #深圳旅游 #烧鹅 #青年创作者扶持计划",
+          "keywordTokens": [
+            "在深圳园林式餐厅吃黑松露烧鹅",
+            "#深圳美食",
+            "#深圳探店",
+            "#深圳旅游",
+            "#烧鹅"
+          ],
+          "whyIncluded": "",
+          "authorFollowerCount": 118486
+        },
+        {
+          "contentId": "7630756883398445562",
+          "title": "在青岛不到五块肉夹馍吃饱吃好，大口炫肉真过瘾#青岛肉夹馍 #青岛CBD #市北美食 #青岛探店",
+          "authorName": "饿魔老张",
+          "platform": "抖音",
+          "publishedAt": "2026-04-20T08:33:58.000Z",
+          "contentUrl": "https://www.douyin.com/video/7630756883398445562",
+          "coverUrl": "https://p11-sign.douyinpic.com/tos-cn-p-0015c000-ce/oEmDFDKFeBtBeXSlICZPEfdWO5yiTIA9XJ17gU~tplv-dy-360p.webp?biz_tag=aweme_video&card_type=153&column_n=0&from=327834062&l=20260422101928F7608E532F5CFC90DB97&lk3s=138a59ce&s=PackSourceEnum_SEARCH_SIN&sc=origin_cover&se=false&x-expires=1778032800&x-signature=ib3LqSKwDMJAHPekogSgfEdx1f4%3D",
+          "viewCount": 0,
+          "likeCount": 923,
+          "commentCount": 93,
+          "shareCount": 253,
+          "collectCount": 120,
+          "structureSummary": "在青岛不到五块肉夹馍吃饱吃好，大口炫肉真过瘾#青岛肉夹馍 #青岛CBD #市北美食 #青岛探店",
+          "keywordTokens": [
+            "在青岛不到五块肉夹馍吃饱吃好",
+            "大口炫肉真过瘾#青岛肉夹馍",
+            "#青岛CBD",
+            "#市北美食",
+            "#青岛探店"
+          ],
+          "whyIncluded": "",
+          "authorFollowerCount": 324616
+        },
+        {
+          "contentId": "7631122150163028943",
+          "title": "最近汕头很多网红去打卡的烧烤店，一到饭点就挤满人，老板边串边卖都忙不过来#烧烤 #夜宵 #汕头美食 #鲜货烧烤 #美食探店",
+          "authorName": "舌尖上的肥弟",
+          "platform": "抖音",
+          "publishedAt": "2026-04-21T08:11:23.000Z",
+          "contentUrl": "https://www.douyin.com/video/7631122150163028943",
+          "coverUrl": "https://p11-sign.douyinpic.com/tos-cn-p-0015/oAlKgQLuKsEPwhfOBJGAg5z47YTAYCfBllIjer~tplv-dy-360p.webp?biz_tag=aweme_video&card_type=153&column_n=0&from=327834062&l=20260422101928F7608E532F5CFC90DB97&lk3s=138a59ce&s=PackSourceEnum_SEARCH_SIN&sc=origin_cover&se=false&x-expires=1778032800&x-signature=fVBMl0gka7tK8kSz463Y8ePqDtk%3D",
+          "viewCount": 0,
+          "likeCount": 165,
+          "commentCount": 8,
+          "shareCount": 41,
+          "collectCount": 30,
+          "structureSummary": "最近汕头很多网红去打卡的烧烤店，一到饭点就挤满人，老板边串边卖都忙不过来#烧烤 #夜宵 #汕头美",
+          "keywordTokens": [
+            "最近汕头很多网红去打卡的烧烤店",
+            "一到饭点就挤满人",
+            "老板边串边卖都忙不过来#烧烤",
+            "#夜宵",
+            "#汕头美食"
+          ],
+          "whyIncluded": "",
+          "authorFollowerCount": 50785
+        },
+        {
+          "contentId": "7630387290028670675",
+          "title": "排骨焖面究竟是哪里的吃法 也太过瘾了 #青岛美食 #排骨焖面 #太好吃了",
+          "authorName": "大魏的胃",
+          "platform": "抖音",
+          "publishedAt": "2026-04-19T08:51:10.000Z",
+          "contentUrl": "https://www.douyin.com/video/7630387290028670675",
+          "coverUrl": "https://p3-sign.douyinpic.com/tos-cn-p-0015/oIFMPoEp5A2WA4sEE2rJX9lBDhkfQ5kfAW0gQD~tplv-dy-360p.webp?biz_tag=aweme_video&card_type=153&column_n=0&from=327834062&l=20260422101931ABFDEAC4B0CECA93A86C&lk3s=138a59ce&s=PackSourceEnum_SEARCH_SIN&sc=origin_cover&se=false&x-expires=1778032800&x-signature=WzQjcY4Zaeq5wfaqFlOSnzvlLok%3D",
+          "viewCount": 0,
+          "likeCount": 40198,
+          "commentCount": 1472,
+          "shareCount": 52682,
+          "collectCount": 4522,
+          "structureSummary": "排骨焖面究竟是哪里的吃法 也太过瘾了 #青岛美食 #排骨焖面 #太好吃了",
+          "keywordTokens": [
+            "排骨焖面究竟是哪里的吃法",
+            "也太过瘾了",
+            "#青岛美食",
+            "#排骨焖面",
+            "#太好吃了"
+          ],
+          "whyIncluded": "",
+          "authorFollowerCount": 0
+        },
+        {
+          "contentId": "7631117182004370100",
+          "title": "有钱速囤！天一广场衢农汇新派衢州菜！新品龙虾臭豆腐牛蛙绝了！ #衢农汇#衢州菜 #宁波美食探店 #本地人推荐 #宁波美食",
+          "authorName": "小助理(探店版)",
+          "platform": "抖音",
+          "publishedAt": "2026-04-21T07:52:05.000Z",
+          "contentUrl": "https://www.douyin.com/video/7631117182004370100",
+          "coverUrl": "https://p3-sign.douyinpic.com/tos-cn-p-0015/oEInICAAeLHeAmB0XiPqvwd5Ds9Adi2gNwcKBQ~tplv-dy-360p.webp?biz_tag=aweme_video&card_type=153&column_n=0&from=327834062&l=20260422101928F7608E532F5CFC90DB97&lk3s=138a59ce&s=PackSourceEnum_SEARCH_SIN&sc=origin_cover&se=false&x-expires=1778032800&x-signature=HAtbaK7iZqB8FQZrAJAZusUrUVc%3D",
+          "viewCount": 0,
+          "likeCount": 346,
+          "commentCount": 10,
+          "shareCount": 120,
+          "collectCount": 31,
+          "structureSummary": "有钱速囤！天一广场衢农汇新派衢州菜！新品龙虾臭豆腐牛蛙绝了！ #衢农汇#衢州菜 #宁波美食探店 ",
+          "keywordTokens": [
+            "有钱速囤！天一广场衢农汇新派衢州菜！新品龙虾臭豆腐牛蛙绝了！",
+            "#衢农汇#衢州菜",
+            "#宁波美食探店",
+            "#本地人推荐",
+            "#宁波美食"
+          ],
+          "whyIncluded": "",
+          "authorFollowerCount": 0
+        }
+      ],
+      "lowFollowerEvidence": [],
+      "evidenceGaps": [],
+      "whyNowItems": [
+        {
+          "sourceLabel": "内容供给",
+          "fact": "抖音 已有 8 条真实内容跑通，包括『外滩上海菜 人均几十超值上海菜#比会吃更』、『今天去吃少见的黄皮脆皮鸡… #深圳美食 』、『苏家塘，70多吃干锅牛肉，玉米粑粑包着吃』，同时命中 305 条热榜/热词。",
+          "inference": "这个方向已经有多条内容跑出数据，说明市场已经验证过这个内容类型。",
+          "userImpact": "可以直接参考『外滩上海菜 人均几十超值上海菜#比会吃更』、『今天去吃少见的黄皮脆皮鸡… #深圳美食 』、『苏家塘，70多吃干锅牛肉，玉米粑粑包着吃』的结构和表达方式。",
+          "tone": "positive"
+        },
+        {
+          "sourceLabel": "竞争格局",
+          "fact": "已有 6 个账号在做这个方向：5 个 KOL、1 个 KOC，包括林木木、深圳美食部落、小苹果探店记。",
+          "inference": "头部账号占比较高，说明赛道已经有大号入场，低粉需要找差异化切入点。",
+          "userImpact": "建议关注这些账号的内容结构，找到可借鉴的切入点。",
+          "tone": "positive"
+        },
+        {
+          "sourceLabel": "用户需求",
+          "fact": "已采集 80 条评论数据，说明这个方向已有真实用户在主动搜索和讨论。",
+          "inference": "评论中的高频词可以直接用作标题和内容切入点。",
+          "userImpact": "可以用评论高频词反推标题和内容切口。",
+          "tone": "positive"
+        }
+      ],
+      "bestFor": [
+        "已采集 8 条真实内容、6 个账号、305 条热榜/热词，可以基于这些样本快速判断是否值得下注。"
+      ],
+      "notFor": [
+        "如果你只想看历史榜单而不关心动作编排，这页不是纯数据看板。"
+      ],
+      "accountMatchSummary": "已采集 8 条内容和 6 个账号，可以先用小样内容快速验证，同时继续积累数据。",
+      "bestActionNow": {
+        "type": "generate_test_brief",
+        "title": "今天直接开拍",
+        "description": "真实样本和市场扩散已经补齐，适合直接进入开拍方案。",
+        "ctaLabel": "拿开拍方案",
+        "reason": "当前真实证据足以支撑直接进入执行层。"
+      },
+      "whyNotOtherActions": [
+        "当前样本已经够支撑执行，不需要继续观望。"
+      ],
+      "missIfWait": "如果继续观望，可能错过这波机会的前期窗口。",
+      "operatorPanel": {
+        "reportSummary": "证据已补齐，可以直接进入执行。",
+        "sourceNotes": [
+          "数据来源：抖音实时搜索"
+        ],
+        "platformNotes": [
+          "抖音：已采集"
+        ],
+        "benchmarkHints": [
+          "林木木 · 头部 KOL",
+          "深圳美食部落 · KOL",
+          "小苹果探店记 · KOL"
+        ],
+        "riskSplit": [
+          "本次采集到 8 条内容、6 个账号，各项证据方向一致。"
+        ],
+        "counterSignals": [],
+        "dataGaps": []
+      },
+      "screeningReport": {
+        "safeActionLevel": "shoot_now",
+        "evidenceAlignment": "medium",
+        "acceptedAccountIds": [
+          "MS4wLjABAAAAV4N2851A57AWgSux9-q2uViGtc9AtJ3E5uws66WL7JzGVtvuW_sgOtTpSIJYc7aZ",
+          "MS4wLjABAAAAESt595KGczJ6uzNxz15gBs3Er6Qmz3t1MVPSCYyO_yA",
+          "MS4wLjABAAAA0gbokvdG8NRIPxas0RdLumy7P-UEzCY_THOsmRHVH529KorUYgD-zv7H1yee9t5c",
+          "MS4wLjABAAAA2Hl2Ae7y_V8PbyIMFeLNy6cFh2ZuhYMOVneKCE7zmxWYSjxobUIRg6_ti2zKMfRf",
+          "MS4wLjABAAAAlKIwK1id4iRCfKz5YWmTxzk1i53kbuU1sU1ZCnLOvEs",
+          "MS4wLjABAAAAjuZ464Sn9FZHaWr7j7X3EUoX_RJ-_JGvvKRI68hPHM8"
+        ],
+        "acceptedContentIds": [
+          "7630753193622204849",
+          "7630775720804994323",
+          "7631052138848810361",
+          "7630380643829966710",
+          "7630756883398445562",
+          "7631122150163028943",
+          "7630387290028670675",
+          "7631117182004370100"
+        ],
+        "acceptedLowFollowerIds": [],
+        "missingEvidence": [],
+        "contradictionSummary": [
+          "各项证据方向一致。"
+        ],
+        "candidates": []
+      },
+      "primaryCard": {
+        "title": "今天直接开拍",
+        "ctaLabel": "拿开拍方案",
+        "description": "真实样本和市场扩散已经补齐，适合直接进入开拍方案。",
+        "reason": "当前真实证据足以支撑直接进入执行层。",
+        "previewSections": [
+          {
+            "title": "这次先拿走什么",
+            "items": [
+              "可以直接参考『外滩上海菜 人均几十超值上海菜#比会吃更』、『今天去吃少见的黄皮脆皮鸡… #深圳美食 』、『苏家塘，70多吃干锅牛肉，玉米粑粑包着吃』的结构和表达方式。",
+              "建议关注这些账号的内容结构，找到可借鉴的切入点。"
+            ]
+          }
+        ],
+        "continueIf": [
+          "新增支持账号、支持内容或评论意图时，可升级到更强动作。"
+        ],
+        "stopIf": [
+          "如果方向变化较大，可以考虑调整角度重新分析。"
+        ],
+        "evidenceRefs": [],
+        "actionMode": "open_deep_dive"
+      },
+      "secondaryCard": {
+        "title": "继续深挖",
+        "ctaLabel": "继续深挖",
+        "description": "这次结果还可以继续展开脚本、策略和执行计划。",
+        "reason": "可以继续探索更多角度，让分析结论更加精准。",
+        "previewSections": [
+          {
+            "title": "为什么是这个备选动作",
+            "items": [
+              "当前更适合继续补证据，而不是直接升级执行承诺。"
+            ]
+          }
+        ],
+        "continueIf": [
+          "下一轮复查若补到更多真实样本，再决定是否升级主动作。"
+        ],
+        "stopIf": [
+          "如果后续证据继续稀疏，就保持观察而不是推进执行。"
+        ],
+        "evidenceRefs": [],
+        "actionMode": "open_deep_dive"
+      },
+      "fitSummary": "当前页重点是这波机会值不值得先下注、先验证还是先观察。",
+      "recommendedNextAction": {
+        "type": "generate_test_brief",
+        "title": "今天直接开拍",
+        "description": "真实样本和市场扩散已经补齐，适合直接进入开拍方案。",
+        "ctaLabel": "拿开拍方案",
+        "reason": "当前真实证据足以支撑直接进入执行层。"
+      },
+      "continueIf": [
+        "当采集到更多账号（当前 6 个）和内容样本（当前 8 条）时，可升级到更强执行动作。",
+        "热榜/热词已命中 305 条，如果继续上升可加大投入。"
+      ],
+      "stopIf": [
+        "如果多次采集后仍然只有 8 条内容和 6 个账号，建议放弃这波机会。"
+      ],
+      "commentInsight": {
+        "totalCommentsCollected": 80,
+        "highFreqKeywords": [
+          "不错",
+          "比心",
+          "玫瑰",
+          "捂脸",
+          "肉夹",
+          "夹馍",
+          "这家",
+          "好吃"
+        ],
+        "sentimentSummary": "positive",
+        "demandSignals": [
+          "推荐菜"
+        ],
+        "highlights": [
+          {
+            "contentId": "7630753193622204849",
+            "contentTitle": "外滩上海菜 人均几十超值上海菜#比会吃更惠吃#心动榜餐厅#抖音新春吃喝玩乐节#寻",
+            "topComments": [
+              {
+                "text": "色香味俱全",
+                "likeCount": 5,
+                "authorName": "独自离开"
+              },
+              {
+                "text": "这家看起来不错，收藏了",
+                "likeCount": 2,
+                "authorName": "Poyo游泳俱乐部"
+              },
+              {
+                "text": "[赞][赞][赞][赞][赞]",
+                "likeCount": 1,
+                "authorName": "呵呵"
+              }
+            ],
+            "totalCommentCount": 20
+          },
+          {
+            "contentId": "7630775720804994323",
+            "contentTitle": "今天去吃少见的黄皮脆皮鸡… #深圳美食 #深圳探店 #吃透深圳 #找深圳美食看深",
+            "topComments": [
+              {
+                "text": "[舔屏][舔屏]",
+                "likeCount": 0,
+                "authorName": "簬過"
+              },
+              {
+                "text": "哇！不错不错.色香味俱全啊[赞][赞][赞][666][666][666][比心][比心]",
+                "likeCount": 0,
+                "authorName": "紫玫瑰"
+              },
+              {
+                "text": "好吃，食材新鲜可口[鼓掌]，汤料美味多汁[鼓掌]",
+                "likeCount": 0,
+                "authorName": "伴君天下舞"
+              }
+            ],
+            "totalCommentCount": 15
+          },
+          {
+            "contentId": "7631052138848810361",
+            "contentTitle": "苏家塘，70多吃干锅牛肉，玉米粑粑包着吃，简直不要太爽， #真实原切牛肉 #干锅",
+            "topComments": [
+              {
+                "text": "我在这里住了十多年，他以前是隐身的？",
+                "likeCount": 2,
+                "authorName": "🖤 壹只° Dà寳唄ɞ 🤍"
+              },
+              {
+                "text": "几个人70多",
+                "likeCount": 1,
+                "authorName": "HHHana"
+              },
+              {
+                "text": "太油了。",
+                "likeCount": 0,
+                "authorName": "扶老奶奶闯红灯"
+              }
+            ],
+            "totalCommentCount": 6
+          },
+          {
+            "contentId": "7630380643829966710",
+            "contentTitle": "在深圳园林式餐厅吃黑松露烧鹅 #深圳美食 #深圳探店 #深圳旅游 #烧鹅 #青年",
+            "topComments": [
+              {
+                "text": "黑松露燒鵝个人感觉不好食 。都係傳統最好食",
+                "likeCount": 4,
+                "authorName": "老城旧事"
+              },
+              {
+                "text": "原来菠萝包真的有菠萝，那我之前吃的没有的算什么[捂脸]",
+                "likeCount": 3,
+                "authorName": "“李家三千金”"
+              },
+              {
+                "text": "周末准备带家人过去吃饭，有没有推荐菜",
+                "likeCount": 1,
+                "authorName": "NEyMaR⚽"
+              }
+            ],
+            "totalCommentCount": 20
+          },
+          {
+            "contentId": "7630756883398445562",
+            "contentTitle": "在青岛不到五块肉夹馍吃饱吃好，大口炫肉真过瘾#青岛肉夹馍 #青岛CBD #市北美",
+            "topComments": [
+              {
+                "text": "青岛有这么偏易的吗",
+                "likeCount": 1,
+                "authorName": "刚哥"
+              },
+              {
+                "text": "猪肉今年价格便宜（猪周期低谷），所以市场上才会出现5元肉夹馍[呲牙]",
+                "likeCount": 0,
+                "authorName": "茶界大千"
+              },
+              {
+                "text": "要是在我家附近我绝对三天吃五顿",
+                "likeCount": 0,
+                "authorName": "飞龙星光"
+              }
+            ],
+            "totalCommentCount": 19
+          }
+        ]
+      },
+      "normalizedBrief": {
+        "inputKind": "prompt",
+        "seedTopic": "美食探店",
+        "industry": "美食探店",
+        "candidatePlatforms": [
+          "douyin"
+        ],
+        "accountContext": "未提供账号连接，按公开平台数据做通用预测",
+        "competitorEvidence": [],
+        "personalizationMode": "public"
+      },
+      "platformSnapshots": [
+        {
+          "platformId": "douyin",
+          "platformName": "抖音",
+          "authMode": "public",
+          "predictionEnabled": true,
+          "callBudget": {
+            "topic": 6,
+            "link": 4,
+            "account": 5,
+            "cookieExtra": 5
+          },
+          "endpointFamilies": [
+            "fetch_hot_search_result",
+            "fetch_one_video_v2",
+            "fetch_user_post_videos",
+            "fetch_video_comments",
+            "creator_v2_*"
+          ],
+          "coreFields": [
+            "aweme_id",
+            "desc",
+            "create_time",
+            "author_id",
+            "follower_count",
+            "digg_count",
+            "comment_count",
+            "share_count",
+            "play_count",
+            "hashtag",
+            "hot_rank",
+            "traffic_source",
+            "search_keywords",
+            "audience_portrait"
+          ],
+          "capabilitySummary": [
+            "搜索",
+            "热榜",
+            "详情",
+            "评论",
+            "主页",
+            "创作者数据"
+          ],
+          "signals": [
+            "搜索需求",
+            "热榜加速度",
+            "评论反馈",
+            "账号画像"
+          ]
+        }
+      ],
+      "scoreBreakdown": {
+        "demand": 100,
+        "competition": 100,
+        "anomaly": 0,
+        "fit": 82,
+        "opportunity": 100,
+        "timing": 100,
+        "risk": 18
+      },
+      "recommendedLowFollowerSampleIds": [],
+      "hotSeedCount": 305,
+      "trendingTags": [
+        "#美食探店",
+        "#美食探店低粉爆款",
+        "#美食探店博主",
+        "#美食探店bgm",
+        "#美食探店视频"
+      ],
+      "taskPayload": {
+        "kind": "opportunity_prediction",
+        "highlight": "「外滩上海菜、人均几十超值上海菜#比会吃更惠吃#心动榜餐厅#抖音新春吃喝玩乐节#寻味烟火气#心动团圆饭、今天去吃少见的黄皮脆皮鸡…、#深圳美食、#深圳探店」方向已有 8 条真实内容跑通，林木木、深圳美食部落、小苹果探店记等已验证可行性，可以直接进入执行。",
+        "verdictLabel": "今天直接开拍",
+        "evidenceSummary": [
+          "抖音 已有 8 条真实内容跑通，包括『外滩上海菜 人均几十超值上海菜#比会吃更』、『今天去吃少见的黄皮脆皮鸡… #深圳美食 』、『苏家塘，70多吃干锅牛肉，玉米粑粑包着吃』，同时命中 305 条热榜/热词。",
+          "已有 6 个账号在做这个方向：5 个 KOL、1 个 KOC，包括林木木、深圳美食部落、小苹果探店记。",
+          "已采集 80 条评论数据，说明这个方向已有真实用户在主动搜索和讨论。"
+        ],
+        "bestActionReason": "当前真实证据足以支撑直接进入执行层。",
+        "supportingProofTitles": [
+          "外滩上海菜 人均几十超值上海菜#比会吃更惠吃#心动榜餐厅#抖音新春吃喝玩乐节#寻味烟火气#心动团圆饭",
+          "今天去吃少见的黄皮脆皮鸡… #深圳美食 #深圳探店 #吃透深圳 #找深圳美食看深圳美食部落 #人间烟火",
+          "苏家塘，70多吃干锅牛肉，玉米粑粑包着吃，简直不要太爽， #真实原切牛肉 #干锅牛肉 #干锅牛肉火锅 #苏家塘美食 #新鲜切牛肉",
+          "在深圳园林式餐厅吃黑松露烧鹅 #深圳美食 #深圳探店 #深圳旅游 #烧鹅 #青年创作者扶持计划"
+        ],
+        "trendOpportunities": [
+          {
+            "opportunityName": "平价特色菜",
+            "stage": "validated",
+            "opportunityScore": 88,
+            "timingScore": 85,
+            "oneLiner": "高需求低竞争，非常值得做",
+            "whyNow": [
+              "样本中4条平价内容均获不错点赞",
+              "热榜命中305条，需求明确",
+              "头部KOL尚未完全覆盖平价品类"
+            ],
+            "doNow": "挖掘本地人均50元内特色美食",
+            "observe": "等待平价探店内容播放数据披露",
+            "executableTopics": [
+              {
+                "title": "70多吃干锅牛肉配玉米粑粑超爽",
+                "hookType": "福利钩子",
+                "angle": "性价比直击",
+                "estimatedDuration": "30-60秒"
+              },
+              {
+                "title": "青岛5块钱肉夹馍大口炫肉超满足",
+                "hookType": "反差钩子",
+                "angle": "低价卖点",
+                "estimatedDuration": "30-45秒"
+              }
+            ],
+            "evidenceSummary": "样本有4条平价内容最高获4万点赞，热榜305条"
+          },
+          {
+            "opportunityName": "地域特色餐品",
+            "stage": "validated",
+            "opportunityScore": 85,
+            "timingScore": 82,
+            "oneLiner": "受众精准，适合本地账号做",
+            "whyNow": [
+              "排骨焖面单条获4万点赞，反馈好",
+              "地域垂类标签流量精准",
+              "本地垂类KOL布局较少，竞争小"
+            ],
+            "doNow": "盘点本地独有的小众特色餐食",
+            "observe": "等待地域内容完播率数据披露",
+            "executableTopics": [
+              {
+                "title": "排骨焖面这么吃太过瘾了",
+                "hookType": "好奇钩子",
+                "angle": "地域特色",
+                "estimatedDuration": "45-60秒"
+              },
+              {
+                "title": "少见黄皮脆皮鸡皮脆肉嫩超香",
+                "hookType": "新奇钩子",
+                "angle": "小众食材",
+                "estimatedDuration": "30-60秒"
+              }
+            ],
+            "evidenceSummary": "排骨焖面单条4万点赞，多地域垂类内容跑通"
+          },
+          {
+            "opportunityName": "网红打卡店测评",
+            "stage": "pre_burst",
+            "opportunityScore": 78,
+            "timingScore": 76,
+            "oneLiner": "有流量潜力，可尝试布局",
+            "whyNow": [
+              "汕头网红烧烤店内容获165点赞",
+              "用户对网红店真实测评需求高",
+              "当前同类内容数量少，缺口大"
+            ],
+            "doNow": "探本地近期爆火的网红排队店",
+            "observe": "等待更多同类爆款内容出现",
+            "executableTopics": [
+              {
+                "title": "汕头网红烧烤店一到饭点全挤满",
+                "hookType": "从众钩子",
+                "angle": "热度背书",
+                "estimatedDuration": "60-90秒"
+              },
+              {
+                "title": "衢农汇新品龙虾臭豆腐牛蛙绝了",
+                "hookType": "种草钩子",
+                "angle": "新品测评",
+                "estimatedDuration": "30-60秒"
+              }
+            ],
+            "evidenceSummary": "现有2条网红店内容跑通，数据有限待验证"
+          }
+        ],
+        "overviewOneLiner": "平价地域特色美食探店需求旺盛"
+      },
+      "recommendedNextTasks": [
+        {
+          "taskIntent": "trend_watch",
+          "title": "监控「美食探店 · 机」的变化",
+          "reason": "当前得分 100，建议建立监控等待更明确的时机。",
+          "actionLabel": "开启智能监控"
+        },
+        {
+          "taskIntent": "viral_breakdown",
+          "title": "拆解「美食探店 · 机」的爆款样本",
+          "reason": "已采集 8 条内容，拆解热门样本的结构和表达方式。",
+          "actionLabel": "拆解爆款结构"
+        },
+        {
+          "taskIntent": "topic_strategy",
+          "title": "探索「美食探店 · 机」的选题方向",
+          "reason": "基于当前数据信号，生成可执行的选题方案。",
+          "actionLabel": "生成可执行选题"
+        }
+      ],
+      "primaryArtifact": {
+        "artifactId": "artifact_seed_run_6998adf3-4cde-486c-b4b4-de3cf6baa074",
+        "runId": "run_6998adf3-4cde-486c-b4b4-de3cf6baa074",
+        "taskIntent": "opportunity_prediction",
+        "artifactType": "opportunity_memo",
+        "title": "美食探店 · 机会判断",
+        "summary": "「外滩上海菜、人均几十超值上海菜#比会吃更惠吃#心动榜餐厅#抖音新春吃喝玩乐节#寻味烟火气#心动团圆饭、今天去吃少见的黄皮脆皮鸡…、#深圳美食、#深圳探店」方向已有 8 条真实内容跑通，林木木、深圳美食部落、小苹果探店记等已验证可行性，可以直接进入执行。",
+        "payload": {
+          "kind": "opportunity_prediction",
+          "highlight": "「外滩上海菜、人均几十超值上海菜#比会吃更惠吃#心动榜餐厅#抖音新春吃喝玩乐节#寻味烟火气#心动团圆饭、今天去吃少见的黄皮脆皮鸡…、#深圳美食、#深圳探店」方向已有 8 条真实内容跑通，林木木、深圳美食部落、小苹果探店记等已验证可行性，可以直接进入执行。",
+          "verdictLabel": "今天直接开拍",
+          "evidenceSummary": [
+            "抖音 已有 8 条真实内容跑通，包括『外滩上海菜 人均几十超值上海菜#比会吃更』、『今天去吃少见的黄皮脆皮鸡… #深圳美食 』、『苏家塘，70多吃干锅牛肉，玉米粑粑包着吃』，同时命中 305 条热榜/热词。",
+            "已有 6 个账号在做这个方向：5 个 KOL、1 个 KOC，包括林木木、深圳美食部落、小苹果探店记。",
+            "已采集 80 条评论数据，说明这个方向已有真实用户在主动搜索和讨论。"
+          ],
+          "bestActionReason": "当前真实证据足以支撑直接进入执行层。",
+          "supportingProofTitles": [
+            "外滩上海菜 人均几十超值上海菜#比会吃更惠吃#心动榜餐厅#抖音新春吃喝玩乐节#寻味烟火气#心动团圆饭",
+            "今天去吃少见的黄皮脆皮鸡… #深圳美食 #深圳探店 #吃透深圳 #找深圳美食看深圳美食部落 #人间烟火",
+            "苏家塘，70多吃干锅牛肉，玉米粑粑包着吃，简直不要太爽， #真实原切牛肉 #干锅牛肉 #干锅牛肉火锅 #苏家塘美食 #新鲜切牛肉",
+            "在深圳园林式餐厅吃黑松露烧鹅 #深圳美食 #深圳探店 #深圳旅游 #烧鹅 #青年创作者扶持计划"
+          ]
+        },
+        "snapshotRefs": [],
+        "createdAt": "2026-04-22T02:20:11.111Z",
+        "updatedAt": "2026-04-22T02:20:11.111Z",
+        "watchable": true,
+        "shareable": true
+      },
+      "agentRun": {
+        "runId": "run_6998adf3-4cde-486c-b4b4-de3cf6baa074",
+        "source": "home_input",
+        "taskIntent": "opportunity_prediction",
+        "taskIntentConfidence": "medium",
+        "status": "degraded",
+        "brief": {
+          "inputKind": "prompt",
+          "seedTopic": "美食探店",
+          "industry": "美食探店",
+          "candidatePlatforms": [
+            "douyin"
+          ],
+          "accountContext": "未提供账号连接，按公开平台数据做通用预测",
+          "competitorEvidence": [],
+          "personalizationMode": "public"
+        },
+        "facts": {
+          "platformSnapshots": [
+            {
+              "platformId": "douyin",
+              "platformName": "抖音",
+              "authMode": "public",
+              "predictionEnabled": true,
+              "callBudget": {
+                "topic": 6,
+                "link": 4,
+                "account": 5,
+                "cookieExtra": 5
+              },
+              "endpointFamilies": [
+                "fetch_hot_search_result",
+                "fetch_one_video_v2",
+                "fetch_user_post_videos",
+                "fetch_video_comments",
+                "creator_v2_*"
+              ],
+              "coreFields": [
+                "aweme_id",
+                "desc",
+                "create_time",
+                "author_id",
+                "follower_count",
+                "digg_count",
+                "comment_count",
+                "share_count",
+                "play_count",
+                "hashtag",
+                "hot_rank",
+                "traffic_source",
+                "search_keywords",
+                "audience_portrait"
+              ],
+              "capabilitySummary": [
+                "搜索",
+                "热榜",
+                "详情",
+                "评论",
+                "主页",
+                "创作者数据"
+              ],
+              "signals": [
+                "搜索需求",
+                "热榜加速度",
+                "评论反馈",
+                "账号画像"
+              ]
+            }
+          ],
+          "scoreBreakdown": {
+            "demand": 100,
+            "competition": 100,
+            "anomaly": 0,
+            "fit": 82,
+            "opportunity": 100,
+            "timing": 100,
+            "risk": 18
+          },
+          "evidenceRefs": {
+            "supportingAccountIds": [
+              "acct-city-revisit",
+              "acct-local-koc",
+              "acct-weekend-eat"
+            ],
+            "supportingContentIds": [
+              "content-city-revisit",
+              "content-late-night-food",
+              "content-price-proof"
+            ],
+            "lowFollowerSampleIds": [
+              "f2",
+              "g8"
+            ]
+          }
+        },
+        "judgment": {
+          "title": "美食探店 · 机会判断",
+          "summary": "「外滩上海菜、人均几十超值上海菜#比会吃更惠吃#心动榜餐厅#抖音新春吃喝玩乐节#寻味烟火气#心动团圆饭、今天去吃少见的黄皮脆皮鸡…、#深圳美食、#深圳探店」方向已有 8 条真实内容跑通，林木木、深圳美食部落、小苹果探店记等已验证可行性，可以直接进入执行。",
+          "verdict": "go_now",
+          "confidenceLabel": "中",
+          "bestAction": {
+            "type": "generate_test_brief",
+            "title": "今天直接开拍",
+            "description": "真实样本和市场扩散已经补齐，适合直接进入开拍方案。",
+            "ctaLabel": "拿开拍方案",
+            "reason": "当前真实证据足以支撑直接进入执行层。"
+          }
+        },
+        "deliverables": [
+          {
+            "kind": "primary_result",
+            "title": "美食探店 · 机会判断",
+            "description": "「外滩上海菜、人均几十超值上海菜#比会吃更惠吃#心动榜餐厅#抖音新春吃喝玩乐节#寻味烟火气#心动团圆饭、今天去吃少见的黄皮脆皮鸡…、#深圳美食、#深圳探店」方向已有 8 条真实内容跑通，林木木、深圳美食部落、小苹果探店记等已验证可行性，可以直接进入执行。",
+            "ctaLabel": "开启智能监控"
+          }
+        ],
+        "recommendedNextTasks": [
+          {
+            "taskIntent": "trend_watch",
+            "title": "监控「美食探店 · 机」的变化",
+            "reason": "当前得分 100，建议建立监控等待更明确的时机。",
+            "actionLabel": "开启智能监控"
+          },
+          {
+            "taskIntent": "viral_breakdown",
+            "title": "拆解「美食探店 · 机」的爆款样本",
+            "reason": "已采集 8 条内容，拆解热门样本的结构和表达方式。",
+            "actionLabel": "拆解爆款结构"
+          },
+          {
+            "taskIntent": "topic_strategy",
+            "title": "探索「美食探店 · 机」的选题方向",
+            "reason": "基于当前数据信号，生成可执行的选题方案。",
+            "actionLabel": "生成可执行选题"
+          }
+        ],
+        "artifacts": [
+          {
+            "artifactId": "artifact_seed_run_6998adf3-4cde-486c-b4b4-de3cf6baa074",
+            "runId": "run_6998adf3-4cde-486c-b4b4-de3cf6baa074",
+            "taskIntent": "opportunity_prediction",
+            "artifactType": "opportunity_memo",
+            "title": "美食探店 · 机会判断",
+            "summary": "「外滩上海菜、人均几十超值上海菜#比会吃更惠吃#心动榜餐厅#抖音新春吃喝玩乐节#寻味烟火气#心动团圆饭、今天去吃少见的黄皮脆皮鸡…、#深圳美食、#深圳探店」方向已有 8 条真实内容跑通，林木木、深圳美食部落、小苹果探店记等已验证可行性，可以直接进入执行。",
+            "payload": {
+              "kind": "opportunity_prediction",
+              "highlight": "「外滩上海菜、人均几十超值上海菜#比会吃更惠吃#心动榜餐厅#抖音新春吃喝玩乐节#寻味烟火气#心动团圆饭、今天去吃少见的黄皮脆皮鸡…、#深圳美食、#深圳探店」方向已有 8 条真实内容跑通，林木木、深圳美食部落、小苹果探店记等已验证可行性，可以直接进入执行。",
+              "verdictLabel": "今天直接开拍",
+              "evidenceSummary": [
+                "抖音 已有 8 条真实内容跑通，包括『外滩上海菜 人均几十超值上海菜#比会吃更』、『今天去吃少见的黄皮脆皮鸡… #深圳美食 』、『苏家塘，70多吃干锅牛肉，玉米粑粑包着吃』，同时命中 305 条热榜/热词。",
+                "已有 6 个账号在做这个方向：5 个 KOL、1 个 KOC，包括林木木、深圳美食部落、小苹果探店记。",
+                "已采集 80 条评论数据，说明这个方向已有真实用户在主动搜索和讨论。"
+              ],
+              "bestActionReason": "当前真实证据足以支撑直接进入执行层。",
+              "supportingProofTitles": [
+                "外滩上海菜 人均几十超值上海菜#比会吃更惠吃#心动榜餐厅#抖音新春吃喝玩乐节#寻味烟火气#心动团圆饭",
+                "今天去吃少见的黄皮脆皮鸡… #深圳美食 #深圳探店 #吃透深圳 #找深圳美食看深圳美食部落 #人间烟火",
+                "苏家塘，70多吃干锅牛肉，玉米粑粑包着吃，简直不要太爽， #真实原切牛肉 #干锅牛肉 #干锅牛肉火锅 #苏家塘美食 #新鲜切牛肉",
+                "在深圳园林式餐厅吃黑松露烧鹅 #深圳美食 #深圳探店 #深圳旅游 #烧鹅 #青年创作者扶持计划"
+              ]
+            },
+            "snapshotRefs": [],
+            "createdAt": "2026-04-22T02:20:11.111Z",
+            "updatedAt": "2026-04-22T02:20:11.111Z",
+            "watchable": true,
+            "shareable": true
+          }
+        ],
+        "runtimeMeta": {
+          "createdAt": "2026-04-22T02:20:11.111Z",
+          "updatedAt": "2026-04-22T02:20:11.111Z",
+          "sourceMode": "live",
+          "executionStatus": "partial_success",
+          "usedPlatforms": [
+            "douyin"
+          ],
+          "usedRouteChain": [
+            "keyword_content_search:L1:/api/v1/douyin/search/fetch_general_search_v1",
+            "topic_discovery:L1:/api/v1/douyin/search/fetch_challenge_search_v2",
+            "hot_seed:L1:/api/v1/douyin/app/v3/fetch_hot_search_list",
+            "low_fan_billboard:L1:/api/v1/douyin/billboard/fetch_hot_total_low_fan_list",
+            "hot_search_billboard:L1:/api/v1/douyin/billboard/fetch_hot_total_search_list",
+            "hot_word_billboard:L1:/api/v1/douyin/billboard/fetch_hot_total_hot_word_list"
+          ],
+          "degradeFlags": [
+            "optional_endpoint_failed",
+            "sparse_comments"
+          ],
+          "endpointHealthVersion": "2026-04-22T02:20:11.013Z"
+        },
+        "degradeFlags": [
+          "optional_endpoint_failed",
+          "sparse_comments"
+        ],
+        "taskPayload": {
+          "kind": "opportunity_prediction",
+          "highlight": "「外滩上海菜、人均几十超值上海菜#比会吃更惠吃#心动榜餐厅#抖音新春吃喝玩乐节#寻味烟火气#心动团圆饭、今天去吃少见的黄皮脆皮鸡…、#深圳美食、#深圳探店」方向已有 8 条真实内容跑通，林木木、深圳美食部落、小苹果探店记等已验证可行性，可以直接进入执行。",
+          "verdictLabel": "今天直接开拍",
+          "evidenceSummary": [
+            "抖音 已有 8 条真实内容跑通，包括『外滩上海菜 人均几十超值上海菜#比会吃更』、『今天去吃少见的黄皮脆皮鸡… #深圳美食 』、『苏家塘，70多吃干锅牛肉，玉米粑粑包着吃』，同时命中 305 条热榜/热词。",
+            "已有 6 个账号在做这个方向：5 个 KOL、1 个 KOC，包括林木木、深圳美食部落、小苹果探店记。",
+            "已采集 80 条评论数据，说明这个方向已有真实用户在主动搜索和讨论。"
+          ],
+          "bestActionReason": "当前真实证据足以支撑直接进入执行层。",
+          "supportingProofTitles": [
+            "外滩上海菜 人均几十超值上海菜#比会吃更惠吃#心动榜餐厅#抖音新春吃喝玩乐节#寻味烟火气#心动团圆饭",
+            "今天去吃少见的黄皮脆皮鸡… #深圳美食 #深圳探店 #吃透深圳 #找深圳美食看深圳美食部落 #人间烟火",
+            "苏家塘，70多吃干锅牛肉，玉米粑粑包着吃，简直不要太爽， #真实原切牛肉 #干锅牛肉 #干锅牛肉火锅 #苏家塘美食 #新鲜切牛肉",
+            "在深圳园林式餐厅吃黑松露烧鹅 #深圳美食 #深圳探店 #深圳旅游 #烧鹅 #青年创作者扶持计划"
+          ]
+        }
+      },
+      "classificationReasons": [
+        "prompt 更像爆款预测和下注决策。"
+      ],
+      "followUps": []
+    }
+  }
+}

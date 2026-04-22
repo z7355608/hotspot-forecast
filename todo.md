@@ -188,3 +188,16 @@
 - [x] 问题3：热门作品参考展示全部内容（不按方向分组），最多9个（3x3 grid）
 - [x] 问题4：热门话题标签优先使用后端trendingTags（联想词扩展数据）；评论采集移除commentCount>0跳过逻辑
 - [x] 问题5：AI下一步建议改为返回多个（选题生成、爆款拆解、智能监控等），展示全部任务卡片
+
+## 紧急修复：React DOM insertBefore错误
+
+- [x] 排查执行任务过程中的insertBefore错误根因
+- [x] 修复导致DOM节点不匹配的代码问题
+- [x] 修复AnalysisView平台状态标签中条件文本节点的不稳定切换（key添加status、文本节点改为span包裹）
+- [x] 修复stepTimings中Math.random()导致的不确定性（改为useRef+确定性分配）
+- [x] 修复platformList未memo化导致每次渲染创建新数组
+- [x] 修复dataCollected区域多个条件文本节点改为稳定的join表达式
+- [x] 修复Fragment改为div包裹避免子节点不稳定
+- [x] 修复不稳定key（key={i}改为基于内容的key）
+- [x] HomePage中progressEvents更新包裹startTransition降低优先级
+- [x] 编写22个测试验证修复逻辑（全部通过）

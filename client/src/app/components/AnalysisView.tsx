@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { AlertCircle, Check, Link2, RotateCcw, Zap } from "lucide-react";
 import { toast } from "sonner";
 import { useAppStore } from "../store/app-store";
@@ -408,7 +408,7 @@ export function AnalysisView({
     return map;
   }, [progressEvents]);
 
-  const platformList = Object.entries(platformStatuses);
+  const platformList = useMemo(() => Object.entries(platformStatuses), [platformStatuses]);
 
   // 从 SSE 事件中提取已采集的真实数据样本
   const dataCollected = useMemo(() => {
@@ -462,19 +462,22 @@ export function AnalysisView({
     if (isDone || error) setCountdown(null);
   }, [isDone, error]);
   // 动态计算步骤耗时：根据任务类型调整总时长，避免动画完成后干等
-  const stepTimings = useMemo(() => {
+  // 使用 useRef 保持 stepTimings 在组件生命周期内稳定（只在首次计算）
+  const stepTimingsRef = useRef<number[] | null>(null);
+  if (!stepTimingsRef.current || stepTimingsRef.current.length !== steps.length) {
     const count = steps.length;
-    // 前 N-1 步分配前 60% 时间，最后一步在 85%-95% 区间完成
     const earlyBudget = totalDuration * 0.60;
     const earlyInterval = count > 1 ? earlyBudget / (count - 1) : earlyBudget;
-    return steps.map((_, i) => {
+    stepTimingsRef.current = steps.map((_, i) => {
       if (i < count - 1) {
-        return Math.round(earlyInterval * (i + 1) * (0.85 + Math.random() * 0.3));
+        // 确定性分配：每步递增，系数从 0.9 到 1.1 均匀分布
+        const factor = 0.9 + (i / Math.max(count - 2, 1)) * 0.2;
+        return Math.round(earlyInterval * (i + 1) * factor);
       }
-      // 最后一步：在 85%~95% 区间完成，尽量接近实际完成时间
-      return Math.round(totalDuration * (0.85 + Math.random() * 0.10));
+      return Math.round(totalDuration * 0.90);
     });
-  }, [steps, taskIntent]);
+  }
+  const stepTimings = stepTimingsRef.current;
 
   useEffect(() => {
     const timers = stepTimings.map((time, index) =>
@@ -652,7 +655,7 @@ export function AnalysisView({
                       <RotateCcw className="h-3 w-3" />
                       重新尝试
                     </button>
-                  ) : dataReady ? "正在载入结果" : (
+                  ) : dataReady ? <span>正在载入结果</span> : (
                     <span className="animate-pulse">
                       {waitSeconds > 60 ? (
                         <button
@@ -668,7 +671,7 @@ export function AnalysisView({
                   )}
                 </div>
               ) : (
-                <>
+                <div>
                   <div className="text-xs text-gray-600 font-medium">
                     {progressPct}%
                   </div>
@@ -677,7 +680,7 @@ export function AnalysisView({
                       ? `预计还需 ${countdown} 秒`
                       : `${completedSteps}/${steps.length} 步`}
                   </div>
-                </>
+                </div>
               )}
             </div>
           </div>
@@ -694,7 +697,7 @@ export function AnalysisView({
             <div className="mt-3 flex flex-wrap gap-2">
               {platformList.map(([pid, info]) => (
                 <div
-                  key={pid}
+                  key={`${pid}-${info.status}`}
                   className={`flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs transition-all ${
                     info.status === "done"
                       ? "bg-emerald-50 text-emerald-700"
@@ -710,18 +713,20 @@ export function AnalysisView({
                   ) : (
                     <div className="h-2 w-2 animate-pulse rounded-full bg-blue-500" />
                   )}
-                  {info.name}
-                  {info.status === "collecting" && " 采集中…"}
-                  {info.status === "done" && (
-                    <>
-                      {info.contentCount && info.contentCount > 0
-                        ? ` 发现 ${info.contentCount} 条内容`
-                        : info.hotCount && info.hotCount > 0
-                          ? ` 捕获 ${info.hotCount} 条热榜`
-                          : " 采集完成"}
-                    </>
-                  )}
-                  {info.status === "failed" && " 采集失败"}
+                  <span>{info.name}</span>
+                  <span>
+                    {info.status === "collecting"
+                      ? " 采集中…"
+                      : info.status === "done"
+                        ? info.contentCount && info.contentCount > 0
+                          ? ` 发现 ${info.contentCount} 条内容`
+                          : info.hotCount && info.hotCount > 0
+                            ? ` 捕获 ${info.hotCount} 条热榜`
+                            : " 采集完成"
+                        : info.status === "failed"
+                          ? " 采集失败"
+                          : null}
+                  </span>
                 </div>
               ))}
             </div>
@@ -756,11 +761,11 @@ export function AnalysisView({
                   数据采集完成，AI 正在分析爆款机会…
                 </span>
                 <span className="ml-auto text-xs text-emerald-600/70">
-                  {dataCollected.contentCount > 0 && `${dataCollected.contentCount} 条内容`}
-                  {dataCollected.contentCount > 0 && dataCollected.accountCount > 0 && " · "}
-                  {dataCollected.accountCount > 0 && `${dataCollected.accountCount} 个账号`}
-                  {(dataCollected.contentCount > 0 || dataCollected.accountCount > 0) && dataCollected.hotCount > 0 && " · "}
-                  {dataCollected.hotCount > 0 && `${dataCollected.hotCount} 条热榜`}
+                  {[
+                    dataCollected.contentCount > 0 ? `${dataCollected.contentCount} 条内容` : null,
+                    dataCollected.accountCount > 0 ? `${dataCollected.accountCount} 个账号` : null,
+                    dataCollected.hotCount > 0 ? `${dataCollected.hotCount} 条热榜` : null,
+                  ].filter(Boolean).join(" · ")}
                 </span>
               </div>
 
@@ -769,7 +774,7 @@ export function AnalysisView({
                 <div className="mb-2.5 flex flex-wrap gap-1.5">
                   {dataCollected.highlights.map((h: string, i: number) => (
                     <span
-                      key={i}
+                      key={`hl-${h.slice(0, 20)}-${i}`}
                       className="inline-flex items-center gap-1 rounded-full bg-white/80 border border-emerald-200 px-2.5 py-1 text-xs font-medium text-emerald-700 shadow-sm"
                     >
                       <span className="text-amber-500">★</span>
@@ -782,7 +787,7 @@ export function AnalysisView({
               {dataCollected.contentSamples.length > 0 && (
                 <div className="space-y-1.5">
                   {dataCollected.contentSamples.map((item: ContentSampleItem, i: number) => (
-                    <div key={i} className="flex items-start gap-2">
+                    <div key={`cs-${item.title.slice(0, 20)}-${i}`} className="flex items-start gap-2">
                       <span className="mt-0.5 shrink-0 rounded bg-blue-50 px-1 py-0.5 text-xs text-blue-500">
                         {item.platform}
                       </span>
@@ -803,7 +808,7 @@ export function AnalysisView({
               {dataCollected.accountSamples.length > 0 && (
                 <div className="mt-2 flex flex-wrap gap-1.5">
                   {dataCollected.accountSamples.map((acc: AccountSampleItem, i: number) => (
-                    <div key={i} className="flex items-center gap-1 rounded-full bg-white/80 border border-gray-100 px-2 py-0.5">
+                    <div key={`acc-${acc.displayName}-${i}`} className="flex items-center gap-1 rounded-full bg-white/80 border border-gray-100 px-2 py-0.5">
                       <span className="text-xs text-gray-500">{acc.displayName}</span>
                       {acc.followerCount != null && acc.followerCount > 0 && (
                         <span className="text-xs text-gray-400">
@@ -872,7 +877,7 @@ export function AnalysisView({
                   </div>
 
                   {status === "active" && (
-                    <>
+                    <div>
                       <p className="mt-1.5 text-xs leading-relaxed text-gray-400">
                         {step.activeDetail}
                       </p>
@@ -883,7 +888,7 @@ export function AnalysisView({
                           delay={600 + logIdx * 800}
                         />
                       ))}
-                    </>
+                    </div>
                   )}
                   {status === "pending" && (
                     <p className="mt-0.5 text-xs text-gray-300">{step.desc}</p>
