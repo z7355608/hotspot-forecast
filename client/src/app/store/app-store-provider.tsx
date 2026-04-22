@@ -537,6 +537,26 @@ export function AppStoreProvider({ children }: { children: ReactNode }) {
         ),
       }));
 
+      // ★ 自动保存结果到后端 artifact store，确保结果页可通过 URL 恢复
+      if (state.dataMode === "live") {
+        saveResultArtifactRequest({
+          snapshot: nextResult as unknown as Record<string, unknown>,
+          createWatch: false,
+        }).then((response) => {
+          setState((current) => ({
+            ...current,
+            results: current.results.map((item) =>
+              item.id === nextResult.id
+                ? { ...item, artifactStatus: response.artifact.artifactStatus }
+                : item,
+            ),
+            savedArtifacts: upsertArtifactSummary(current.savedArtifacts, response.artifact),
+          }));
+        }).catch((err) => {
+          console.warn("[AutoSave] 自动保存结果失败，结果仅存在于本地", err);
+        });
+      }
+
       return {
         ok: true,
         resultId: nextResult.id,

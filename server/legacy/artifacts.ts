@@ -141,7 +141,10 @@ export async function getResultArtifactById(artifactId: string) {
     readResultArtifactStore(),
     readWatchTaskStore(),
   ]);
-  const artifact = artifactStore[artifactId];
+  // 先按 artifactId 精确查找，再按 clientResultId 回退查找
+  const artifact: StoredResultArtifact | undefined =
+    artifactStore[artifactId] ??
+    Object.values(artifactStore).find((a) => a.clientResultId === artifactId);
   if (!artifact) return null;
   const watchTask = artifact.watchTaskId ? watchTaskStore[artifact.watchTaskId] : undefined;
   return {

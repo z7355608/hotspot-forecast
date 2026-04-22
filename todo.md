@@ -161,3 +161,10 @@
 - [x] 在 live-predictions.ts 中添加 extractLowFanBillboardContents 函数处理低粉爆款榜数据
 - [x] 在 live-predictions.ts 中添加 billboard 数据提取处理（hot_search_billboard、hot_word_billboard 计入 hotSeedCount）
 - [x] 编写 billboard-integration.test.ts 测试（11 个测试全部通过）
+
+## 爆款预测链路修复：搜索结果未转化为真实结果页
+
+- [x] 排查 /results/rucg2fd 结果页数据是否包含真实搜索结果
+- [x] 检查预测链路中数据从搜索API到结果页的完整流转
+- [x] 修复数据丢失或转化失败的环节：自动保存结果到后端 + clientResultId 回退查找
+- [x] 验证修复后的预测链路能生成真实可用的结果页（6个测试全部通过）
