@@ -694,6 +694,10 @@ export function buildLiveResult(
   if (typeof live.hotSeedCount === "number") {
     (record as ResultRecord).hotSeedCount = live.hotSeedCount;
   }
+  // 携带 aiTopicSuggestions（由后端 LLM 生成的爆款选题建议）
+  if (Array.isArray(live.aiTopicSuggestions) && live.aiTopicSuggestions.length > 0) {
+    (record as ResultRecord).aiTopicSuggestions = live.aiTopicSuggestions;
+  }
   // 携带服务端返回的完整 taskPayload（包含 trendOpportunities、overviewOneLiner 等 LLM 生成字段）
   // createResultRecord 内部会用 buildAgentContract 重新生成 taskPayload，会覆盖服务端的字段，
   // 所以这里需要把服务端的 taskPayload 合并进来，确保 LLM 生成的字段不丢失。

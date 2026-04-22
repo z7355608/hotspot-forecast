@@ -8,6 +8,7 @@ import type {
   AgentRecommendedTask,
   AgentRun,
   AgentTaskPayload,
+  AiTopicSuggestion,
   AppDataMode,
   BreakdownSampleTaskPayload,
   PredictionBestAction,
@@ -225,6 +226,8 @@ export interface ResultRecord {
   commentInsight?: PredictionCommentInsight;
   /** 选题策略 V2 完整数据（5 阶段 Pipeline 结果） */
   topicStrategyV2?: TopicStrategyV2Data;
+  /** AI 生成的爆款选题建议（2-3个） */
+  aiTopicSuggestions?: AiTopicSuggestion[];
 }
 
 export interface BreakdownGeneratedResult {

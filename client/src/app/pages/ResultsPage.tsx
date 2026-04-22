@@ -652,6 +652,14 @@ function normalizeRemoteResult(detail: SavedResultArtifactDetail): ResultRecord 
           createdAt: asString(item.createdAt, detail.updatedAt),
         }))
       : [],
+    aiTopicSuggestions: Array.isArray(snapshot.aiTopicSuggestions)
+      ? (snapshot.aiTopicSuggestions as unknown[]).filter(isRecord).map((topic) => ({
+          title: asString(topic.title, "未命名选题"),
+          angle: asString(topic.angle, ""),
+          referenceTitle: typeof topic.referenceTitle === "string" ? topic.referenceTitle : undefined,
+          referenceId: typeof topic.referenceId === "string" ? topic.referenceId : undefined,
+        }))
+      : undefined,
     commentInsight: isRecord(snapshot.commentInsight)
       ? {
           totalCommentsCollected: asNumber(snapshot.commentInsight.totalCommentsCollected, 0),

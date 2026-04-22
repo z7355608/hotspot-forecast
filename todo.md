@@ -253,3 +253,25 @@
 - [x] 前端卡片显示“互动粉丝比 Xx”替代“异常值 0x”
 - [x] 全局替换“爆发因子”为“互动粉丝比”，“播放量”为“互动数据”
 - [x] TypeScript编译0错误
+
+## 新功能：AI预测选题模块（结果页第一屏）
+
+### 后端
+- [x] 在prediction-types.ts中新增AiTopicSuggestion类型（title/angle/referenceTitle/referenceId）
+- [x] 在PredictionUiResult和ResultRecord中新增aiTopicSuggestions字段
+- [x] 在live-predictions.ts最后一步增加LLM调用，基于热门样本+低粉特征+评论高频词生成2-3个选题
+- [x] 将生成的选题写入最终结果对象（enrichedResult + store-helpers透传）
+
+### 前端
+- [x] 在new-prediction-result.tsx中新增AI选题卡片模块
+- [x] 插入位置：建议拍摄方向下方、热门作品参考上方
+- [x] 卡片内容：爆款标题+切入角度+对标参考+行动按钮
+- [x] 保持现有炫酷UI风格（科技感、高亮、横向卡片）
+- [x] 行动按钮复用现有CTA逻辑（open-cta-editor事件 + shoot_plan ctaId）
+
+### 持久化恢复
+- [x] ResultsPage.normalizeRemoteResult中添加aiTopicSuggestions的映射逻辑
+
+### 验证
+- [x] TypeScript编译0错误
+- [x] 编写测试验证选题生成逻辑（24个测试全部通过）

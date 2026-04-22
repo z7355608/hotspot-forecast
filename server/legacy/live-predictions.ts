@@ -23,6 +23,7 @@ import { classifyIntentWithLLM } from "./intent-agent.js";
 import { parseInput } from "./input-parser.js";
 import { extractTaskParams } from "./payload-extractor.js";
 import type {
+  AiTopicSuggestion,
   PredictionBestAction,
   PredictionRequestDraft,
   PredictionSafeActionLevel,
@@ -1308,6 +1309,101 @@ ${lowFollowerSummary}
     log.warn({ err }, "LLM 趋势机会分析失败，降级到空列表");
   }
 
+  // ----------------------------------------------------------------
+  // Step LLM-Topic: 基于真实采集数据，LLM 生成 2-3 个爆款选题建议
+  // ----------------------------------------------------------------
+  let aiTopicSuggestions: AiTopicSuggestion[] = [];
+  try {
+    const seedTopic = baseArtifacts.normalizedBrief.seedTopic;
+    // 构建热门样本标题（前5条）
+    const topSampleTitles = supportingContents.slice(0, 5).map((c, i) => {
+      const like = c.likeCount ?? 0;
+      const likeStr = like >= 10000 ? `${(like / 10000).toFixed(1)}万点赞` : like > 0 ? `${like}点赞` : "数据待验证";
+      return `${i + 1}. 「${c.title}」(${c.platform}) ${likeStr}`;
+    }).join("\n");
+    // 构建低粉爆款特征（前3条）
+    const lowFollowerInfo = lowFollowerEvidence.slice(0, 3).map((e, i) => {
+      return `${i + 1}. 「${e.title}」(${e.fansLabel}) 互动粉丝比${e.anomaly}x`;
+    }).join("\n");
+    // 构建评论高频词
+    const commentKeywords = commentInsight?.highFreqKeywords?.slice(0, 5).join("、") ?? "暂无";
+    // 构建评论需求信号
+    const demandSignals = commentInsight?.demandSignals?.slice(0, 3).join("、") ?? "暂无";
+
+    const topicPrompt = `你是一位短视频爆款内容策划师，擅长从真实数据中提炼可执行的选题。
+
+当前分析赛道：「${seedTopic}」
+
+【真实采集的热门样本】
+${topSampleTitles || "暂无样本"}
+
+【低粉爆款样本】
+${lowFollowerInfo || "暂无低粉爆款"}
+
+【评论区高频词】
+${commentKeywords}
+
+【评论区需求信号】
+${demandSignals}
+
+【任务】
+基于以上真实数据，生成 3 个具体可执行的短视频选题。每个选题必须：
+1. 标题可以直接用作短视频标题，有爆款潜力（15-25字）
+2. 切入角度基于真实样本的成功特征推演，不是凭空编造
+3. 必须引用上方某个真实样本作为对标参考
+
+输出严格的 JSON 格式：
+{
+  "topics": [
+    {
+      "title": "爆款标题（15-25字，直接可用）",
+      "angle": "切入角度说明（25字以内）",
+      "referenceTitle": "引用的真实样本标题"
+    }
+  ]
+}
+
+注意：
+- 标题要有钩子感，能在前3秒抓住用户
+- 切入角度要具体，不要笼统的“拍一个XX视频”
+- 必须基于真实数据推演，不能脱离数据的编造`;
+
+    const topicLlmResponse = await callLLM({
+      modelId: "doubao",
+      messages: [
+        { role: "system", content: "你是短视频爆款内容策划师，严格按 JSON 格式输出，不要输出任何其他内容。" },
+        { role: "user", content: topicPrompt },
+      ],
+      maxTokens: 1200,
+      temperature: 0.4,
+      timeoutMs: 20000,
+    });
+
+    const topicJsonMatch = topicLlmResponse.content.match(/\{[\s\S]*\}/);
+    if (topicJsonMatch) {
+      const parsed = JSON.parse(topicJsonMatch[0]) as {
+        topics?: Array<{ title?: string; angle?: string; referenceTitle?: string }>;
+      };
+      if (Array.isArray(parsed.topics) && parsed.topics.length > 0) {
+        aiTopicSuggestions = parsed.topics.slice(0, 3).map((t) => {
+          // 尝试匹配对标样本的 ID
+          const refContent = t.referenceTitle
+            ? supportingContents.find((c) => c.title.includes(t.referenceTitle!) || t.referenceTitle!.includes(c.title))
+            : undefined;
+          return {
+            title: t.title ?? "未命名选题",
+            angle: t.angle ?? "",
+            referenceTitle: t.referenceTitle,
+            referenceId: refContent?.contentId,
+          };
+        });
+      }
+    }
+    log.info(`LLM AI选题生成完成: ${aiTopicSuggestions.length} 个选题`);
+  } catch (err) {
+    log.warn({ err }, "LLM AI选题生成失败，降级为空列表");
+  }
+
   const runtimeMeta = {
     sourceMode: "live" as const,
     executionStatus,
@@ -1397,6 +1493,8 @@ ${lowFollowerSummary}
     primaryArtifact,
     agentRun: run,
     classificationReasons: contract.classification.reasons,
+    // 注入 AI 生成的爆款选题建议
+    ...(aiTopicSuggestions.length > 0 ? { aiTopicSuggestions } : {}),
   };
 
   return {

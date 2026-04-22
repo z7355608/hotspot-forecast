@@ -279,6 +279,17 @@ export interface PredictionCommentHighlight {
   totalCommentCount: number;
 }
 
+export interface AiTopicSuggestion {
+  /** 爆款标题（直接可用的短视频标题） */
+  title: string;
+  /** 切入角度（一句话说明为什么这么拍） */
+  angle: string;
+  /** 对标参考（引用真实采集到的样本标题） */
+  referenceTitle?: string;
+  /** 对标样本ID */
+  referenceId?: string;
+}
+
 export interface PredictionCommentInsight {
   totalCommentsCollected: number;
   highFreqKeywords: string[];
@@ -907,6 +918,8 @@ export interface PredictionUiResult {
   continueIf: string[];
   stopIf: string[];
   commentInsight?: PredictionCommentInsight;
+  /** AI 生成的爆款选题建议（2-3个） */
+  aiTopicSuggestions?: AiTopicSuggestion[];
 }
 
 export interface PredictionArtifacts {
