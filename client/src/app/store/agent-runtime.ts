@@ -494,35 +494,75 @@ export function buildRecommendedNextTasks(
       const shortTopic = topic.slice(0, 8);
       const contentCount = result.supportingContents?.length ?? 0;
       const accountCount = result.supportingAccounts?.length ?? 0;
+      const lowFanCount = result.lowFollowerEvidence?.length ?? 0;
+      const tasks: AgentRecommendedTask[] = [];
 
       if (result.confidenceLabel === "高" && result.windowStrength === "strong_now") {
-        return [
-          makeTask(
-            "topic_strategy",
-            `把「${shortTopic}」收口成选题`,
-            `机会得分 ${score}，${contentCount} 条内容支撑，窗口期强，应立即转化为可执行选题。`,
-            "继续到选题策略",
-          ),
-        ];
-      }
-      if (result.opportunityType === "structure_window") {
-        return [
-          makeTask(
+        // 强信号：优先生成选题
+        tasks.push(makeTask(
+          "topic_strategy",
+          `把「${shortTopic}」收口成选题`,
+          `机会得分 ${score}，${contentCount} 条内容支撑，窗口期强，应立即转化为可执行选题。`,
+          "生成可执行选题",
+        ));
+        if (lowFanCount > 0) {
+          tasks.push(makeTask(
             "viral_breakdown",
-            `拆解「${shortTopic}」的结构`,
-            `当前机会属于结构迁移窗口，${accountCount} 个账号已验证，先拆清可复制结构再执行。`,
-            "继续到爆款拆解",
-          ),
-        ];
-      }
-      return [
-        makeTask(
+            `拆解「${shortTopic}」的爆款结构`,
+            `发现 ${lowFanCount} 个低粉爆款样本，拆解可复用的内容结构和钩子设计。`,
+            "拆解爆款结构",
+          ));
+        }
+        tasks.push(makeTask(
+          "trend_watch",
+          `持续监控「${shortTopic}」`,
+          `窗口期内持续跟踪数据变化，有异动立刻通知。`,
+          "开启智能监控",
+        ));
+      } else if (result.opportunityType === "structure_window") {
+        // 结构窗口：优先拆解
+        tasks.push(makeTask(
+          "viral_breakdown",
+          `拆解「${shortTopic}」的结构`,
+          `当前机会属于结构迁移窗口，${accountCount} 个账号已验证，先拆清可复制结构再执行。`,
+          "拆解爆款结构",
+        ));
+        tasks.push(makeTask(
+          "topic_strategy",
+          `基于结构生成选题`,
+          `把拆解出的结构转化为适合你的可执行选题。`,
+          "生成可执行选题",
+        ));
+        tasks.push(makeTask(
           "trend_watch",
           `监控「${shortTopic}」的变化`,
-          `当前得分 ${score}，信号还不够强，建议建立监控等待更明确的时机。`,
+          `持续跟踪赛道数据，确认最佳入场时机。`,
           "开启智能监控",
-        ),
-      ];
+        ));
+      } else {
+        // 默认：多种建议组合
+        tasks.push(makeTask(
+          "trend_watch",
+          `监控「${shortTopic}」的变化`,
+          `当前得分 ${score}，建议建立监控等待更明确的时机。`,
+          "开启智能监控",
+        ));
+        if (contentCount > 0) {
+          tasks.push(makeTask(
+            "viral_breakdown",
+            `拆解「${shortTopic}」的爆款样本`,
+            `已采集 ${contentCount} 条内容，拆解热门样本的结构和表达方式。`,
+            "拆解爆款结构",
+          ));
+        }
+        tasks.push(makeTask(
+          "topic_strategy",
+          `探索「${shortTopic}」的选题方向`,
+          `基于当前数据信号，生成可执行的选题方案。`,
+          "生成可执行选题",
+        ));
+      }
+      return tasks;
     }
     case "viral_breakdown":
       return [

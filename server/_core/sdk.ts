@@ -288,14 +288,23 @@ class SDKServer {
       }
     }
 
-    if (!user) {
+     if (!user) {
       throw ForbiddenError("User not found");
     }
 
-    await db.upsertUser({
-      openId: user.openId,
-      lastSignedIn: signedInAt,
-    });
+    // Throttle lastSignedIn updates to avoid infinite re-render loops.
+    // Only update if more than 5 minutes have passed since last sign-in.
+    const SIGN_IN_THROTTLE_MS = 5 * 60 * 1000; // 5 minutes
+    const lastSigned = user.lastSignedIn ? new Date(user.lastSignedIn).getTime() : 0;
+    if (signedInAt.getTime() - lastSigned > SIGN_IN_THROTTLE_MS) {
+      await db.upsertUser({
+        openId: user.openId,
+        lastSignedIn: signedInAt,
+      });
+      // Return the updated user so the response is stable
+      const updatedUser = await db.getUserByOpenId(user.openId);
+      return updatedUser ?? user;
+    }
 
     return user;
   }

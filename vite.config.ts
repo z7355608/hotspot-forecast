@@ -185,6 +185,11 @@ export default defineConfig({
       "localhost",
       "127.0.0.1",
     ],
+    hmr: {
+      // Increase timeout to reduce false "connection lost" from proxy idle timeouts
+      timeout: 60000,
+      overlay: false,
+    },
     fs: {
       strict: true,
       deny: ["**/.*"],

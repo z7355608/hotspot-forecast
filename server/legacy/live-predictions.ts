@@ -1072,6 +1072,7 @@ export async function runLivePrediction(
     scoreBreakdown,
     recommendedLowFollowerSampleIds: lowFollowerEvidence.map((item) => item.id),
     hotSeedCount,
+    trendingTags: searchKeywords.map((kw) => `#${kw}`),
   };
 
   // ----------------------------------------------------------------

@@ -334,12 +334,41 @@ function ContentVideoCard({ content }: { content: PredictionSupportingContent })
     <div className={`rounded-[16px] border overflow-hidden bg-white hover:shadow-md transition-shadow duration-200 ${
       abnormal ? "border-amber-200 opacity-75" : "border-[#F3F4F6]"
     }`}>
-      <div className="relative aspect-[16/10] bg-[#F3F4F6] overflow-hidden">
+      <div
+        className="relative aspect-[16/10] bg-[#F3F4F6] overflow-hidden cursor-pointer group"
+        onClick={() => {
+          if (content.contentUrl) {
+            window.open(content.contentUrl, "_blank", "noopener,noreferrer");
+          }
+        }}
+      >
         {content.coverUrl ? (
-          <img src={content.coverUrl} alt={content.title} className="w-full h-full object-cover" />
-        ) : (
-          <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-[#F0EEFF] to-[#E8E6FF]">
-            <Play className="w-8 h-8 text-[#8979FF] opacity-50" />
+          <img
+            src={content.coverUrl}
+            alt={content.title}
+            className="w-full h-full object-cover"
+            referrerPolicy="no-referrer"
+            crossOrigin="anonymous"
+            onError={(e) => {
+              const target = e.currentTarget;
+              target.style.display = "none";
+              const fallback = target.nextElementSibling as HTMLElement;
+              if (fallback) fallback.style.display = "flex";
+            }}
+          />
+        ) : null}
+        <div
+          className="w-full h-full flex items-center justify-center bg-gradient-to-br from-[#F0EEFF] to-[#E8E6FF]"
+          style={{ display: content.coverUrl ? "none" : "flex", position: content.coverUrl ? "absolute" : "relative", inset: 0 }}
+        >
+          <Play className="w-8 h-8 text-[#8979FF] opacity-50" />
+        </div>
+        {/* 播放按钮覆盖层 */}
+        {content.contentUrl && (
+          <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200 bg-black/20">
+            <div className="w-10 h-10 rounded-full bg-white/90 flex items-center justify-center shadow-lg">
+              <Play className="w-5 h-5 text-[#8979FF] ml-0.5" />
+            </div>
           </div>
         )}
         <div className="absolute bottom-2 left-2 flex gap-1">
@@ -496,19 +525,21 @@ function NewPredictionResultBody({ result }: ArtifactRendererProps) {
     return dirs;
   }, [result]);
 
-  // 按方向分组视频内容
-  const contentsByDirection = useMemo(() => {
-    if (validContents.length === 0) return [[]];
-    const chunkSize = Math.max(1, Math.ceil(validContents.length / Math.max(directions.length, 1)));
-    return directions.map((_, i) =>
-      validContents.slice(i * chunkSize, (i + 1) * chunkSize)
-    );
-  }, [validContents, directions]);
+  // 热门作品展示全部内容（不再按方向分组，避免每组只有1-2条）
+  const currentContents = validContents;
 
-  const currentContents = contentsByDirection[selectedDirection] ?? contentsByDirection[0] ?? [];
-
-  // 热门标签
+  // 热门标签：优先使用后端返回的真实热门话题（trendingTags），回退到样本关键词
+  const trendingTags = (result as unknown as Record<string, unknown>).trendingTags as string[] | undefined;
   const hotTags = useMemo(() => {
+    // 优先使用后端返回的趋势标签
+    if (trendingTags && trendingTags.length > 0) {
+      return trendingTags.slice(0, 6).map((tag, i, arr) => ({
+        tag: tag.startsWith("#") ? tag : `#${tag}`,
+        count: arr.length - i, // 按顺序递减权重
+        w: Math.round(((arr.length - i) / arr.length) * 100),
+      }));
+    }
+    // 回退：从样本关键词提取
     const tagCount = new Map<string, number>();
     validContents.forEach(c => {
       c.keywordTokens.forEach(kw => {
@@ -517,13 +548,13 @@ function NewPredictionResultBody({ result }: ArtifactRendererProps) {
     });
     return Array.from(tagCount.entries())
       .sort((a, b) => b[1] - a[1])
-      .slice(0, 5)
+      .slice(0, 6)
       .map(([tag, count], i, arr) => ({
         tag: `#${tag}`,
         count,
         w: Math.round((count / (arr[0]?.[1] ?? 1)) * 100),
       }));
-  }, [validContents]);
+  }, [trendingTags, validContents]);
 
   // 异常数据统计
   const abnormalCount = supportingContents.filter(c => isAbnormalContent(c)).length;
@@ -552,11 +583,16 @@ function NewPredictionResultBody({ result }: ArtifactRendererProps) {
           {/* 主内容区：左文字 + 右概率仪表盘 */}
           <div className="flex items-start justify-between gap-6">
             <div className="flex-1 min-w-0">
-              {/* 今日建议拍什么 — 优先展示具体可拍内容，而非泛赛道名 */}
-              <div className="text-[13px] text-[#6B7280] mb-2">今日建议拍什么</div>
+              {/* 爆款预测结果 — 直接给用户交付可执行的内容方向 */}
+              <div className="text-[13px] text-[#6B7280] mb-2">爆款预测结果</div>
               <h2 className="text-[24px] text-[#101828] leading-[34px] font-semibold mb-1">
                 {result.primaryCard?.title || result.opportunityTitle || result.query}
               </h2>
+              {result.primaryCard?.description && (
+                <p className="text-[13px] text-[#6B7280] mb-2 leading-[20px]">
+                  {result.primaryCard.description}
+                </p>
+              )}
               {/* 具体选题示例标签 */}
               {(() => {
                 const tp = result.taskPayload;
@@ -573,8 +609,9 @@ function NewPredictionResultBody({ result }: ArtifactRendererProps) {
                   </div>
                 );
               })()}
+              {/* 核心建议摘要 */}
               <p className="text-[15px] text-[#374151] leading-[26px] mb-5">
-                {result.primaryCard?.description || result.bestActionNow?.reason || result.summary}
+                {result.bestActionNow?.reason || result.summary}
               </p>
 
               {/* 推荐级别说明 */}
@@ -591,8 +628,8 @@ function NewPredictionResultBody({ result }: ArtifactRendererProps) {
               {/* Agent 建议的下一步任务 */}
               {result.recommendedNextTasks?.length > 0 && (
                 <div className="space-y-2">
-                  <div className="text-[12px] text-[#6B7280] mb-1">Agent 建议的下一步</div>
-                  {result.recommendedNextTasks.slice(0, 2).map((task, i) => (
+                  <div className="text-[12px] text-[#6B7280] mb-1">AI 推荐的下一步</div>
+                  {result.recommendedNextTasks.map((task, i) => (
                     <div key={i} className="flex items-center justify-between px-4 py-3 rounded-[14px] border border-[#F3F4F6] bg-[#F9FAFB] hover:bg-[#F3F4F6] transition-colors cursor-pointer"
                       onClick={() => {
                         window.dispatchEvent(new CustomEvent("open-deep-dive", {
@@ -820,7 +857,7 @@ function NewPredictionResultBody({ result }: ArtifactRendererProps) {
 
       {/* 热门作品（随方向联动） */}
       {currentContents.length > 0 && (
-        <CollapsibleSection title="热门作品参考" subtitle={`${directions[selectedDirection]?.title ?? "全部"} · ${currentContents.length} 个样本`}>
+        <CollapsibleSection title="热门作品参考" subtitle={`共 ${currentContents.length} 个热门样本`} defaultOpen={true}>
           <div className="pt-4">
             {hotTags.length > 0 && (
               <div className="flex flex-wrap gap-2 mb-4">
@@ -834,8 +871,8 @@ function NewPredictionResultBody({ result }: ArtifactRendererProps) {
               </div>
             )}
             <div className="grid grid-cols-3 gap-4">
-              {currentContents.slice(0, 6).map((content, vi) => (
-                <ContentVideoCard key={`${selectedDirection}-${vi}`} content={content} />
+              {currentContents.slice(0, 9).map((content, vi) => (
+                <ContentVideoCard key={`content-${vi}`} content={content} />
               ))}
             </div>
           </div>
@@ -931,7 +968,7 @@ function NewPredictionResultBody({ result }: ArtifactRendererProps) {
                 <div className="border-t border-[#F3F4F6] pt-5">
                   <div className="flex items-center justify-between mb-3">
                     <h3 className="text-[13px] text-[#1E2939]">相关热门话题标签</h3>
-                    <span className="text-[11px] text-[#99A1AF]">基于样本关键词</span>
+                    <span className="text-[11px] text-[#99A1AF]">基于平台热门话题</span>
                   </div>
                   <div className="space-y-2.5">
                     {hotTags.map((item) => (

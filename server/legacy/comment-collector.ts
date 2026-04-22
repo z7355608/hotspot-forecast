@@ -143,9 +143,9 @@ export function inferSentiment(texts: string[]): "positive" | "mixed" | "negativ
  */
 export async function fetchCommentInsight(
   contents: ExtractedContent[],
-  existingCommentCount: number,
+  _existingCommentCount: number,
 ): Promise<PredictionCommentInsight | null> {
-  if (existingCommentCount > 0) return null;
+  // 注：不再跳过评论采集 — existingCommentCount 只是搜索结果中的计数字段，不包含实际评论文本
 
   const douyinContents = contents.filter(
     (c) => c.contentId && c.platform === "抖音" && !c.contentId.startsWith("note_"),

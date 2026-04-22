@@ -1,6 +1,6 @@
 import { getLoginUrl } from "@/const";
 import { trpc } from "@/lib/trpc";
-import { useCallback, useMemo } from "react";
+import { useCallback, useEffect, useMemo } from "react";
 
 type UseAuthOptions = {
   redirectOnUnauthenticated?: boolean;
@@ -15,6 +15,13 @@ export function useAuth(options?: UseAuthOptions) {
       staleTime: 60_000,
     }
   );
+
+  // Redirect to login page when auth check completes and user is not authenticated
+  useEffect(() => {
+    if (options?.redirectOnUnauthenticated && !loading && !user) {
+      window.location.href = getLoginUrl();
+    }
+  }, [options?.redirectOnUnauthenticated, loading, user]);
 
   const logoutMutation = trpc.auth.logout.useMutation({
     onSuccess: () => {
