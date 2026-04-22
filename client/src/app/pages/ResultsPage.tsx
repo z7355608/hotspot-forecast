@@ -478,6 +478,7 @@ function normalizeRemoteResult(detail: SavedResultArtifactDetail): ResultRecord 
           fansCount: asNumber(item.fansCount, 0),
           anomaly: asNumber(item.anomaly, 0),
           playCount: asString(item.playCount, "未知播放"),
+          engagementCount: asNumber(item.engagementCount, 0),
           trackTags: asStringArray(item.trackTags),
           suggestion: asString(
             item.suggestion,

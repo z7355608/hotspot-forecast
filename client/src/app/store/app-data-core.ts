@@ -1423,7 +1423,7 @@ export function createBreakdownSampleResultRecord(
     playCount: sample.playCount,
     trackTags: sample.trackTags,
     burstReasons: sample.burstReasons,
-    breakdownSummary: `这条 ${track} 样本的核心竞争力在于「${sample.burstReasons[0]} × ${sample.burstReasons[1] ?? "明确结果"}」的结构组合。播放量 ${sample.playCount}，爆发因子 ${sample.anomaly}倍，适合借鉴的是表达框架和叙事顺序，而不是直接复制素材。`,
+    breakdownSummary: `这条 ${track} 样本的核心竞争力在于「${sample.burstReasons[0]} × ${sample.burstReasons[1] ?? "明确结果"}」的结构组合。${sample.playCount}，互动粉丝比 ${sample.anomaly}倍，适合借鉴的是表达框架和叙事顺序，而不是直接复制素材。`,
     copyPoints: [
       `保留「${sample.burstReasons[0]}」这个爆因，把内容切成更适合你账号的 ${track} 场景`,
       `标题使用"明确对象 + 明确结果"的结构，避免抽象概念`,
@@ -1432,7 +1432,7 @@ export function createBreakdownSampleResultRecord(
     avoidPoints: [
       `不要直接照搬 @${sample.account} 的叙事素材，账号人设不同效果会大打折扣`,
       `${secondTrack} 赛道的平台调性差异较大，迁移时需调整语气和节奏`,
-      `爆发因子 ${sample.anomaly}倍 不代表可复制性高，需结合自身账号阶段判断`,
+      `互动粉丝比 ${sample.anomaly}倍 不代表可复制性高，需结合自身账号阶段判断`,
     ],
     migrationSteps: [
       `第一步：确认你的账号是否在 ${track} 赛道，且目标人群与样本重叠`,
@@ -1524,7 +1524,7 @@ export function createBreakdownSampleResultRecord(
     title: `${track} 爆款样本拆解完成`,
     ctaLabel: "生成翻拍脚本",
     description: taskPayload.breakdownSummary,
-    reason: `爆发因子 ${sample.anomaly}倍，可借鉴度高，适合在 ${track} 赛道借鉴结构`,
+    reason: `互动粉丝比 ${sample.anomaly}倍，可借鉴度高，适合在 ${track} 赛道借鉴结构`,
     previewSections: [
       {
         title: "值得抄的部分",
@@ -1625,6 +1625,7 @@ export function createBreakdownSampleResultRecord(
       fansCount: sample.fansCount,
       anomaly: sample.anomaly,
       playCount: sample.playCount,
+      engagementCount: 0,
       trackTags: sample.trackTags,
       suggestion: sample.suggestion,
       publishedAt: sample.publishedAt,
@@ -1633,8 +1634,8 @@ export function createBreakdownSampleResultRecord(
     whyNowItems: [
       {
         sourceLabel: "低粉爆款样本",
-        fact: `${sample.platform} 上 ${sample.fansLabel} 账号实现 ${sample.playCount} 播放`,
-        inference: `爆发因子 ${sample.anomaly}倍，说明内容结构本身具备传播力，与账号体量关系不大`,
+        fact: `${sample.platform} 上 ${sample.fansLabel} 账号实现 ${sample.playCount}`,
+        inference: `互动粉丝比 ${sample.anomaly}倍，说明内容结构本身具备传播力，与账号体量关系不大`,
         userImpact: "新号或小号可以直接借鉴这个结构，降低冷启动风险",
         tone: "positive",
       },
@@ -1648,7 +1649,7 @@ export function createBreakdownSampleResultRecord(
     screeningReport,
     primaryCard,
     secondaryCard,
-    fitSummary: `这条样本在 ${track} 赛道具备高可借鉴性，爆发因子 ${sample.anomaly}倍，新手友好度 ${sample.newbieFriendly ?? 80} 分`,
+    fitSummary: `这条样本在 ${track} 赛道具备高可借鉴性，互动粉丝比 ${sample.anomaly}倍，新手友好度 ${sample.newbieFriendly ?? 80} 分`,
     recommendedNextAction: bestActionNow,
     continueIf: primaryCard.continueIf,
     stopIf: primaryCard.stopIf,
@@ -1660,7 +1661,7 @@ export function createBreakdownSampleResultRecord(
       `来源：低粉爆款技能入口`,
       `样本：${sample.title.slice(0, 15)}`,
       `平台：${sample.platform}`,
-      `爆发因子：${sample.anomaly}倍`,
+      `互动粉丝比：${sample.anomaly}倍`,
     ],
     followUps: [],
   };

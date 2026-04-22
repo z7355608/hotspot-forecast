@@ -351,8 +351,12 @@ export interface PredictionLowFollowerEvidenceItem {
   coverUrl?: string | null;
   fansLabel: string;
   fansCount: number;
+  /** 互动粉丝比异常倍数（基于实际可用数据计算） */
   anomaly: number;
+  /** 互动指标展示标签（优先播放量，降级用点赞/评论量） */
   playCount: string;
+  /** 用于计算异常值的核心互动数值 */
+  engagementCount: number;
   likeCount?: number | null;
   commentCount?: number | null;
   collectCount?: number | null;

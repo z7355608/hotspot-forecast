@@ -512,31 +512,59 @@ export function mapLowFollowerEvidence(contents: ExtractedContent[]): ExtractedL
   return contents
     .filter((item) => item.authorFollowerCount !== null && item.authorFollowerCount > 0 && item.authorFollowerCount <= 10_000)
     .slice(0, 4)
-    .map((item) => ({
-      id: `live_low_${item.contentId}`,
-      platform: item.platform,
-      contentForm: "短视频/图文样本",
-      title: item.title,
-      account: item.authorName,
-      contentUrl: item.contentUrl,
-      coverUrl: item.coverUrl ?? null,
-      fansLabel:
-        item.authorFollowerCount !== null ? `${item.authorFollowerCount.toLocaleString("zh-CN")} 粉` : "低粉作者",
-      fansCount: item.authorFollowerCount ?? 0,
-      anomaly:
-        item.authorFollowerCount && item.viewCount
-          ? clamp((item.viewCount / Math.max(item.authorFollowerCount, 1)) * 10, 1, 99)
-          : 0,
-      playCount:
-        item.viewCount !== null ? `${item.viewCount.toLocaleString("zh-CN")} 播放` : "播放待补充",
-      likeCount: item.likeCount,
-      commentCount: item.commentCount,
-      collectCount: item.collectCount,
-      shareCount: item.shareCount,
-      trackTags: item.keywordTokens,
-      suggestion: "这条低粉样本已进入真实证据池，适合先做可复制性验证。",
-      publishedAt: item.publishedAt,
-    }));
+    .map((item) => {
+      const fans = Math.max(item.authorFollowerCount ?? 1, 1);
+
+      // 互动指标降级链：播放量 > 点赞量 > 评论量+收藏量
+      let engagementCount = 0;
+      let engagementLabel = "";
+      if (item.viewCount != null && item.viewCount > 0) {
+        engagementCount = item.viewCount;
+        engagementLabel = `${item.viewCount.toLocaleString("zh-CN")} 播放`;
+      } else if (item.likeCount != null && item.likeCount > 0) {
+        engagementCount = item.likeCount;
+        engagementLabel = `${item.likeCount.toLocaleString("zh-CN")} 点赞`;
+      } else {
+        // 用评论+收藏+分享的总和作为互动指标
+        const totalEngagement =
+          (item.commentCount ?? 0) + (item.collectCount ?? 0) + (item.shareCount ?? 0);
+        if (totalEngagement > 0) {
+          engagementCount = totalEngagement;
+          engagementLabel = `${totalEngagement.toLocaleString("zh-CN")} 互动`;
+        } else {
+          engagementCount = 0;
+          engagementLabel = "数据采集中";
+        }
+      }
+
+      // 异常倍数：互动量 / 粉丝数，最低1x，最高99x
+      const anomaly = engagementCount > 0
+        ? clamp(Math.round(engagementCount / fans), 1, 99)
+        : 0;
+
+      return {
+        id: `live_low_${item.contentId}`,
+        platform: item.platform,
+        contentForm: "短视频/图文样本",
+        title: item.title,
+        account: item.authorName,
+        contentUrl: item.contentUrl,
+        coverUrl: item.coverUrl ?? null,
+        fansLabel:
+          item.authorFollowerCount !== null ? `${item.authorFollowerCount.toLocaleString("zh-CN")} 粉` : "低粉作者",
+        fansCount: item.authorFollowerCount ?? 0,
+        anomaly,
+        playCount: engagementLabel,
+        engagementCount,
+        likeCount: item.likeCount,
+        commentCount: item.commentCount,
+        collectCount: item.collectCount,
+        shareCount: item.shareCount,
+        trackTags: item.keywordTokens,
+        suggestion: "这条低粉样本已进入真实证据池，适合先做可复制性验证。",
+        publishedAt: item.publishedAt,
+      };
+    });
 }
 
 /* ── Result Card Builders ── */

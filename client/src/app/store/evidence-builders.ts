@@ -578,6 +578,7 @@ export function buildLowFollowerEvidence(
       fansCount: sample.fansCount,
       anomaly: sample.anomaly,
       playCount: sample.playCount,
+      engagementCount: 0,
       trackTags: sample.trackTags,
       suggestion: sample.suggestion,
       publishedAt: sample.publishedAt,

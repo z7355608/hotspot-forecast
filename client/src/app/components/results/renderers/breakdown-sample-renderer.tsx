@@ -3,7 +3,7 @@
  * ==========================
  * 低粉爆款样本拆解的 Dumb Renderer。
  * 设计为"技能工作台"风格：
- *   - 顶部：样本基础信息卡（平台/粉丝/播放/爆发因子）
+ *   - 顶部：样本基础信息卡（平台/粉丝/互动/互动粉丝比）
  *   - 主区：三栏拆解结果（值得抄 / 别照搬 / 迁移步骤）
  *   - 工具区：标题变体 + 开头钉子 + 内容提纲
  *   - 底部：相似案例横向列表
@@ -58,11 +58,11 @@ function BreakdownSampleBody({ result }: ArtifactRendererProps) {
             <p className="mt-1 text-sm font-medium text-gray-900">{payload.fansLabel}</p>
           </div>
           <div className="rounded-2xl border border-gray-100 bg-gray-50 px-4 py-3">
-            <p className="text-xs text-gray-500">播放量</p>
+            <p className="text-xs text-gray-500">互动数据</p>
             <p className="mt-1 text-sm font-medium text-gray-900">{payload.playCount}</p>
           </div>
           <div className="rounded-2xl border border-gray-100 bg-emerald-50 px-4 py-3">
-            <p className="text-xs text-emerald-700">爆发因子</p>
+            <p className="text-xs text-emerald-700">互动粉丝比</p>
             <p className="mt-1 text-sm font-medium text-emerald-900">
               {payload.anomaly}倍
             </p>
@@ -257,7 +257,7 @@ function getHeroMetrics(result: ResultRecord): HeroMetricCard[] {
 
   return [
     {
-      label: "爆发因子",
+      label: "互动粉丝比",
       value: payload ? `${payload.anomaly}倍` : "—",
       detail: payload
         ? `${payload.platform} · ${payload.fansLabel} 账号实现 ${payload.playCount}`

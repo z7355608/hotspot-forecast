@@ -327,10 +327,10 @@ export function BreakdownPage() {
   const pendingAction = ACTIONS.find((item) => item.id === pendingActionId) ?? null;
   const generatedResults = getBreakdownResults(sample.id);
   const freePreviewStats = [
-    { icon: <Eye className="h-3 w-3" />, label: "播放", value: sample.playCount },
+    { icon: <Eye className="h-3 w-3" />, label: "互动数据", value: sample.playCount },
     {
       icon: <TrendingUp className="h-3 w-3" />,
-      label: "爆发因子",
+      label: "互动粉丝比",
       value: `${sample.anomaly}倍`,
     },
   ];
@@ -476,10 +476,10 @@ export function BreakdownPage() {
             <div className={`mb-4 grid gap-2.5 ${isMember ? "grid-cols-2 lg:grid-cols-4" : "grid-cols-2"}`}>
               {(isMember
                 ? [
-                    { icon: <Eye className="h-3 w-3" />, label: "播放", value: sample.playCount },
+                    { icon: <Eye className="h-3 w-3" />, label: "互动数据", value: sample.playCount },
                     {
                       icon: <TrendingUp className="h-3 w-3" />,
-                      label: "爆发因子",
+                      label: "互动粉丝比",
                       value: `${sample.anomaly}倍`,
                     },
                     {

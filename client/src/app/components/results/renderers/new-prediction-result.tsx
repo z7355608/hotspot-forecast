@@ -914,11 +914,15 @@ function NewPredictionResultBody({ result }: ArtifactRendererProps) {
                   <Flame className="w-4 h-4 text-[#EF4444]" />
                   <span className="text-[13px] text-[#1E2939] font-medium">{item.title}</span>
                 </div>
-                <div className="flex items-center gap-3 text-[12px] text-[#6B7280]">
+                <div className="flex items-center gap-3 text-[12px] text-[#6B7280] flex-wrap">
                   <span>@{item.account}</span>
                   <span>{item.fansLabel}</span>
-                  {item.playCount && <span>{item.playCount}播放</span>}
-                  <span className="px-1.5 py-0.5 rounded bg-[#FEF2F2] text-[#EF4444] text-[11px] font-medium">异常值 {item.anomaly}x</span>
+                  {item.playCount && <span>{item.playCount}</span>}
+                  {item.anomaly > 0 && (
+                    <span className="px-1.5 py-0.5 rounded bg-[#FEF2F2] text-[#EF4444] text-[11px] font-medium">
+                      互动粉丝比 {item.anomaly}x
+                    </span>
+                  )}
                 </div>
                 {item.suggestion && (
                   <p className="mt-2 text-[12px] text-[#6B7280] leading-[18px]">

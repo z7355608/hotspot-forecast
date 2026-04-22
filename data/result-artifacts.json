@@ -2248,5 +2248,1185 @@
       "followUps": []
     },
     "watchTaskId": "watch_d9fd9af5-6713-42ad-ade9-3596606d7718"
+  },
+  "artifact_28cf4673-9cba-4696-9ed7-fd9e7713c96d": {
+    "artifactId": "artifact_28cf4673-9cba-4696-9ed7-fd9e7713c96d",
+    "clientResultId": "run_dc437d32-cd95-4132-a6fe-22004cd0da1c",
+    "taskIntent": "opportunity_prediction",
+    "artifactType": "opportunity_memo",
+    "createdAt": "2026-04-22T05:43:37.835Z",
+    "updatedAt": "2026-04-22T05:43:37.835Z",
+    "query": "健身减脂 赛道现在发什么会火？帮我找出具体可执行的选题",
+    "type": "爆款预测",
+    "title": "健身减脂 · 机会判断",
+    "summary": "「45分钟高效燃脂、瘦腰瘦腿瘦全身🔥❗️❗️❗️40岁宝妈居家健身已瘦20斤、跟着练就能瘦💦💦45分钟跟练+拉伸、动作简单、新手友好👬#减脂有氧运动」方向已有 10 条真实内容跑通，爱健身的菜同学、自律大帝、爱健身的发型师等已验证可行性，可以直接进入执行。",
+    "platform": [
+      "抖音"
+    ],
+    "score": 95,
+    "scoreLabel": "强推",
+    "verdict": "go_now",
+    "windowStrength": "strong_now",
+    "confidenceLabel": "中",
+    "opportunityTitle": "健身减脂 · 机会判断",
+    "coreBet": "「45分钟高效燃脂、瘦腰瘦腿瘦全身🔥❗️❗️❗️40岁宝妈居家健身已瘦20斤、跟着练就能瘦💦💦45分钟跟练+拉伸、动作简单、新手友好👬#减脂有氧运动」方向已有 10 条真实内容跑通，爱健身的菜同学、自律大帝、爱健身的发型师等已验证可行性，可以直接进入执行。",
+    "watchable": true,
+    "shareable": true,
+    "snapshot": {
+      "id": "run_dc437d32-cd95-4132-a6fe-22004cd0da1c",
+      "dataMode": "live",
+      "taskIntent": "opportunity_prediction",
+      "taskIntentConfidence": "high",
+      "entrySource": "example",
+      "title": "健身减脂 · 机会判断",
+      "summary": "「45分钟高效燃脂、瘦腰瘦腿瘦全身🔥❗️❗️❗️40岁宝妈居家健身已瘦20斤、跟着练就能瘦💦💦45分钟跟练+拉伸、动作简单、新手友好👬#减脂有氧运动」方向已有 10 条真实内容跑通，爱健身的菜同学、自律大帝、爱健身的发型师等已验证可行性，可以直接进入执行。",
+      "primaryCtaLabel": "开启智能监控",
+      "query": "健身减脂 赛道现在发什么会火？帮我找出具体可执行的选题",
+      "modelId": "doubao",
+      "createdAt": "2026-04-22T05:43:37.678Z",
+      "updatedAt": "2026-04-22T05:43:37.678Z",
+      "type": "爆款预测",
+      "platform": [
+        "抖音"
+      ],
+      "score": 95,
+      "scoreLabel": "强推",
+      "verdict": "go_now",
+      "confidenceLabel": "中",
+      "opportunityTitle": "健身减脂 · 机会判断",
+      "opportunityType": "anomaly_window",
+      "windowStrength": "strong_now",
+      "coreBet": "「45分钟高效燃脂、瘦腰瘦腿瘦全身🔥❗️❗️❗️40岁宝妈居家健身已瘦20斤、跟着练就能瘦💦💦45分钟跟练+拉伸、动作简单、新手友好👬#减脂有氧运动」方向已有 10 条真实内容跑通，爱健身的菜同学、自律大帝、爱健身的发型师等已验证可行性，可以直接进入执行。",
+      "decisionBoundary": "10 条内容 + 6 个账号已补齐，「健身减脂」可以直接进入执行。",
+      "marketEvidence": {
+        "evidenceWindowLabel": "实时抓取 · 4月22日",
+        "momentumLabel": "accelerating",
+        "kolCount": 1,
+        "kocCount": 5,
+        "newCreatorCount": 4,
+        "similarContentCount": 10,
+        "growth7d": 100,
+        "lowFollowerAnomalyRatio": 40,
+        "timingLabel": "已采集 10 条内容、6 个账号，建议先做小样验证。",
+        "tierBreakdown": {
+          "headKol": 1,
+          "standardKol": 0,
+          "strongKoc": 1,
+          "standardKoc": 4
+        }
+      },
+      "supportingAccounts": [
+        {
+          "accountId": "MS4wLjABAAAAdLgrV--yf6_SaPgtzogqtg9w_VjPICc1MIWgzy1H04o",
+          "displayName": "爱健身的菜同学",
+          "handle": "45963909241",
+          "platform": "抖音",
+          "profileUrl": "https://www.douyin.com/user/MS4wLjABAAAAdLgrV--yf6_SaPgtzogqtg9w_VjPICc1MIWgzy1H04o",
+          "tierLabel": "standard_koc",
+          "followerCount": 1028,
+          "followingCount": 378,
+          "totalLikeCount": 5214,
+          "avgEngagementRate30d": null,
+          "breakoutHitRate30d": null,
+          "recentTopicClusters": [],
+          "whyIncluded": ""
+        },
+        {
+          "accountId": "MS4wLjABAAAAlVPIaUw76oFQUmyMMqt2rk-pQfTGJ1YSJnyvicbxKNM",
+          "displayName": "自律大帝",
+          "handle": "ErrorHao",
+          "platform": "抖音",
+          "profileUrl": "https://www.douyin.com/user/MS4wLjABAAAAlVPIaUw76oFQUmyMMqt2rk-pQfTGJ1YSJnyvicbxKNM",
+          "tierLabel": "head_kol",
+          "followerCount": 1323122,
+          "followingCount": 1917,
+          "totalLikeCount": 52673388,
+          "avgEngagementRate30d": null,
+          "breakoutHitRate30d": null,
+          "recentTopicClusters": [],
+          "whyIncluded": ""
+        },
+        {
+          "accountId": "MS4wLjABAAAAWLIhi-qxxxKdZH0GSEdO2NSOLDcmZxezGc_NNbQtOX4",
+          "displayName": "爱健身的发型师",
+          "handle": "249949449db",
+          "platform": "抖音",
+          "profileUrl": "https://www.douyin.com/user/MS4wLjABAAAAWLIhi-qxxxKdZH0GSEdO2NSOLDcmZxezGc_NNbQtOX4",
+          "tierLabel": "standard_koc",
+          "followerCount": 372,
+          "followingCount": 434,
+          "totalLikeCount": 13796,
+          "avgEngagementRate30d": null,
+          "breakoutHitRate30d": null,
+          "recentTopicClusters": [],
+          "whyIncluded": ""
+        },
+        {
+          "accountId": "MS4wLjABAAAAmxVcfKlJ0p8_D_kbX9LxIACoQZek3V7KmpcUZ0cikvbd5Z0Cj5qvFt-bDXzBGYDT",
+          "displayName": "奥瑞白",
+          "handle": "dyonf0brzrr4",
+          "platform": "抖音",
+          "profileUrl": "https://www.douyin.com/user/MS4wLjABAAAAmxVcfKlJ0p8_D_kbX9LxIACoQZek3V7KmpcUZ0cikvbd5Z0Cj5qvFt-bDXzBGYDT",
+          "tierLabel": "standard_koc",
+          "followerCount": 1092,
+          "followingCount": 105,
+          "totalLikeCount": 31962,
+          "avgEngagementRate30d": null,
+          "breakoutHitRate30d": null,
+          "recentTopicClusters": [],
+          "whyIncluded": ""
+        },
+        {
+          "accountId": "MS4wLjABAAAAetNdo3J5G2kuUf8lbmEUQOFtFrQ8UfweQlffw_XUN1I",
+          "displayName": "月儿",
+          "handle": "",
+          "platform": "抖音",
+          "profileUrl": "https://www.douyin.com/user/MS4wLjABAAAAetNdo3J5G2kuUf8lbmEUQOFtFrQ8UfweQlffw_XUN1I",
+          "tierLabel": "standard_koc",
+          "followerCount": 1820,
+          "followingCount": 302,
+          "totalLikeCount": 14104,
+          "avgEngagementRate30d": null,
+          "breakoutHitRate30d": null,
+          "recentTopicClusters": [],
+          "whyIncluded": ""
+        },
+        {
+          "accountId": "MS4wLjABAAAAwPS8lxXxs5UZ9pBL_tRwnMjAiVkLk9_eENU-Dswi38k",
+          "displayName": "黑皮余教练",
+          "handle": "",
+          "platform": "抖音",
+          "profileUrl": "https://www.douyin.com/user/MS4wLjABAAAAwPS8lxXxs5UZ9pBL_tRwnMjAiVkLk9_eENU-Dswi38k",
+          "tierLabel": "strong_koc",
+          "followerCount": 38038,
+          "followingCount": 88,
+          "totalLikeCount": 351005,
+          "avgEngagementRate30d": null,
+          "breakoutHitRate30d": null,
+          "recentTopicClusters": [],
+          "whyIncluded": ""
+        }
+      ],
+      "supportingContents": [
+        {
+          "contentId": "7629245289187430644",
+          "title": "45分钟高效燃脂，瘦腰瘦腿瘦全身🔥❗️❗️❗️40岁宝妈居家健身已瘦20斤，跟着练就能瘦💦💦45分钟跟练+拉伸，动作简单，新手友好👬#减脂有氧运动 #瘦腿提臀瘦全身 #瘦身塑形训练 #暴汗燃脂瘦全身 #瘦腰瘦腿瘦肚子",
+          "authorName": "爱健身的菜同学",
+          "platform": "抖音",
+          "publishedAt": "2026-04-16T10:58:00.000Z",
+          "contentUrl": "https://www.douyin.com/video/7629245289187430644",
+          "coverUrl": "https://p3-sign.douyinpic.com/tos-cn-p-0015/oki9mLn08A7jAObBi7NDHehBDQgfIUD0A0zgIB~tplv-dy-360p.webp?biz_tag=aweme_video&card_type=153&column_n=0&from=327834062&l=20260422134154FAA66ADF449DD59A8CEF&lk3s=138a59ce&s=PackSourceEnum_SEARCH_SIN&sc=origin_cover&se=false&x-expires=1778043600&x-signature=o0k5AzCUVMdhzAwY2cNtDGYcFiM%3D",
+          "viewCount": 0,
+          "likeCount": 10,
+          "commentCount": 0,
+          "shareCount": 0,
+          "collectCount": 3,
+          "structureSummary": "45分钟高效燃脂，瘦腰瘦腿瘦全身🔥❗️❗️❗️40岁宝妈居家健身已瘦20斤，跟着练就能瘦💦\ud83d",
+          "keywordTokens": [
+            "45分钟高效燃脂",
+            "瘦腰瘦腿瘦全身🔥❗️❗️❗️40岁宝妈居家健身已瘦20斤",
+            "跟着练就能瘦💦💦45分钟跟练+拉伸",
+            "动作简单",
+            "新手友好👬#减脂有氧运动"
+          ],
+          "whyIncluded": "",
+          "authorFollowerCount": 1028
+        },
+        {
+          "contentId": "7631063768973383658",
+          "title": "没什么基础 不知道怎么减肥减脂｜跟我们坚持完成这套燃脂训练 每天2～4组 循序渐进3个月 配合清淡饮食 肚子慢慢变小了 #减脂 #健身 #训练",
+          "authorName": "自律大帝",
+          "platform": "抖音",
+          "publishedAt": "2026-04-21T04:24:50.000Z",
+          "contentUrl": "https://www.douyin.com/video/7631063768973383658",
+          "coverUrl": "https://p3-sign.douyinpic.com/tos-cn-p-0015/osetgHec4rj9fn1N4vJQgyXfAILBEPAeN6GoGI~tplv-dy-360p.webp?biz_tag=aweme_video&card_type=153&column_n=0&from=327834062&l=20260422134154FAA66ADF449DD59A8CEF&lk3s=138a59ce&s=PackSourceEnum_SEARCH_SIN&sc=origin_cover&se=false&x-expires=1778043600&x-signature=idnP7SDSmZtg4qWvo4IXUgRavxk%3D",
+          "viewCount": 0,
+          "likeCount": 542,
+          "commentCount": 17,
+          "shareCount": 26,
+          "collectCount": 192,
+          "structureSummary": "没什么基础 不知道怎么减肥减脂｜跟我们坚持完成这套燃脂训练 每天2～4组 循序渐进3个月 配合清",
+          "keywordTokens": [
+            "没什么基础",
+            "不知道怎么减肥减脂｜跟我们坚持完成这套燃脂训练",
+            "每天2～4组",
+            "循序渐进3个月",
+            "配合清淡饮食"
+          ],
+          "whyIncluded": "",
+          "authorFollowerCount": 1323122
+        },
+        {
+          "contentId": "7630857372035404145",
+          "title": "想进步听话#减脂食谱",
+          "authorName": "爱健身的发型师",
+          "platform": "抖音",
+          "publishedAt": "2026-04-20T15:03:54.000Z",
+          "contentUrl": "https://www.douyin.com/video/7630857372035404145",
+          "coverUrl": "https://p26-sign.douyinpic.com/tos-cn-i-0813c000-ce/ocAOAfUfDJDTFAHBfmEQIlEDzE8IUC8gk97DBA~tplv-dy-360p.webp?biz_tag=aweme_images&card_type=303&column_n=0&from=327834062&l=202604221341555DD673F0CE15E19FF60D&lk3s=138a59ce&s=PackSourceEnum_SEARCH_SIN&sc=origin_cover&se=false&x-expires=1778043600&x-signature=tgEyWGJUKSZrDRrbnngKzZ0KC%2F0%3D",
+          "viewCount": 0,
+          "likeCount": 20,
+          "commentCount": 2,
+          "shareCount": 0,
+          "collectCount": 1,
+          "structureSummary": "想进步听话#减脂食谱",
+          "keywordTokens": [
+            "想进步听话#减脂食谱"
+          ],
+          "whyIncluded": "",
+          "authorFollowerCount": 372
+        },
+        {
+          "contentId": "7630810470290667627",
+          "title": "今天的全身太猛了！牛一个周一次全身，这一次课的强度顶两节课🤭最后两个8公斤动作燃爆了👍#晶晶力量 #晶晶力量训练回放 #种草激励计划 #真实生活分享计划 #全身训练 @抖音生活服务热点宝 @DOU+上热门",
+          "authorName": "奥瑞白",
+          "platform": "抖音",
+          "publishedAt": "2026-04-20T12:01:54.000Z",
+          "contentUrl": "https://www.douyin.com/video/7630810470290667627",
+          "coverUrl": "https://p3-sign.douyinpic.com/tos-cn-p-0015/oQipbbL08AgLAl2Bi5WwHeFBDSmfIatMANjgIB~tplv-dy-360p.webp?biz_tag=aweme_video&card_type=153&column_n=0&from=327834062&l=20260422134154FAA66ADF449DD59A8CEF&lk3s=138a59ce&s=PackSourceEnum_SEARCH_SIN&sc=origin_cover&se=false&x-expires=1778043600&x-signature=eHrpvy4UPl0ZAljKQO6eGybdtTE%3D",
+          "viewCount": 0,
+          "likeCount": 103,
+          "commentCount": 98,
+          "shareCount": 24,
+          "collectCount": 12,
+          "structureSummary": "今天的全身太猛了！牛一个周一次全身，这一次课的强度顶两节课🤭最后两个8公斤动作燃爆了👍#晶晶",
+          "keywordTokens": [
+            "今天的全身太猛了！牛一个周一次全身",
+            "这一次课的强度顶两节课🤭最后两个8公斤动作燃爆了👍#晶晶力量",
+            "#晶晶力量训练回放",
+            "#种草激励计划",
+            "#真实生活分享计划"
+          ],
+          "whyIncluded": "",
+          "authorFollowerCount": 1092
+        },
+        {
+          "contentId": "7630079244249900706",
+          "title": "美食博主拍着拍着就倒闭了，收获了一身肥肉，今天开启CPB饮食了，你们都坚持了几天？#真实生活分享计划 #CPB饮食 #减脂 #鸡胸肉美食做法 #吃鸡胸肉一个月的变化",
+          "authorName": "月儿",
+          "platform": "抖音",
+          "publishedAt": "2026-04-18T12:44:22.000Z",
+          "contentUrl": "https://www.douyin.com/video/7630079244249900706",
+          "coverUrl": "https://p3-sign.douyinpic.com/tos-cn-i-dy/_offtrans__540x720_aae756ea11119e4e976b05b41cc57de0_d32c8d23f3fbee7284a46d76dd06e8ee1c4c104459bf87afb179e8f4ee4601bf_vvic~tplv-dy-aweme-images-offline.image?biz_tag=aweme_video&card_type=153&column_n=0&from=327834062&l=20260422134154FAA66ADF449DD59A8CEF&lk3s=138a59ce&s=PackSourceEnum_SEARCH_SIN&sc=origin_cover&se=false&x-expires=1778043600&x-signature=y%2Fr5KuyC%2BajFd1Byk4I4IjxWMsY%3D",
+          "viewCount": 0,
+          "likeCount": 10,
+          "commentCount": 10,
+          "shareCount": 0,
+          "collectCount": 0,
+          "structureSummary": "美食博主拍着拍着就倒闭了，收获了一身肥肉，今天开启CPB饮食了，你们都坚持了几天？#真实生活分享",
+          "keywordTokens": [
+            "美食博主拍着拍着就倒闭了",
+            "收获了一身肥肉",
+            "今天开启CPB饮食了",
+            "你们都坚持了几天？#真实生活分享计划",
+            "#CPB饮食"
+          ],
+          "whyIncluded": "",
+          "authorFollowerCount": 1820
+        },
+        {
+          "contentId": "7630311687552233894",
+          "title": "不出门在家一样燃脂暴汗，练出好身材#好身材练起来#暴汗燃脂瘦全身#居家锻炼#高效燃脂#減脂",
+          "authorName": "黑皮余教练",
+          "platform": "抖音",
+          "publishedAt": "2026-04-19T03:46:22.000Z",
+          "contentUrl": "https://www.douyin.com/video/7630311687552233894",
+          "coverUrl": "https://p26-sign.douyinpic.com/tos-cn-p-0015c000-ce/okkA4GITAiGz27AbfYseL8kTe0gBfnQDUUQ9zY~tplv-dy-360p.webp?biz_tag=aweme_video&card_type=153&column_n=0&from=327834062&l=20260422134154FAA66ADF449DD59A8CEF&lk3s=138a59ce&s=PackSourceEnum_SEARCH_SIN&sc=origin_cover&se=false&x-expires=1778043600&x-signature=1cBIJAZSN7q8XMBgnT04RXh3hUY%3D",
+          "viewCount": 0,
+          "likeCount": 188,
+          "commentCount": 1,
+          "shareCount": 20,
+          "collectCount": 82,
+          "structureSummary": "不出门在家一样燃脂暴汗，练出好身材#好身材练起来#暴汗燃脂瘦全身#居家锻炼#高效燃脂#減脂",
+          "keywordTokens": [
+            "不出门在家一样燃脂暴汗",
+            "练出好身材#好身材练起来#暴汗燃脂瘦全身#居家锻炼#高效燃脂#減脂"
+          ],
+          "whyIncluded": "",
+          "authorFollowerCount": 38038
+        },
+        {
+          "contentId": "7630753488510930929",
+          "title": "无复杂器械，解锁全身训练，4个高效动作，力量+塑形+燃脂一步到位，打造紧致有型好身材#减脂塑形 #健身干货 #热门训练计划",
+          "authorName": "苏超爱练",
+          "platform": "抖音",
+          "publishedAt": "2026-04-20T08:20:47.000Z",
+          "contentUrl": "https://www.douyin.com/video/7630753488510930929",
+          "coverUrl": "https://p26-sign.douyinpic.com/tos-cn-p-0015c000-ce/ocf7QBEV835sHyoLIDCGQWYwgCFeJTAeyYD8QE~tplv-dy-360p.webp?biz_tag=aweme_video&card_type=153&column_n=0&from=327834062&l=202604221341555DD673F0CE15E19FF60D&lk3s=138a59ce&s=PackSourceEnum_SEARCH_SIN&sc=origin_cover&se=false&x-expires=1778043600&x-signature=0vByhWJDk5H63mo81LQ5anlSNiM%3D",
+          "viewCount": 0,
+          "likeCount": 434,
+          "commentCount": 23,
+          "shareCount": 93,
+          "collectCount": 567,
+          "structureSummary": "无复杂器械，解锁全身训练，4个高效动作，力量+塑形+燃脂一步到位，打造紧致有型好身材#减脂塑形 ",
+          "keywordTokens": [
+            "无复杂器械",
+            "解锁全身训练",
+            "4个高效动作",
+            "力量+塑形+燃脂一步到位",
+            "打造紧致有型好身材#减脂塑形"
+          ],
+          "whyIncluded": "",
+          "authorFollowerCount": 0
+        },
+        {
+          "contentId": "7630731976802184566",
+          "title": "一眼看懂平板支撑的正确姿势 #平板支撑 #健身干货 #减脂塑形",
+          "authorName": "花茶",
+          "platform": "抖音",
+          "publishedAt": "2026-04-20T06:57:19.000Z",
+          "contentUrl": "https://www.douyin.com/video/7630731976802184566",
+          "coverUrl": "https://p3-sign.douyinpic.com/tos-cn-p-0015/ocKBByVamgA5DKeNLDnwLeFVIAIBPCGfTga7IL~tplv-dy-360p.webp?biz_tag=aweme_video&card_type=153&column_n=0&from=327834062&l=202604221341555DD673F0CE15E19FF60D&lk3s=138a59ce&s=PackSourceEnum_SEARCH_SIN&sc=origin_cover&se=false&x-expires=1778043600&x-signature=UD3lH87ivBpwLs54xFQrPlyhjEA%3D",
+          "viewCount": 0,
+          "likeCount": 208,
+          "commentCount": 4,
+          "shareCount": 42,
+          "collectCount": 155,
+          "structureSummary": "一眼看懂平板支撑的正确姿势 #平板支撑 #健身干货 #减脂塑形",
+          "keywordTokens": [
+            "一眼看懂平板支撑的正确姿势",
+            "#平板支撑",
+            "#健身干货",
+            "#减脂塑形"
+          ],
+          "whyIncluded": "",
+          "authorFollowerCount": 0
+        },
+        {
+          "contentId": "7629571939216002358",
+          "title": "第39集 | 练腿别瞎练！这套标准动作顺序，专攻臀腿塑形，线条紧致又好看#练腿 #臀腿训练 #健身干货 #减脂 #",
+          "authorName": "阿伟讲健身",
+          "platform": "抖音",
+          "publishedAt": "2026-04-17T03:55:51.000Z",
+          "contentUrl": "https://www.douyin.com/video/7629571939216002358",
+          "coverUrl": "https://p9-sign.douyinpic.com/tos-cn-p-0015/o8eTae7DB1Gw0hYIvrL3LIo0BemEIACl1HAEAA~tplv-dy-360p.webp?biz_tag=aweme_video&card_type=153&column_n=0&from=327834062&l=202604221341555DD673F0CE15E19FF60D&lk3s=138a59ce&s=PackSourceEnum_SEARCH_SIN&sc=origin_cover&se=false&x-expires=1778043600&x-signature=zn6HGe57XcbO1czZXNrIW8f8VRI%3D",
+          "viewCount": 0,
+          "likeCount": 5102,
+          "commentCount": 95,
+          "shareCount": 849,
+          "collectCount": 4447,
+          "structureSummary": "第39集 | 练腿别瞎练！这套标准动作顺序，专攻臀腿塑形，线条紧致又好看#练腿 #臀腿训练 #健",
+          "keywordTokens": [
+            "第39集",
+            "|",
+            "练腿别瞎练！这套标准动作顺序",
+            "专攻臀腿塑形",
+            "线条紧致又好看#练腿"
+          ],
+          "whyIncluded": "",
+          "authorFollowerCount": 0
+        },
+        {
+          "contentId": "7629649073389634917",
+          "title": "夏季减脂 想在夏天前完成一场惊天逆袭吗，不需要器械就能做到，快行动起来吧！#健身 #减脂 #减肥 #居家锻炼 #健身干货",
+          "authorName": "大金讲健身（健身焚决版）",
+          "platform": "抖音",
+          "publishedAt": "2026-04-17T08:55:05.000Z",
+          "contentUrl": "https://www.douyin.com/video/7629649073389634917",
+          "coverUrl": "https://p26-sign.douyinpic.com/tos-cn-p-0015c000-ce/oUelhstv8TxfggIX6W8LwBmGDXeswg7D9XQADJ~tplv-dy-360p.webp?biz_tag=aweme_video&card_type=153&column_n=0&from=327834062&l=202604221341555DD673F0CE15E19FF60D&lk3s=138a59ce&s=PackSourceEnum_SEARCH_SIN&sc=origin_cover&se=false&x-expires=1778043600&x-signature=fCeGREyNWw%2BNeL%2BwZNqOH6xNMqc%3D",
+          "viewCount": 0,
+          "likeCount": 4302,
+          "commentCount": 52,
+          "shareCount": 378,
+          "collectCount": 2674,
+          "structureSummary": "夏季减脂 想在夏天前完成一场惊天逆袭吗，不需要器械就能做到，快行动起来吧！#健身 #减脂 #减肥",
+          "keywordTokens": [
+            "夏季减脂",
+            "想在夏天前完成一场惊天逆袭吗",
+            "不需要器械就能做到",
+            "快行动起来吧！#健身",
+            "#减脂"
+          ],
+          "whyIncluded": "",
+          "authorFollowerCount": 0
+        }
+      ],
+      "lowFollowerEvidence": [
+        {
+          "id": "live_low_7629245289187430644",
+          "platform": "抖音",
+          "contentForm": "短视频/图文样本",
+          "title": "45分钟高效燃脂，瘦腰瘦腿瘦全身🔥❗️❗️❗️40岁宝妈居家健身已瘦20斤，跟着练就能瘦💦💦45分钟跟练+拉伸，动作简单，新手友好👬#减脂有氧运动 #瘦腿提臀瘦全身 #瘦身塑形训练 #暴汗燃脂瘦全身 #瘦腰瘦腿瘦肚子",
+          "account": "爱健身的菜同学",
+          "contentUrl": "https://www.douyin.com/video/7629245289187430644",
+          "coverUrl": "https://p3-sign.douyinpic.com/tos-cn-p-0015/oki9mLn08A7jAObBi7NDHehBDQgfIUD0A0zgIB~tplv-dy-360p.webp?biz_tag=aweme_video&card_type=153&column_n=0&from=327834062&l=20260422134154FAA66ADF449DD59A8CEF&lk3s=138a59ce&s=PackSourceEnum_SEARCH_SIN&sc=origin_cover&se=false&x-expires=1778043600&x-signature=o0k5AzCUVMdhzAwY2cNtDGYcFiM%3D",
+          "fansLabel": "1,028 粉",
+          "fansCount": 1028,
+          "anomaly": 0,
+          "playCount": "0 播放",
+          "likeCount": 10,
+          "commentCount": 0,
+          "collectCount": 3,
+          "shareCount": 0,
+          "trackTags": [
+            "45分钟高效燃脂",
+            "瘦腰瘦腿瘦全身🔥❗️❗️❗️40岁宝妈居家健身已瘦20斤",
+            "跟着练就能瘦💦💦45分钟跟练+拉伸",
+            "动作简单",
+            "新手友好👬#减脂有氧运动"
+          ],
+          "suggestion": "宝妈真实案例背书，动作友好，明确减脂效果，击中居家瘦身需求",
+          "publishedAt": "2026-04-16T10:58:00.000Z"
+        },
+        {
+          "id": "live_low_7630857372035404145",
+          "platform": "抖音",
+          "contentForm": "短视频/图文样本",
+          "title": "想进步听话#减脂食谱",
+          "account": "爱健身的发型师",
+          "contentUrl": "https://www.douyin.com/video/7630857372035404145",
+          "coverUrl": "https://p26-sign.douyinpic.com/tos-cn-i-0813c000-ce/ocAOAfUfDJDTFAHBfmEQIlEDzE8IUC8gk97DBA~tplv-dy-360p.webp?biz_tag=aweme_images&card_type=303&column_n=0&from=327834062&l=202604221341555DD673F0CE15E19FF60D&lk3s=138a59ce&s=PackSourceEnum_SEARCH_SIN&sc=origin_cover&se=false&x-expires=1778043600&x-signature=tgEyWGJUKSZrDRrbnngKzZ0KC%2F0%3D",
+          "fansLabel": "372 粉",
+          "fansCount": 372,
+          "anomaly": 0,
+          "playCount": "0 播放",
+          "likeCount": 20,
+          "commentCount": 2,
+          "collectCount": 1,
+          "shareCount": 0,
+          "trackTags": [
+            "想进步听话#减脂食谱"
+          ],
+          "suggestion": "短平快引导，强指令性，引发用户对减脂食谱的好奇心",
+          "publishedAt": "2026-04-20T15:03:54.000Z"
+        },
+        {
+          "id": "live_low_7630810470290667627",
+          "platform": "抖音",
+          "contentForm": "短视频/图文样本",
+          "title": "今天的全身太猛了！牛一个周一次全身，这一次课的强度顶两节课🤭最后两个8公斤动作燃爆了👍#晶晶力量 #晶晶力量训练回放 #种草激励计划 #真实生活分享计划 #全身训练 @抖音生活服务热点宝 @DOU+上热门",
+          "account": "奥瑞白",
+          "contentUrl": "https://www.douyin.com/video/7630810470290667627",
+          "coverUrl": "https://p3-sign.douyinpic.com/tos-cn-p-0015/oQipbbL08AgLAl2Bi5WwHeFBDSmfIatMANjgIB~tplv-dy-360p.webp?biz_tag=aweme_video&card_type=153&column_n=0&from=327834062&l=20260422134154FAA66ADF449DD59A8CEF&lk3s=138a59ce&s=PackSourceEnum_SEARCH_SIN&sc=origin_cover&se=false&x-expires=1778043600&x-signature=eHrpvy4UPl0ZAljKQO6eGybdtTE%3D",
+          "fansLabel": "1,092 粉",
+          "fansCount": 1092,
+          "anomaly": 0,
+          "playCount": "0 播放",
+          "likeCount": 103,
+          "commentCount": 98,
+          "collectCount": 12,
+          "shareCount": 24,
+          "trackTags": [
+            "今天的全身太猛了！牛一个周一次全身",
+            "这一次课的强度顶两节课🤭最后两个8公斤动作燃爆了👍#晶晶力量",
+            "#晶晶力量训练回放",
+            "#种草激励计划",
+            "#真实生活分享计划"
+          ],
+          "suggestion": "强调训练高效性，突出高燃动作点，精准触达力量训练受众",
+          "publishedAt": "2026-04-20T12:01:54.000Z"
+        },
+        {
+          "id": "live_low_7630079244249900706",
+          "platform": "抖音",
+          "contentForm": "短视频/图文样本",
+          "title": "美食博主拍着拍着就倒闭了，收获了一身肥肉，今天开启CPB饮食了，你们都坚持了几天？#真实生活分享计划 #CPB饮食 #减脂 #鸡胸肉美食做法 #吃鸡胸肉一个月的变化",
+          "account": "月儿",
+          "contentUrl": "https://www.douyin.com/video/7630079244249900706",
+          "coverUrl": "https://p3-sign.douyinpic.com/tos-cn-i-dy/_offtrans__540x720_aae756ea11119e4e976b05b41cc57de0_d32c8d23f3fbee7284a46d76dd06e8ee1c4c104459bf87afb179e8f4ee4601bf_vvic~tplv-dy-aweme-images-offline.image?biz_tag=aweme_video&card_type=153&column_n=0&from=327834062&l=20260422134154FAA66ADF449DD59A8CEF&lk3s=138a59ce&s=PackSourceEnum_SEARCH_SIN&sc=origin_cover&se=false&x-expires=1778043600&x-signature=y%2Fr5KuyC%2BajFd1Byk4I4IjxWMsY%3D",
+          "fansLabel": "1,820 粉",
+          "fansCount": 1820,
+          "anomaly": 0,
+          "playCount": "0 播放",
+          "likeCount": 10,
+          "commentCount": 10,
+          "collectCount": 0,
+          "shareCount": 0,
+          "trackTags": [
+            "美食博主拍着拍着就倒闭了",
+            "收获了一身肥肉",
+            "今天开启CPB饮食了",
+            "你们都坚持了几天？#真实生活分享计划",
+            "#CPB饮食"
+          ],
+          "suggestion": "反差感故事开篇，互动提问拉参与，真实感强易引发共鸣",
+          "publishedAt": "2026-04-18T12:44:22.000Z"
+        }
+      ],
+      "evidenceGaps": [],
+      "whyNowItems": [
+        {
+          "sourceLabel": "内容供给",
+          "fact": "抖音 已有 10 条真实内容跑通，包括『45分钟高效燃脂，瘦腰瘦腿瘦全身🔥❗️』、『没什么基础 不知道怎么减肥减脂｜跟我们坚』、『想进步听话#减脂食谱』，同时命中 122 条热榜/热词。",
+          "inference": "这个方向已经有多条内容跑出数据，说明市场已经验证过这个内容类型。",
+          "userImpact": "可以直接参考『45分钟高效燃脂，瘦腰瘦腿瘦全身🔥❗️』、『没什么基础 不知道怎么减肥减脂｜跟我们坚』、『想进步听话#减脂食谱』的结构和表达方式。",
+          "tone": "positive"
+        },
+        {
+          "sourceLabel": "竞争格局",
+          "fact": "已有 6 个账号在做这个方向：1 个 KOL、5 个 KOC、4 个低粉账号，包括爱健身的菜同学、自律大帝、爱健身的发型师。",
+          "inference": "中小账号占比较高，说明这个方向对新号/低粉号比较友好。",
+          "userImpact": "已有 4 个低粉账号在做，说明低粉也有机会。",
+          "tone": "positive"
+        },
+        {
+          "sourceLabel": "用户需求",
+          "fact": "已采集 32 条评论数据，说明这个方向已有真实用户在主动搜索和讨论。",
+          "inference": "评论中的高频词可以直接用作标题和内容切入点。",
+          "userImpact": "可以用评论高频词反推标题和内容切口。",
+          "tone": "positive"
+        }
+      ],
+      "bestFor": [
+        "已采集 10 条真实内容、6 个账号、122 条热榜/热词，可以基于这些样本快速判断是否值得下注。"
+      ],
+      "notFor": [
+        "如果你只想看历史榜单而不关心动作编排，这页不是纯数据看板。"
+      ],
+      "accountMatchSummary": "已采集 10 条内容和 6 个账号，可以先用小样内容快速验证，同时继续积累数据。",
+      "bestActionNow": {
+        "type": "generate_test_brief",
+        "title": "今天直接开拍",
+        "description": "真实样本和市场扩散已经补齐，适合直接进入开拍方案。",
+        "ctaLabel": "拿开拍方案",
+        "reason": "当前真实证据足以支撑直接进入执行层。"
+      },
+      "whyNotOtherActions": [
+        "当前样本已经够支撑执行，不需要继续观望。"
+      ],
+      "missIfWait": "如果继续观望，可能错过这波机会的前期窗口。",
+      "operatorPanel": {
+        "reportSummary": "证据已补齐，可以直接进入执行。",
+        "sourceNotes": [
+          "数据来源：抖音实时搜索"
+        ],
+        "platformNotes": [
+          "抖音：已采集"
+        ],
+        "benchmarkHints": [
+          "爱健身的菜同学 · KOC",
+          "自律大帝 · 头部 KOL",
+          "爱健身的发型师 · KOC"
+        ],
+        "riskSplit": [
+          "本次采集到 10 条内容、6 个账号，各项证据方向一致。"
+        ],
+        "counterSignals": [],
+        "dataGaps": []
+      },
+      "screeningReport": {
+        "safeActionLevel": "shoot_now",
+        "evidenceAlignment": "medium",
+        "acceptedAccountIds": [
+          "MS4wLjABAAAAdLgrV--yf6_SaPgtzogqtg9w_VjPICc1MIWgzy1H04o",
+          "MS4wLjABAAAAlVPIaUw76oFQUmyMMqt2rk-pQfTGJ1YSJnyvicbxKNM",
+          "MS4wLjABAAAAWLIhi-qxxxKdZH0GSEdO2NSOLDcmZxezGc_NNbQtOX4",
+          "MS4wLjABAAAAmxVcfKlJ0p8_D_kbX9LxIACoQZek3V7KmpcUZ0cikvbd5Z0Cj5qvFt-bDXzBGYDT",
+          "MS4wLjABAAAAetNdo3J5G2kuUf8lbmEUQOFtFrQ8UfweQlffw_XUN1I",
+          "MS4wLjABAAAAwPS8lxXxs5UZ9pBL_tRwnMjAiVkLk9_eENU-Dswi38k"
+        ],
+        "acceptedContentIds": [
+          "7629245289187430644",
+          "7631063768973383658",
+          "7630857372035404145",
+          "7630810470290667627",
+          "7630079244249900706",
+          "7630311687552233894",
+          "7630753488510930929",
+          "7630731976802184566",
+          "7629571939216002358",
+          "7629649073389634917"
+        ],
+        "acceptedLowFollowerIds": [
+          "live_low_7629245289187430644",
+          "live_low_7630857372035404145",
+          "live_low_7630810470290667627",
+          "live_low_7630079244249900706"
+        ],
+        "missingEvidence": [],
+        "contradictionSummary": [
+          "各项证据方向一致。"
+        ],
+        "candidates": []
+      },
+      "primaryCard": {
+        "title": "今天直接开拍",
+        "ctaLabel": "拿开拍方案",
+        "description": "真实样本和市场扩散已经补齐，适合直接进入开拍方案。",
+        "reason": "当前真实证据足以支撑直接进入执行层。",
+        "previewSections": [
+          {
+            "title": "这次先拿走什么",
+            "items": [
+              "可以直接参考『45分钟高效燃脂，瘦腰瘦腿瘦全身🔥❗️』、『没什么基础 不知道怎么减肥减脂｜跟我们坚』、『想进步听话#减脂食谱』的结构和表达方式。",
+              "已有 4 个低粉账号在做，说明低粉也有机会。"
+            ]
+          }
+        ],
+        "continueIf": [
+          "新增支持账号、支持内容或评论意图时，可升级到更强动作。"
+        ],
+        "stopIf": [
+          "如果方向变化较大，可以考虑调整角度重新分析。"
+        ],
+        "evidenceRefs": [],
+        "actionMode": "open_deep_dive"
+      },
+      "secondaryCard": {
+        "title": "去看可抄样本",
+        "ctaLabel": "去看可抄样本",
+        "description": "优先看真实低粉样本，确认这波机会有没有可复制的早期结构。",
+        "reason": "已有低粉异常样本，最适合先验证可复制性。",
+        "previewSections": [
+          {
+            "title": "为什么是这个备选动作",
+            "items": [
+              "低粉异常样本已经出现，说明这波机会值得先拿样本做验证。"
+            ]
+          }
+        ],
+        "continueIf": [
+          "下一轮复查若补到更多真实样本，再决定是否升级主动作。"
+        ],
+        "stopIf": [
+          "如果后续证据继续稀疏，就保持观察而不是推进执行。"
+        ],
+        "evidenceRefs": [],
+        "actionMode": "open_deep_dive"
+      },
+      "fitSummary": "当前页重点是这波机会值不值得先下注、先验证还是先观察。",
+      "recommendedNextAction": {
+        "type": "generate_test_brief",
+        "title": "今天直接开拍",
+        "description": "真实样本和市场扩散已经补齐，适合直接进入开拍方案。",
+        "ctaLabel": "拿开拍方案",
+        "reason": "当前真实证据足以支撑直接进入执行层。"
+      },
+      "continueIf": [
+        "当采集到更多账号（当前 6 个）和内容样本（当前 10 条）时，可升级到更强执行动作。",
+        "热榜/热词已命中 122 条，如果继续上升可加大投入。"
+      ],
+      "stopIf": [
+        "如果多次采集后仍然只有 10 条内容和 6 个账号，建议放弃这波机会。"
+      ],
+      "commentInsight": {
+        "totalCommentsCollected": 32,
+        "highFreqKeywords": [
+          "开练",
+          "动作",
+          "回放",
+          "这节",
+          "节课"
+        ],
+        "sentimentSummary": "positive",
+        "demandSignals": [
+          "怎么感觉这个是库存啊？["
+        ],
+        "highlights": [
+          {
+            "contentId": "7631063768973383658",
+            "contentTitle": "没什么基础 不知道怎么减肥减脂｜跟我们坚持完成这套燃脂训练 每天2～4组 循序渐",
+            "topComments": [
+              {
+                "text": "开练已经练了五天休一天了",
+                "likeCount": 1,
+                "authorName": "倾向"
+              },
+              {
+                "text": "我也想瘦[飞吻]",
+                "likeCount": 1,
+                "authorName": "自律的小蟹"
+              },
+              {
+                "text": "想瘦",
+                "likeCount": 0,
+                "authorName": "江文Fan"
+              }
+            ],
+            "totalCommentCount": 11
+          },
+          {
+            "contentId": "7630857372035404145",
+            "contentTitle": "想进步听话#减脂食谱",
+            "topComments": [
+              {
+                "text": "一周三练，大哥有氧也是三次吗？？",
+                "likeCount": 0,
+                "authorName": "子枫"
+              }
+            ],
+            "totalCommentCount": 1
+          },
+          {
+            "contentId": "7630810470290667627",
+            "contentTitle": "今天的全身太猛了！牛一个周一次全身，这一次课的强度顶两节课🤭最后两个8公斤动作",
+            "topComments": [
+              {
+                "text": "心都蹦到嗓子眼了我直接看了一组[捂脸][捂脸]",
+                "likeCount": 1,
+                "authorName": "云曦🌞"
+              },
+              {
+                "text": "原来这个动作是这样的，我没做对过一次[捂脸]",
+                "likeCount": 0,
+                "authorName": "听喜欢的歌"
+              },
+              {
+                "text": "这周一的吗",
+                "likeCount": 0,
+                "authorName": "小七"
+              }
+            ],
+            "totalCommentCount": 20
+          }
+        ]
+      },
+      "normalizedBrief": {
+        "inputKind": "prompt",
+        "seedTopic": "健身减脂",
+        "industry": "健身减脂",
+        "candidatePlatforms": [
+          "douyin"
+        ],
+        "accountContext": "未提供账号连接，按公开平台数据做通用预测",
+        "competitorEvidence": [],
+        "personalizationMode": "public"
+      },
+      "platformSnapshots": [
+        {
+          "platformId": "douyin",
+          "platformName": "抖音",
+          "authMode": "public",
+          "predictionEnabled": true,
+          "callBudget": {
+            "topic": 6,
+            "link": 4,
+            "account": 5,
+            "cookieExtra": 5
+          },
+          "endpointFamilies": [
+            "fetch_hot_search_result",
+            "fetch_one_video_v2",
+            "fetch_user_post_videos",
+            "fetch_video_comments",
+            "creator_v2_*"
+          ],
+          "coreFields": [
+            "aweme_id",
+            "desc",
+            "create_time",
+            "author_id",
+            "follower_count",
+            "digg_count",
+            "comment_count",
+            "share_count",
+            "play_count",
+            "hashtag",
+            "hot_rank",
+            "traffic_source",
+            "search_keywords",
+            "audience_portrait"
+          ],
+          "capabilitySummary": [
+            "搜索",
+            "热榜",
+            "详情",
+            "评论",
+            "主页",
+            "创作者数据"
+          ],
+          "signals": [
+            "搜索需求",
+            "热榜加速度",
+            "评论反馈",
+            "账号画像"
+          ]
+        }
+      ],
+      "scoreBreakdown": {
+        "demand": 100,
+        "competition": 66,
+        "anomaly": 72,
+        "fit": 82,
+        "opportunity": 95,
+        "timing": 100,
+        "risk": 18
+      },
+      "recommendedLowFollowerSampleIds": [
+        "live_low_7629245289187430644",
+        "live_low_7630857372035404145",
+        "live_low_7630810470290667627",
+        "live_low_7630079244249900706"
+      ],
+      "hotSeedCount": 122,
+      "trendingTags": [
+        "#健身减脂",
+        "#健身减脂干货"
+      ],
+      "taskPayload": {
+        "kind": "opportunity_prediction",
+        "highlight": "「45分钟高效燃脂、瘦腰瘦腿瘦全身🔥❗️❗️❗️40岁宝妈居家健身已瘦20斤、跟着练就能瘦💦💦45分钟跟练+拉伸、动作简单、新手友好👬#减脂有氧运动」方向已有 10 条真实内容跑通，爱健身的菜同学、自律大帝、爱健身的发型师等已验证可行性，可以直接进入执行。",
+        "verdictLabel": "今天直接开拍",
+        "evidenceSummary": [
+          "抖音 已有 10 条真实内容跑通，包括『45分钟高效燃脂，瘦腰瘦腿瘦全身🔥❗️』、『没什么基础 不知道怎么减肥减脂｜跟我们坚』、『想进步听话#减脂食谱』，同时命中 122 条热榜/热词。",
+          "已有 6 个账号在做这个方向：1 个 KOL、5 个 KOC、4 个低粉账号，包括爱健身的菜同学、自律大帝、爱健身的发型师。",
+          "已采集 32 条评论数据，说明这个方向已有真实用户在主动搜索和讨论。"
+        ],
+        "bestActionReason": "当前真实证据足以支撑直接进入执行层。",
+        "supportingProofTitles": [
+          "45分钟高效燃脂，瘦腰瘦腿瘦全身🔥❗️❗️❗️40岁宝妈居家健身已瘦20斤，跟着练就能瘦💦💦45分钟跟练+拉伸，动作简单，新手友好👬#减脂有氧运动 #瘦腿提臀瘦全身 #瘦身塑形训练 #暴汗燃脂瘦全身 #瘦腰瘦腿瘦肚子",
+          "没什么基础 不知道怎么减肥减脂｜跟我们坚持完成这套燃脂训练 每天2～4组 循序渐进3个月 配合清淡饮食 肚子慢慢变小了 #减脂 #健身 #训练",
+          "想进步听话#减脂食谱",
+          "今天的全身太猛了！牛一个周一次全身，这一次课的强度顶两节课🤭最后两个8公斤动作燃爆了👍#晶晶力量 #晶晶力量训练回放 #种草激励计划 #真实生活分享计划 #全身训练 @抖音生活服务热点宝 @DOU+上热门"
+        ],
+        "trendOpportunities": [
+          {
+            "opportunityName": "新手居家燃脂",
+            "stage": "validated",
+            "opportunityScore": 85,
+            "timingScore": 88,
+            "oneLiner": "新手友好，低粉也能做，值得入局",
+            "whyNow": [
+              "已有低粉相关样本跑通数据",
+              "热榜命中122条，需求旺盛",
+              "内容门槛低，新手受众基数大"
+            ],
+            "doNow": "拍低强度居家跟练内容",
+            "observe": "观察同类型内容互动率变化",
+            "executableTopics": [
+              {
+                "title": "3个动作在家暴汗瘦肚子",
+                "hookType": "痛点钩子",
+                "angle": "无器械居家",
+                "estimatedDuration": "30-60秒"
+              },
+              {
+                "title": "新手每天2组，30天瘦10斤",
+                "hookType": "效果钩子",
+                "angle": "低门槛跟练",
+                "estimatedDuration": "60-90秒"
+              }
+            ],
+            "evidenceSummary": "低粉博主发布居家燃脂内容已有爆品案例，热榜匹配度高"
+          },
+          {
+            "opportunityName": "动作干货教学",
+            "stage": "validated",
+            "opportunityScore": 80,
+            "timingScore": 82,
+            "oneLiner": "需求稳定，内容易产出，可做",
+            "whyNow": [
+              "单条干货内容点赞超400",
+              "用户对正确动作需求明确",
+              "头部暂未垄断该细分内容"
+            ],
+            "doNow": "拆解常见动作正确姿势",
+            "observe": "观察干货内容的收藏率走势",
+            "executableTopics": [
+              {
+                "title": "平板支撑常见错误纠正",
+                "hookType": "干货钩子",
+                "angle": "动作纠错",
+                "estimatedDuration": "30-60秒"
+              },
+              {
+                "title": "4个无器械全身训练动作",
+                "hookType": "痛点钩子",
+                "angle": "高效动作合集",
+                "estimatedDuration": "60-90秒"
+              }
+            ],
+            "evidenceSummary": "动作干货类内容平均点赞超300，用户接受度高"
+          },
+          {
+            "opportunityName": "真实减脂记录",
+            "stage": "pre_burst",
+            "opportunityScore": 75,
+            "timingScore": 78,
+            "oneLiner": "信任度高，潜力大，可尝试",
+            "whyNow": [
+              "美食博主减脂打卡内容已出现",
+              "真实场景内容用户共鸣强",
+              "当前同类内容供给较少"
+            ],
+            "doNow": "拍普通人减脂日常vlog",
+            "observe": "观察打卡类内容的互动增长率",
+            "executableTopics": [
+              {
+                "title": "减脂第7天，我吃了这些",
+                "hookType": "好奇钩子",
+                "angle": "日常打卡",
+                "estimatedDuration": "30-60秒"
+              },
+              {
+                "title": "150斤减脂1个月变化记录",
+                "hookType": "对比钩子",
+                "angle": "变化展示",
+                "estimatedDuration": "60-90秒"
+              }
+            ],
+            "evidenceSummary": "已有真实减脂相关内容发布，当前样本量较少，潜力待验证"
+          }
+        ],
+        "overviewOneLiner": "健身减脂新手向内容低粉易出爆品"
+      },
+      "recommendedNextTasks": [
+        {
+          "taskIntent": "trend_watch",
+          "title": "监控「健身减脂 · 机」的变化",
+          "reason": "当前得分 95，建议建立监控等待更明确的时机。",
+          "actionLabel": "开启智能监控"
+        },
+        {
+          "taskIntent": "viral_breakdown",
+          "title": "拆解「健身减脂 · 机」的爆款样本",
+          "reason": "已采集 10 条内容，拆解热门样本的结构和表达方式。",
+          "actionLabel": "拆解爆款结构"
+        },
+        {
+          "taskIntent": "topic_strategy",
+          "title": "探索「健身减脂 · 机」的选题方向",
+          "reason": "基于当前数据信号，生成可执行的选题方案。",
+          "actionLabel": "生成可执行选题"
+        }
+      ],
+      "primaryArtifact": {
+        "artifactId": "artifact_seed_run_dc437d32-cd95-4132-a6fe-22004cd0da1c",
+        "runId": "run_dc437d32-cd95-4132-a6fe-22004cd0da1c",
+        "taskIntent": "opportunity_prediction",
+        "artifactType": "opportunity_memo",
+        "title": "健身减脂 · 机会判断",
+        "summary": "「45分钟高效燃脂、瘦腰瘦腿瘦全身🔥❗️❗️❗️40岁宝妈居家健身已瘦20斤、跟着练就能瘦💦💦45分钟跟练+拉伸、动作简单、新手友好👬#减脂有氧运动」方向已有 10 条真实内容跑通，爱健身的菜同学、自律大帝、爱健身的发型师等已验证可行性，可以直接进入执行。",
+        "payload": {
+          "kind": "opportunity_prediction",
+          "highlight": "「45分钟高效燃脂、瘦腰瘦腿瘦全身🔥❗️❗️❗️40岁宝妈居家健身已瘦20斤、跟着练就能瘦💦💦45分钟跟练+拉伸、动作简单、新手友好👬#减脂有氧运动」方向已有 10 条真实内容跑通，爱健身的菜同学、自律大帝、爱健身的发型师等已验证可行性，可以直接进入执行。",
+          "verdictLabel": "今天直接开拍",
+          "evidenceSummary": [
+            "抖音 已有 10 条真实内容跑通，包括『45分钟高效燃脂，瘦腰瘦腿瘦全身🔥❗️』、『没什么基础 不知道怎么减肥减脂｜跟我们坚』、『想进步听话#减脂食谱』，同时命中 122 条热榜/热词。",
+            "已有 6 个账号在做这个方向：1 个 KOL、5 个 KOC、4 个低粉账号，包括爱健身的菜同学、自律大帝、爱健身的发型师。",
+            "已采集 32 条评论数据，说明这个方向已有真实用户在主动搜索和讨论。"
+          ],
+          "bestActionReason": "当前真实证据足以支撑直接进入执行层。",
+          "supportingProofTitles": [
+            "45分钟高效燃脂，瘦腰瘦腿瘦全身🔥❗️❗️❗️40岁宝妈居家健身已瘦20斤，跟着练就能瘦💦💦45分钟跟练+拉伸，动作简单，新手友好👬#减脂有氧运动 #瘦腿提臀瘦全身 #瘦身塑形训练 #暴汗燃脂瘦全身 #瘦腰瘦腿瘦肚子",
+            "没什么基础 不知道怎么减肥减脂｜跟我们坚持完成这套燃脂训练 每天2～4组 循序渐进3个月 配合清淡饮食 肚子慢慢变小了 #减脂 #健身 #训练",
+            "想进步听话#减脂食谱",
+            "今天的全身太猛了！牛一个周一次全身，这一次课的强度顶两节课🤭最后两个8公斤动作燃爆了👍#晶晶力量 #晶晶力量训练回放 #种草激励计划 #真实生活分享计划 #全身训练 @抖音生活服务热点宝 @DOU+上热门"
+          ]
+        },
+        "snapshotRefs": [],
+        "createdAt": "2026-04-22T05:43:37.678Z",
+        "updatedAt": "2026-04-22T05:43:37.678Z",
+        "watchable": true,
+        "shareable": true
+      },
+      "agentRun": {
+        "runId": "run_dc437d32-cd95-4132-a6fe-22004cd0da1c",
+        "source": "example",
+        "taskIntent": "opportunity_prediction",
+        "taskIntentConfidence": "high",
+        "status": "degraded",
+        "brief": {
+          "inputKind": "prompt",
+          "seedTopic": "健身减脂",
+          "industry": "健身减脂",
+          "candidatePlatforms": [
+            "douyin"
+          ],
+          "accountContext": "未提供账号连接，按公开平台数据做通用预测",
+          "competitorEvidence": [],
+          "personalizationMode": "public"
+        },
+        "facts": {
+          "platformSnapshots": [
+            {
+              "platformId": "douyin",
+              "platformName": "抖音",
+              "authMode": "public",
+              "predictionEnabled": true,
+              "callBudget": {
+                "topic": 6,
+                "link": 4,
+                "account": 5,
+                "cookieExtra": 5
+              },
+              "endpointFamilies": [
+                "fetch_hot_search_result",
+                "fetch_one_video_v2",
+                "fetch_user_post_videos",
+                "fetch_video_comments",
+                "creator_v2_*"
+              ],
+              "coreFields": [
+                "aweme_id",
+                "desc",
+                "create_time",
+                "author_id",
+                "follower_count",
+                "digg_count",
+                "comment_count",
+                "share_count",
+                "play_count",
+                "hashtag",
+                "hot_rank",
+                "traffic_source",
+                "search_keywords",
+                "audience_portrait"
+              ],
+              "capabilitySummary": [
+                "搜索",
+                "热榜",
+                "详情",
+                "评论",
+                "主页",
+                "创作者数据"
+              ],
+              "signals": [
+                "搜索需求",
+                "热榜加速度",
+                "评论反馈",
+                "账号画像"
+              ]
+            }
+          ],
+          "scoreBreakdown": {
+            "demand": 100,
+            "competition": 66,
+            "anomaly": 72,
+            "fit": 82,
+            "opportunity": 95,
+            "timing": 100,
+            "risk": 18
+          },
+          "evidenceRefs": {
+            "supportingAccountIds": [
+              "acct-fatloss-log",
+              "acct-office-train",
+              "acct-postpartum-fit"
+            ],
+            "supportingContentIds": [
+              "content-fatloss-30d",
+              "content-office-train",
+              "content-plateau-fix"
+            ],
+            "lowFollowerSampleIds": [
+              "f3"
+            ]
+          }
+        },
+        "judgment": {
+          "title": "健身减脂 · 机会判断",
+          "summary": "「45分钟高效燃脂、瘦腰瘦腿瘦全身🔥❗️❗️❗️40岁宝妈居家健身已瘦20斤、跟着练就能瘦💦💦45分钟跟练+拉伸、动作简单、新手友好👬#减脂有氧运动」方向已有 10 条真实内容跑通，爱健身的菜同学、自律大帝、爱健身的发型师等已验证可行性，可以直接进入执行。",
+          "verdict": "go_now",
+          "confidenceLabel": "中",
+          "bestAction": {
+            "type": "generate_test_brief",
+            "title": "今天直接开拍",
+            "description": "真实样本和市场扩散已经补齐，适合直接进入开拍方案。",
+            "ctaLabel": "拿开拍方案",
+            "reason": "当前真实证据足以支撑直接进入执行层。"
+          }
+        },
+        "deliverables": [
+          {
+            "kind": "primary_result",
+            "title": "健身减脂 · 机会判断",
+            "description": "「45分钟高效燃脂、瘦腰瘦腿瘦全身🔥❗️❗️❗️40岁宝妈居家健身已瘦20斤、跟着练就能瘦💦💦45分钟跟练+拉伸、动作简单、新手友好👬#减脂有氧运动」方向已有 10 条真实内容跑通，爱健身的菜同学、自律大帝、爱健身的发型师等已验证可行性，可以直接进入执行。",
+            "ctaLabel": "开启智能监控"
+          }
+        ],
+        "recommendedNextTasks": [
+          {
+            "taskIntent": "trend_watch",
+            "title": "监控「健身减脂 · 机」的变化",
+            "reason": "当前得分 95，建议建立监控等待更明确的时机。",
+            "actionLabel": "开启智能监控"
+          },
+          {
+            "taskIntent": "viral_breakdown",
+            "title": "拆解「健身减脂 · 机」的爆款样本",
+            "reason": "已采集 10 条内容，拆解热门样本的结构和表达方式。",
+            "actionLabel": "拆解爆款结构"
+          },
+          {
+            "taskIntent": "topic_strategy",
+            "title": "探索「健身减脂 · 机」的选题方向",
+            "reason": "基于当前数据信号，生成可执行的选题方案。",
+            "actionLabel": "生成可执行选题"
+          }
+        ],
+        "artifacts": [
+          {
+            "artifactId": "artifact_seed_run_dc437d32-cd95-4132-a6fe-22004cd0da1c",
+            "runId": "run_dc437d32-cd95-4132-a6fe-22004cd0da1c",
+            "taskIntent": "opportunity_prediction",
+            "artifactType": "opportunity_memo",
+            "title": "健身减脂 · 机会判断",
+            "summary": "「45分钟高效燃脂、瘦腰瘦腿瘦全身🔥❗️❗️❗️40岁宝妈居家健身已瘦20斤、跟着练就能瘦💦💦45分钟跟练+拉伸、动作简单、新手友好👬#减脂有氧运动」方向已有 10 条真实内容跑通，爱健身的菜同学、自律大帝、爱健身的发型师等已验证可行性，可以直接进入执行。",
+            "payload": {
+              "kind": "opportunity_prediction",
+              "highlight": "「45分钟高效燃脂、瘦腰瘦腿瘦全身🔥❗️❗️❗️40岁宝妈居家健身已瘦20斤、跟着练就能瘦💦💦45分钟跟练+拉伸、动作简单、新手友好👬#减脂有氧运动」方向已有 10 条真实内容跑通，爱健身的菜同学、自律大帝、爱健身的发型师等已验证可行性，可以直接进入执行。",
+              "verdictLabel": "今天直接开拍",
+              "evidenceSummary": [
+                "抖音 已有 10 条真实内容跑通，包括『45分钟高效燃脂，瘦腰瘦腿瘦全身🔥❗️』、『没什么基础 不知道怎么减肥减脂｜跟我们坚』、『想进步听话#减脂食谱』，同时命中 122 条热榜/热词。",
+                "已有 6 个账号在做这个方向：1 个 KOL、5 个 KOC、4 个低粉账号，包括爱健身的菜同学、自律大帝、爱健身的发型师。",
+                "已采集 32 条评论数据，说明这个方向已有真实用户在主动搜索和讨论。"
+              ],
+              "bestActionReason": "当前真实证据足以支撑直接进入执行层。",
+              "supportingProofTitles": [
+                "45分钟高效燃脂，瘦腰瘦腿瘦全身🔥❗️❗️❗️40岁宝妈居家健身已瘦20斤，跟着练就能瘦💦💦45分钟跟练+拉伸，动作简单，新手友好👬#减脂有氧运动 #瘦腿提臀瘦全身 #瘦身塑形训练 #暴汗燃脂瘦全身 #瘦腰瘦腿瘦肚子",
+                "没什么基础 不知道怎么减肥减脂｜跟我们坚持完成这套燃脂训练 每天2～4组 循序渐进3个月 配合清淡饮食 肚子慢慢变小了 #减脂 #健身 #训练",
+                "想进步听话#减脂食谱",
+                "今天的全身太猛了！牛一个周一次全身，这一次课的强度顶两节课🤭最后两个8公斤动作燃爆了👍#晶晶力量 #晶晶力量训练回放 #种草激励计划 #真实生活分享计划 #全身训练 @抖音生活服务热点宝 @DOU+上热门"
+              ]
+            },
+            "snapshotRefs": [],
+            "createdAt": "2026-04-22T05:43:37.678Z",
+            "updatedAt": "2026-04-22T05:43:37.678Z",
+            "watchable": true,
+            "shareable": true
+          }
+        ],
+        "runtimeMeta": {
+          "createdAt": "2026-04-22T05:43:37.678Z",
+          "updatedAt": "2026-04-22T05:43:37.678Z",
+          "sourceMode": "live",
+          "executionStatus": "partial_success",
+          "usedPlatforms": [
+            "douyin"
+          ],
+          "usedRouteChain": [
+            "keyword_content_search:L1:/api/v1/douyin/search/fetch_general_search_v1",
+            "topic_discovery:L1:/api/v1/douyin/search/fetch_challenge_search_v2",
+            "hot_seed:L1:/api/v1/douyin/app/v3/fetch_hot_search_list",
+            "low_fan_billboard:L1:/api/v1/douyin/billboard/fetch_hot_total_low_fan_list",
+            "hot_search_billboard:L1:/api/v1/douyin/billboard/fetch_hot_total_search_list",
+            "hot_word_billboard:L1:/api/v1/douyin/billboard/fetch_hot_total_hot_word_list"
+          ],
+          "degradeFlags": [
+            "optional_endpoint_failed",
+            "sparse_comments"
+          ],
+          "endpointHealthVersion": "2026-04-22T05:43:37.653Z"
+        },
+        "degradeFlags": [
+          "optional_endpoint_failed",
+          "sparse_comments"
+        ],
+        "taskPayload": {
+          "kind": "opportunity_prediction",
+          "highlight": "「45分钟高效燃脂、瘦腰瘦腿瘦全身🔥❗️❗️❗️40岁宝妈居家健身已瘦20斤、跟着练就能瘦💦💦45分钟跟练+拉伸、动作简单、新手友好👬#减脂有氧运动」方向已有 10 条真实内容跑通，爱健身的菜同学、自律大帝、爱健身的发型师等已验证可行性，可以直接进入执行。",
+          "verdictLabel": "今天直接开拍",
+          "evidenceSummary": [
+            "抖音 已有 10 条真实内容跑通，包括『45分钟高效燃脂，瘦腰瘦腿瘦全身🔥❗️』、『没什么基础 不知道怎么减肥减脂｜跟我们坚』、『想进步听话#减脂食谱』，同时命中 122 条热榜/热词。",
+            "已有 6 个账号在做这个方向：1 个 KOL、5 个 KOC、4 个低粉账号，包括爱健身的菜同学、自律大帝、爱健身的发型师。",
+            "已采集 32 条评论数据，说明这个方向已有真实用户在主动搜索和讨论。"
+          ],
+          "bestActionReason": "当前真实证据足以支撑直接进入执行层。",
+          "supportingProofTitles": [
+            "45分钟高效燃脂，瘦腰瘦腿瘦全身🔥❗️❗️❗️40岁宝妈居家健身已瘦20斤，跟着练就能瘦💦💦45分钟跟练+拉伸，动作简单，新手友好👬#减脂有氧运动 #瘦腿提臀瘦全身 #瘦身塑形训练 #暴汗燃脂瘦全身 #瘦腰瘦腿瘦肚子",
+            "没什么基础 不知道怎么减肥减脂｜跟我们坚持完成这套燃脂训练 每天2～4组 循序渐进3个月 配合清淡饮食 肚子慢慢变小了 #减脂 #健身 #训练",
+            "想进步听话#减脂食谱",
+            "今天的全身太猛了！牛一个周一次全身，这一次课的强度顶两节课🤭最后两个8公斤动作燃爆了👍#晶晶力量 #晶晶力量训练回放 #种草激励计划 #真实生活分享计划 #全身训练 @抖音生活服务热点宝 @DOU+上热门"
+          ]
+        }
+      },
+      "classificationReasons": [
+        "当前示例模板更接近爆款预测任务。",
+        "prompt 明确在问爆款机会和爆款预测。",
+        "prompt 更像爆款预测和下注决策。"
+      ],
+      "followUps": []
+    }
   }
 }

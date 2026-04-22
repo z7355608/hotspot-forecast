@@ -4,7 +4,7 @@
     "method": "POST",
     "capability": "keyword_content_search",
     "sampleParams": {
-      "keyword": "健身减脂博主",
+      "keyword": "健身减脂干货",
       "cursor": 0,
       "sort_type": "0",
       "publish_time": "7",
@@ -15,10 +15,10 @@
     },
     "httpStatus": 200,
     "businessCode": 200,
-    "requestId": "b236fcac-537a-43ab-b8af-9f9f819c745c",
+    "requestId": "6ca0ccbf-61f2-4c53-8faf-95980a35b505",
     "stable": true,
     "tier": "L1",
-    "verifiedAt": "2026-04-22T03:30:01.451Z",
+    "verifiedAt": "2026-04-22T05:42:01.217Z",
     "consecutiveFails": 0
   },
   "POST /api/v1/douyin/search/fetch_challenge_search_v2": {
@@ -26,7 +26,7 @@
     "method": "POST",
     "capability": "topic_discovery",
     "sampleParams": {
-      "keyword": "健身减脂博主",
+      "keyword": "健身减脂干货",
       "cursor": 0,
       "sort_type": "0",
       "publish_time": "7",
@@ -37,10 +37,10 @@
     },
     "httpStatus": 200,
     "businessCode": 200,
-    "requestId": "bf22d0f6-1940-4972-a686-a37dbfcc9239",
+    "requestId": "6fd96053-c200-4250-b096-a6379d07446a",
     "stable": true,
     "tier": "L1",
-    "verifiedAt": "2026-04-22T03:30:04.322Z",
+    "verifiedAt": "2026-04-22T05:42:03.698Z",
     "consecutiveFails": 0
   },
   "GET /api/v1/douyin/app/v3/fetch_hot_search_list": {
@@ -53,10 +53,10 @@
     },
     "httpStatus": 200,
     "businessCode": 200,
-    "requestId": "c127a6f5-a639-4da6-9a7a-ee37cf96dfe4",
+    "requestId": "85aab6d5-cc00-43be-b66d-b96952ffef3d",
     "stable": true,
     "tier": "L1",
-    "verifiedAt": "2026-04-22T03:30:06.434Z",
+    "verifiedAt": "2026-04-22T05:42:06.051Z",
     "consecutiveFails": 0
   },
   "POST /api/v1/douyin/billboard/fetch_hot_total_low_fan_list": {
@@ -66,10 +66,10 @@
     "sampleParams": {},
     "httpStatus": 200,
     "businessCode": 200,
-    "requestId": "4771123a-3f41-40c1-9eae-b46e553a1551",
+    "requestId": "d8f5c8cc-986f-4fdb-bf23-fc99f8c96b90",
     "stable": true,
     "tier": "L1",
-    "verifiedAt": "2026-04-22T03:30:08.139Z",
+    "verifiedAt": "2026-04-22T05:42:08.249Z",
     "consecutiveFails": 0
   },
   "POST /api/v1/douyin/billboard/fetch_hot_total_search_list": {
@@ -79,10 +79,10 @@
     "sampleParams": {},
     "httpStatus": 200,
     "businessCode": 200,
-    "requestId": "8ef7baef-ae31-4f77-a34a-51c8be852fe8",
+    "requestId": "b5b5d263-6023-4891-b0b3-10d4e48a8986",
     "stable": true,
     "tier": "L1",
-    "verifiedAt": "2026-04-22T03:30:09.726Z",
+    "verifiedAt": "2026-04-22T05:42:09.941Z",
     "consecutiveFails": 0
   },
   "POST /api/v1/douyin/billboard/fetch_hot_total_hot_word_list": {
@@ -92,10 +92,10 @@
     "sampleParams": {},
     "httpStatus": 200,
     "businessCode": 200,
-    "requestId": "14a59c0c-2450-4144-b59a-c88d2544aaeb",
+    "requestId": "fe6a4de0-4aee-46be-90c0-75972e499eaf",
     "stable": true,
     "tier": "L1",
-    "verifiedAt": "2026-04-22T03:30:11.919Z",
+    "verifiedAt": "2026-04-22T05:42:11.085Z",
     "consecutiveFails": 0
   }
 }

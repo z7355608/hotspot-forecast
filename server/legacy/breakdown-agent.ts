@@ -245,7 +245,7 @@ ${topContents.map((c: Record<string, unknown>, i: number) => `### 样本 ${i + 1
 
 ## 真实账号样本（同赛道创作者）
 ${topAccounts.map((a: Record<string, unknown>, i: number) => `${i + 1}. **${a.name}** (@${a.handle}) · ${a.platform} · ${a.tier} · 粉丝 ${a.followers ?? "?"} · 内容方向：${(a.topics as string[] || []).join("、")}`).join("\n")}
-${lowFollowerEvidence.length > 0 ? "\n## 低粉爆款样本\n" + lowFollowerEvidence.map((e: Record<string, unknown>, i: number) => (i + 1) + ". 「" + e.title + "」— " + e.account + "(粉丝 " + e.fans + ") · 播放 " + e.playCount + " · 爆发因子 " + e.anomaly + "倍").join("\n") : ""}
+${lowFollowerEvidence.length > 0 ? "\n## 低粉爆款样本\n" + lowFollowerEvidence.map((e: Record<string, unknown>, i: number) => (i + 1) + ". 「" + e.title + "」— " + e.account + "(粉丝 " + e.fans + ") · " + e.playCount + " · 互动粉丝比 " + e.anomaly + "倍").join("\n") : ""}
 `.trim() : "";
 
   // 构建样本上下文描述
@@ -253,8 +253,8 @@ ${lowFollowerEvidence.length > 0 ? "\n## 低粉爆款样本\n" + lowFollowerEvid
 ## 样本信息
 - **标题**：${sampleTitle}
 - **平台**：${platform} · **内容形式**：${contentForm}
-- **账号量级**：${fansLabel} · **播放量**：${playCount}
-- **爆发因子**：${anomaly}倍(同量级账号平均值的 ${anomaly} 倍)
+- **账号量级**：${fansLabel} · **互动数据**：${playCount}
+- **互动粉丝比**：${anomaly}倍(同量级账号平均值的 ${anomaly} 倍)
 - **赛道标签**：${trackTags.join("、")}
 - **爆因分析**：${burstReasons.join("、")}
 ${breakdownSummary ? `- **拆解摘要**：${breakdownSummary}` : ""}
