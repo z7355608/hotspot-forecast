@@ -14,7 +14,7 @@ import {
   AlertCircle, ChevronDown, Play, ArrowRight,
   FileText, Search, Zap, ChevronUp,
   Rocket, Flame, Eye, Compass,
-  CheckCircle2, Clock, Lightbulb,
+  CheckCircle2, Clock, Lightbulb, Database,
 } from "lucide-react";
 import type { ArtifactRendererProps, CtaActionConfig, DeepDiveConfig, FollowUpAction, HeroMetricCard } from "../artifact-registry";
 import { registerArtifactRenderer } from "../artifact-registry";
@@ -641,72 +641,83 @@ function NewPredictionResultBody({ result }: ArtifactRendererProps) {
       </div>
 
       {/* ================================================================ */}
-      {/* 爆款预测选题 — 紧接第一屏结论下方，确保用户立即看到              */}
+      {/* 【AI 预测爆款选题】— 核心交付物，第一屏最重要的模块       */}
       {/* ================================================================ */}
       {result.aiTopicSuggestions && result.aiTopicSuggestions.length > 0 && (
-        <div className="rounded-[24px] border border-[#E9E5FF] bg-gradient-to-br from-[#FAFAFF] to-[#F3F0FF] p-6 shadow-[0px_2px_8px_rgba(137,121,255,0.08)]">
+        <div className="rounded-[24px] border-2 border-[#C4BBFF] bg-gradient-to-br from-[#FAFAFF] via-[#F5F3FF] to-[#EDE9FF] p-6 shadow-[0px_4px_20px_rgba(137,121,255,0.15)]">
           {/* 模块标题 */}
-          <div className="flex items-center gap-2 mb-5">
-            <div className="flex items-center justify-center w-8 h-8 rounded-full bg-gradient-to-br from-[#8979FF] to-[#6C5CE7]">
-              <Sparkles className="w-4 h-4 text-white" />
+          <div className="flex items-center gap-3 mb-6">
+            <div className="flex items-center justify-center w-10 h-10 rounded-full bg-gradient-to-br from-[#8979FF] to-[#6C5CE7] shadow-[0px_2px_8px_rgba(137,121,255,0.4)]">
+              <Sparkles className="w-5 h-5 text-white" />
             </div>
             <div>
-              <h3 className="text-[16px] font-semibold text-[#1E2939]">
-                爆款预测选题
+              <h3 className="text-[18px] font-bold text-[#1E2939]">
+                AI 预测爆款选题
               </h3>
-              <p className="text-[12px] text-[#8979FF] mt-0.5 font-medium">直接拍这几个一定会火</p>
+              <p className="text-[13px] text-[#8979FF] mt-0.5 font-semibold">直接拍这几个一定会火 · 基于真实数据推演</p>
             </div>
           </div>
 
-          {/* 横向滚动卡片组 */}
+          {/* 选题卡片组 */}
           <div className="flex gap-4 overflow-x-auto pb-2 -mx-1 px-1 snap-x snap-mandatory scrollbar-thin scrollbar-thumb-[#E9E5FF] scrollbar-track-transparent">
             {result.aiTopicSuggestions.map((topic: AiTopicSuggestion, idx: number) => (
               <div
                 key={`ai-topic-${idx}`}
-                className="flex-shrink-0 w-[280px] snap-start rounded-[18px] border border-[#E9E5FF] bg-white p-5 shadow-[0px_1px_4px_rgba(137,121,255,0.06)] hover:shadow-[0px_4px_16px_rgba(137,121,255,0.12)] hover:border-[#C4BBFF] transition-all duration-200 flex flex-col"
+                className="flex-shrink-0 w-[320px] snap-start rounded-[18px] border border-[#E9E5FF] bg-white p-5 shadow-[0px_2px_8px_rgba(137,121,255,0.08)] hover:shadow-[0px_6px_24px_rgba(137,121,255,0.16)] hover:border-[#B5ABFF] transition-all duration-200 flex flex-col"
               >
                 {/* 序号徽章 + 爆款机率 */}
                 <div className="flex items-center gap-2 mb-3">
-                  <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-gradient-to-br from-[#8979FF] to-[#6C5CE7] text-white text-[11px] font-bold">
+                  <span className="inline-flex items-center justify-center w-7 h-7 rounded-full bg-gradient-to-br from-[#8979FF] to-[#6C5CE7] text-white text-[12px] font-bold shadow-sm">
                     {idx + 1}
                   </span>
                   {topic.score != null && (
-                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-bold"
+                    <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[12px] font-bold"
                       style={{
                         background: topic.score >= 85 ? "rgba(5,150,105,0.1)" : topic.score >= 70 ? "rgba(137,121,255,0.1)" : "rgba(217,119,6,0.1)",
                         color: topic.score >= 85 ? "#059669" : topic.score >= 70 ? "#8979FF" : "#D97706",
                       }}>
-                      <Flame className="w-3 h-3" />
+                      <Flame className="w-3.5 h-3.5" />
                       爆款机率 {topic.score}%
                     </span>
                   )}
                 </div>
 
                 {/* 爆款标题 */}
-                <h4 className="text-[15px] font-semibold text-[#1E2939] leading-[22px] mb-2 line-clamp-2">
+                <h4 className="text-[16px] font-bold text-[#1E2939] leading-[24px] mb-2 line-clamp-2">
                   {topic.title}
                 </h4>
 
                 {/* 切入角度 */}
-                <p className="text-[12px] text-[#6B7280] leading-[18px] mb-3 flex-1">
-                  <span className="text-[#8979FF] font-medium">切入角度：</span>
+                <p className="text-[13px] text-[#4A5565] leading-[20px] mb-3">
+                  <span className="text-[#8979FF] font-semibold">切入角度：</span>
                   {topic.angle}
                 </p>
 
+                {/* 核心标签 */}
+                {topic.tags && topic.tags.length > 0 && (
+                  <div className="flex flex-wrap gap-1.5 mb-3">
+                    {topic.tags.map((tag, ti) => (
+                      <span key={ti} className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium bg-[#F3F0FF] text-[#7C6BDB] border border-[#E9E5FF]">
+                        {tag}
+                      </span>
+                    ))}
+                  </div>
+                )}
+
                 {/* 对标参考 */}
                 {topic.referenceTitle && (
-                  <div className="rounded-[10px] bg-[#F9F8FF] border border-[#F3F0FF] px-3 py-2 mb-3">
-                    <div className="flex items-center gap-1.5">
-                      <Eye className="w-3 h-3 text-[#8979FF] shrink-0" />
-                      <span className="text-[11px] text-[#6B7280]">对标参考</span>
+                  <div className="rounded-[10px] bg-[#F9F8FF] border border-[#F3F0FF] px-3 py-2.5 mb-4">
+                    <div className="flex items-center gap-1.5 mb-1">
+                      <Eye className="w-3.5 h-3.5 text-[#8979FF] shrink-0" />
+                      <span className="text-[11px] text-[#8979FF] font-medium">对标参考</span>
                     </div>
-                    <p className="text-[11px] text-[#4A5565] mt-1 leading-[16px] line-clamp-2">
-                      「{topic.referenceTitle}」
+                    <p className="text-[12px] text-[#4A5565] leading-[18px] line-clamp-2">
+                      {topic.referenceAuthor ? `@${topic.referenceAuthor}：` : ""}「{topic.referenceTitle}」
                     </p>
                   </div>
                 )}
 
-                {/* 行动按钮 */}
+                {/* 行动按钮：生成开拍脚本 */}
                 <button
                   onClick={() => {
                     window.dispatchEvent(new CustomEvent("open-cta-editor", {
@@ -716,14 +727,16 @@ function NewPredictionResultBody({ result }: ArtifactRendererProps) {
                           directionTitle: topic.title,
                           directionDescription: topic.angle,
                           referenceTitle: topic.referenceTitle,
+                          referenceAuthor: topic.referenceAuthor,
+                          tags: topic.tags,
                         },
                       },
                     }));
                   }}
-                  className="mt-auto flex items-center justify-center gap-1.5 w-full py-2.5 rounded-[12px] bg-gradient-to-r from-[#8979FF] to-[#6C5CE7] text-white text-[13px] font-medium hover:from-[#7A6AEE] hover:to-[#5B4DD6] transition-all duration-200 shadow-[0px_2px_6px_rgba(137,121,255,0.3)]"
+                  className="mt-auto flex items-center justify-center gap-1.5 w-full py-3 rounded-[12px] bg-gradient-to-r from-[#8979FF] to-[#6C5CE7] text-white text-[14px] font-semibold hover:from-[#7A6AEE] hover:to-[#5B4DD6] transition-all duration-200 shadow-[0px_3px_10px_rgba(137,121,255,0.35)]"
                 >
-                  <Rocket className="w-3.5 h-3.5" />
-                  拿开拍方案
+                  <FileText className="w-4 h-4" />
+                  生成开拍脚本
                 </button>
               </div>
             ))}
@@ -870,8 +883,18 @@ function NewPredictionResultBody({ result }: ArtifactRendererProps) {
       </div>
 
       {/* ================================================================ */}
-      {/* 第三层：归因展开 — 全部默认折叠                                    */}
+      {/* 支撑证据区域 — 以上选题的预测依据                             */}
       {/* ================================================================ */}
+      <div className="relative space-y-4">
+        {/* 分割线 + 标题 */}
+        <div className="flex items-center gap-3 mb-1">
+          <div className="flex-1 h-px bg-gradient-to-r from-transparent via-[#E5E7EB] to-transparent" />
+          <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-[#F9FAFB] border border-[#F3F4F6]">
+            <Database className="w-3.5 h-3.5 text-[#99A1AF]" />
+            <span className="text-[12px] text-[#6B7280] font-medium">以上选题的预测依据（数据支撑）</span>
+          </div>
+          <div className="flex-1 h-px bg-gradient-to-r from-transparent via-[#E5E7EB] to-transparent" />
+        </div>
 
       {/* 异常数据提示 */}
       {abnormalCount > 0 && (
@@ -1119,6 +1142,8 @@ function NewPredictionResultBody({ result }: ArtifactRendererProps) {
           </div>
         </CollapsibleSection>
       )}
+
+      </div>{/* 支撑证据区域结束 */}
 
       <div className="h-4" />
     </div>

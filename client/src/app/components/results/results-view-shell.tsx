@@ -396,7 +396,11 @@ export function ResultsView({
   };
 
   /** CTA 按鈕点击后弹出编辑器，可接收选中方向的上下文 */
-  const handleCtaWithEditor = (ctaAction: CtaActionConfig, directionContext?: { title: string; description: string; tag?: string }) => {
+  const handleCtaWithEditor = (ctaAction: CtaActionConfig, directionContext?: { title: string; description: string; tag?: string; directionTitle?: string; directionDescription?: string; referenceTitle?: string; referenceAuthor?: string; tags?: string[] }) => {
+    // 兼容选题卡片传入的 directionTitle/directionDescription 字段
+    if (directionContext && !directionContext.title && directionContext.directionTitle) {
+      directionContext = { ...directionContext, title: directionContext.directionTitle, description: directionContext.directionDescription || directionContext.description };
+    }
     // watch_7d 特殊处理：直接加入智能监控，而不是生成观察计划文档
     if (ctaAction.id === "watch_7d") {
       handleEnsureWatch();
@@ -415,14 +419,33 @@ export function ResultsView({
       // live 模式：构建真实 SSE 请求体，向后端发起流式调用
       const payload = result.taskPayload;
       // 将选中方向的上下文融入 prompt，实现方向选择与 CTA 的联动
-      const dirPromptSuffix = directionContext
-        ? `\n用户选择的拍摄方向：「${directionContext.title}」。${directionContext.description ? `方向说明：${directionContext.description}` : ""}。请围绕这个方向生成内容。`
-        : "";
+      // 构建丰富的选题上下文 prompt
+      let dirPromptSuffix = "";
+      if (directionContext) {
+        const parts: string[] = [`\n用户选择的拍摄方向：「${directionContext.title}」。`];
+        if (directionContext.description) parts.push(`切入角度：${directionContext.description}。`);
+        if (directionContext.referenceTitle) {
+          parts.push(`对标参考：${directionContext.referenceAuthor ? `@${directionContext.referenceAuthor}的` : ""}「${directionContext.referenceTitle}」。`);
+        }
+        if (directionContext.tags?.length) {
+          parts.push(`核心标签：${directionContext.tags.join(" ")}。`);
+        }
+        parts.push("请围绕这个具体选题生成开拍脚本。");
+        dirPromptSuffix = parts.join("");
+      }
       const context: Record<string, unknown> = {
         userPrompt: ctaAction.prompt + dirPromptSuffix,
         resultTitle: result.title,
         resultQuery: result.query,
         selectedDirection: directionContext ?? null,
+        // 注入选题卡片的完整信息（如果来自选题卡片的点击）
+        ...(directionContext?.referenceTitle ? {
+          topicReference: {
+            title: directionContext.referenceTitle,
+            author: directionContext.referenceAuthor,
+          },
+        } : {}),
+        ...(directionContext?.tags?.length ? { topicTags: directionContext.tags } : {}),
       };
       // 注入样本上下文（breakdown_sample 类型）
       if (payload?.kind === "breakdown_sample") {

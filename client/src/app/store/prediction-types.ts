@@ -288,8 +288,12 @@ export interface AiTopicSuggestion {
   referenceTitle?: string;
   /** 对标样本ID */
   referenceId?: string;
+  /** 对标作者名称 */
+  referenceAuthor?: string;
   /** 爆款机率分数（0-100） */
   score?: number;
+  /** 核心标签（如 #居家减脂 #无器械健身） */
+  tags?: string[];
 }
 
 export interface PredictionCommentInsight {

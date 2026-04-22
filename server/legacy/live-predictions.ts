@@ -1387,7 +1387,8 @@ ${demandSignals}
       "title": "爆款标题（15-25字，直接可用）",
       "angle": "切入角度说明（25字以内）",
       "referenceTitle": "引用的真实样本标题",
-      "score": 88
+      "score": 88,
+      "tags": ["#标签1", "#标签2", "#标签3"]
     }
   ]
 }
@@ -1395,7 +1396,8 @@ ${demandSignals}
 注意：
 - 标题要有钩子感，能在前3秒抓住用户
 - 切入角度要具体，不要笼统的“拍一个XX视频”
-- 必须基于真实数据推演，不能脱离数据的编造`;
+- 必须基于真实数据推演，不能脱离数据的编造
+- tags 必须是 2-4 个与该选题直接相关的核心标签，每个以 # 开头`;
 
     const topicLlmResponse = await callLLM({
       modelId: "doubao",
@@ -1411,7 +1413,7 @@ ${demandSignals}
     const topicJsonMatch = topicLlmResponse.content.match(/\{[\s\S]*\}/);
     if (topicJsonMatch) {
       const parsed = JSON.parse(topicJsonMatch[0]) as {
-        topics?: Array<{ title?: string; angle?: string; referenceTitle?: string; score?: number }>;
+        topics?: Array<{ title?: string; angle?: string; referenceTitle?: string; score?: number; tags?: string[] }>;
       };
       if (Array.isArray(parsed.topics) && parsed.topics.length > 0) {
         aiTopicSuggestions = parsed.topics.slice(0, 3).map((t) => {
@@ -1422,12 +1424,17 @@ ${demandSignals}
           // 爆款机率分数：限制在 70-95 范围内
           const rawScore = typeof t.score === "number" ? t.score : 80;
           const clampedScore = Math.max(70, Math.min(95, rawScore));
+          // 确保 tags 格式正确（每个以 # 开头）
+          const rawTags = Array.isArray(t.tags) ? t.tags.filter((tag): tag is string => typeof tag === "string") : [];
+          const normalizedTags = rawTags.map((tag) => tag.startsWith("#") ? tag : `#${tag}`).slice(0, 4);
           return {
             title: t.title ?? "未命名选题",
             angle: t.angle ?? "",
             referenceTitle: t.referenceTitle,
             referenceId: refContent?.contentId,
+            referenceAuthor: refContent?.authorName ?? undefined,
             score: clampedScore,
+            tags: normalizedTags.length > 0 ? normalizedTags : undefined,
           };
         });
       }

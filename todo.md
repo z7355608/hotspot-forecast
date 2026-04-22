@@ -308,3 +308,31 @@
 ### Gap修复（系统审查）
 - [x] 同步覆盖 agentRun/run 内的 recommendedNextTasks，确保与 enrichedResult 一致
 - [x] 降级路径改为始终保留 likes>=1000 硬门槛（放宽时间范围而非放弃门槛）
+
+## 缺陷修复：分析失败 - API代理未接通真实数据后端
+
+- [ ] 排查"分析失败：当前环境未接通真实数据后端"的根因
+- [ ] 确保/api反向代理正确指向Node服务
+- [ ] 验证分析流程端到端可用
+
+## 结果页重构：从赛道分析升级为具体选题方案
+
+### P1：重构第一屏核心交付物（最高优先级）
+- [x] 第一屏爆发指数下方新增【AI 预测爆款选题】核心模块
+- [x] 每个选题方案包含：爆款标题、切入角度、对标参考（关联具体热门样本+作者）、核心标签
+- [x] 后端LLM调用增加核心标签（tags）字段生成
+- [x] AiTopicSuggestion类型新增tags和referenceAuthor字段
+- [x] 前端选题卡片展示完整信息（标题+角度+标签+对标作者+对标标题）
+
+### P2：将分析报告降级为支撑证据（高优先级）
+- [x] 在选题方案下方增加分割线，标题为“以上选题的预测依据（数据支撑）”
+- [x] 将“为什么现在值得拍”、“热门作品参考”、“低粉爆款归因”、“市场数据支撑”等模块收纳在支撑证据区域
+- [x] 视觉层级降级：选题方案为主角，数据分析为配角（Database图标+分割线+标题）
+
+### P3：强化下一步动作转化（中优先级）
+- [x] 每个选题卡片内放置主操作按钮[生成开拍脚本]
+- [x] 点击按钮将选题信息（标题、切入角度、对标样本、作者、标签）传递给脚本生成Agent
+- [x] 实现从“预测选题”到“生成脚本”的无缝衔接（dirPromptSuffix + topicReference + topicTags）
+- [x] 后端 breakdown-agent.ts context类型新增 topicReference/topicTags 字段
+- [x] shoot_plan prompt 显式消费 topicReference/topicTags（buildTopicContext 辅助函数）
+- [x] TypeScript编译0错误 + Legacy Bridge正常加载 + 49个测试全部通过

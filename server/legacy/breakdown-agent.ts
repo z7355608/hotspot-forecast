@@ -115,6 +115,12 @@ export interface BreakdownActionRequest {
     videoTranscript?: string;
     /** 解析到的视频标题（由后端预处理后注入） */
     videoTitle?: string;
+    /** AI选题卡片上下文（由前端点击“生成开拍脚本”按钮时注入） */
+    topicReference?: {
+      title: string;
+      author?: string;
+    };
+    topicTags?: string[];
     /** 选题策略 V2 上下文 */
     topicStrategyV2?: {
       track: string;
@@ -163,6 +169,24 @@ const SYSTEM_PROMPT = `你是一位专业的短视频爆款内容策略师，擅
 不要输出“好的”、“当然”等废话开头，直接输出内容。
 当前日期是 ${new Date().toISOString().slice(0, 10)}，所有内容必须基于当前时间点，不要引用过时的数据或案例。`;
 
+/** 构建 AI 选题卡片上下文（如果来自选题卡片的点击） */
+function buildTopicContext(
+  topicReference: BreakdownActionRequest["context"]["topicReference"],
+  topicTags: string[],
+): string {
+  if (!topicReference?.title) return "";
+  const parts: string[] = [];
+  parts.push(`## 用户选择的具体选题`);
+  parts.push(
+    `- **对标参考**：${topicReference.author ? `@${topicReference.author} 的` : ""}「${topicReference.title}」`,
+  );
+  if (topicTags.length > 0) {
+    parts.push(`- **核心标签**：${topicTags.join(" ")}`);
+  }
+  parts.push("");
+  return parts.join("\n");
+}
+
 function buildPrompt(req: BreakdownActionRequest): LLMMessage[] {
   const { actionId, context } = req;
   const {
@@ -199,6 +223,9 @@ function buildPrompt(req: BreakdownActionRequest): LLMMessage[] {
     bestFor = [],
     notFor = [],
     topicStrategyV2 = undefined as BreakdownActionRequest["context"]["topicStrategyV2"],
+    // AI 选题卡片上下文
+    topicReference = undefined as BreakdownActionRequest["context"]["topicReference"],
+    topicTags = [] as string[],
   } = context;
 
   const track = trackTags[0] ?? "内容";
@@ -679,7 +706,7 @@ ${userPrompt ? `**用户补充要求**：${userPrompt}` : ""}`;
       userMessage = hasOpportunityData
         ? `${opportunityContext}
 
-## 任务：生成开拍方案
+${buildTopicContext(topicReference, topicTags)}## 任务：生成开拍方案
 
 基于以上真实样本数据，为「${resultQuery}」赛道生成一版可直接开拍的完整方案。
 

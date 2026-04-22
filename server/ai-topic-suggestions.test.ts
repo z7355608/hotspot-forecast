@@ -1,7 +1,8 @@
 /**
  * AI 选题生成模块测试
  * ===================
- * 验证 AiTopicSuggestion 类型定义、数据透传、前端渲染器包含新模块
+ * 验证 AiTopicSuggestion 类型定义、数据透传、前端渲染器包含新模块、
+ * P1-P3 重构验证（选题方案+支撑证据+脚本生成衔接）
  */
 import { describe, it, expect } from "vitest";
 import * as fs from "node:fs";
@@ -20,24 +21,33 @@ describe("AiTopicSuggestion 类型定义", () => {
     expect(topic.angle).toBe("测试角度");
   });
 
-  it("应该支持可选的 referenceTitle 和 referenceId 字段", () => {
+  it("应该支持可选的 referenceTitle、referenceId、score、tags、referenceAuthor 字段", () => {
     const topic: AiTopicSuggestion = {
       title: "3天瘦5斤的减脂餐，不用挨饿也能瘦",
       angle: "用真实数据对比展示效果",
       referenceTitle: "我用这个方法一周瘦了8斤",
       referenceId: "content_123",
+      score: 88,
+      tags: ["#减脂餐", "#健康饮食"],
+      referenceAuthor: "爱健身的菜同学",
     };
     expect(topic.referenceTitle).toBe("我用这个方法一周瘦了8斤");
     expect(topic.referenceId).toBe("content_123");
+    expect(topic.score).toBe(88);
+    expect(topic.tags).toEqual(["#减脂餐", "#健康饮食"]);
+    expect(topic.referenceAuthor).toBe("爱健身的菜同学");
   });
 
-  it("referenceTitle 和 referenceId 可以为 undefined", () => {
+  it("所有可选字段可以为 undefined", () => {
     const topic: AiTopicSuggestion = {
       title: "测试标题",
       angle: "测试角度",
     };
     expect(topic.referenceTitle).toBeUndefined();
     expect(topic.referenceId).toBeUndefined();
+    expect(topic.score).toBeUndefined();
+    expect(topic.tags).toBeUndefined();
+    expect(topic.referenceAuthor).toBeUndefined();
   });
 });
 
@@ -72,7 +82,7 @@ describe("store-helpers.ts 包含 aiTopicSuggestions 透传逻辑", () => {
   });
 });
 
-describe("前端渲染器包含 AI 选题模块", () => {
+describe("P1：前端渲染器 — AI 预测爆款选题模块", () => {
   const rendererSource = fs.readFileSync(
     path.resolve(
       __dirname,
@@ -81,12 +91,12 @@ describe("前端渲染器包含 AI 选题模块", () => {
     "utf-8",
   );
 
-  it("应该包含 AI 选题模块标题", () => {
-    expect(rendererSource).toContain("爆款预测选题");
+  it("应该包含 AI 选题模块标题'AI 预测爆款选题'", () => {
+    expect(rendererSource).toContain("AI 预测爆款选题");
   });
 
-  it("应该包含'拿开拍方案'按钮", () => {
-    expect(rendererSource).toContain("拿开拍方案");
+  it("应该包含引导文案'直接拍这几个一定会火'", () => {
+    expect(rendererSource).toContain("直接拍这几个一定会火");
   });
 
   it("应该包含 aiTopicSuggestions 数据读取", () => {
@@ -101,16 +111,31 @@ describe("前端渲染器包含 AI 选题模块", () => {
     expect(rendererSource).toContain("切入角度");
   });
 
+  it("应该包含爆款机率分数展示", () => {
+    expect(rendererSource).toContain("爆款机率");
+    expect(rendererSource).toContain("topic.score");
+  });
+
+  it("应该包含核心标签展示", () => {
+    expect(rendererSource).toContain("topic.tags");
+  });
+
+  it("应该包含对标作者展示", () => {
+    expect(rendererSource).toContain("topic.referenceAuthor");
+  });
+
+  it("应该包含'生成开拍脚本'按钮", () => {
+    expect(rendererSource).toContain("生成开拍脚本");
+  });
+
   it("应该通过 open-cta-editor 事件触发行动", () => {
-    // 确认 AI 选题卡片的按钮使用了 open-cta-editor 事件
     expect(rendererSource).toContain("open-cta-editor");
     expect(rendererSource).toContain('ctaId: "shoot_plan"');
   });
 
-  it("爆款预测选题模块应该在第一屏结论之后、建议拍摄方向之前", () => {
-    // 用注释标记来定位位置，避免与其他文本混淆
+  it("选题模块应该在第一屏结论之后、建议拍摄方向之前", () => {
     const firstScreenComment = rendererSource.indexOf("第一层：结果先行");
-    const aiTopicComment = rendererSource.indexOf("爆款预测选题 — 紧接第一屏结论下方");
+    const aiTopicComment = rendererSource.indexOf("AI 预测爆款选题】— 核心交付物");
     const secondLayerComment = rendererSource.indexOf("第二层：动作建议");
     const hotWorksIdx = rendererSource.indexOf("热门作品参考");
     
@@ -118,19 +143,113 @@ describe("前端渲染器包含 AI 选题模块", () => {
     expect(aiTopicComment).toBeGreaterThan(-1);
     expect(secondLayerComment).toBeGreaterThan(-1);
     expect(hotWorksIdx).toBeGreaterThan(-1);
-    // 选题模块在第一屏之后、第二层之前
     expect(aiTopicComment).toBeGreaterThan(firstScreenComment);
     expect(aiTopicComment).toBeLessThan(secondLayerComment);
     expect(aiTopicComment).toBeLessThan(hotWorksIdx);
   });
+});
 
-  it("应该包含引导文案'直接拍这几个一定会火'", () => {
-    expect(rendererSource).toContain("直接拍这几个一定会火");
+describe("P2：支撑证据区域", () => {
+  const rendererSource = fs.readFileSync(
+    path.resolve(
+      __dirname,
+      "../client/src/app/components/results/renderers/new-prediction-result.tsx",
+    ),
+    "utf-8",
+  );
+
+  it("应该包含支撑证据分割线和标题", () => {
+    expect(rendererSource).toContain("以上选题的预测依据（数据支撑）");
   });
 
-  it("应该包含爆款机率分数展示", () => {
-    expect(rendererSource).toContain("爆款机率");
-    expect(rendererSource).toContain("topic.score");
+  it("支撑证据区域应该在选题模块和动作建议之后", () => {
+    const aiTopicIdx = rendererSource.indexOf("AI 预测爆款选题");
+    const evidenceIdx = rendererSource.indexOf("以上选题的预测依据（数据支撑）");
+    const secondLayerIdx = rendererSource.indexOf("第二层：动作建议");
+    
+    expect(aiTopicIdx).toBeGreaterThan(-1);
+    expect(evidenceIdx).toBeGreaterThan(-1);
+    expect(secondLayerIdx).toBeGreaterThan(-1);
+    expect(evidenceIdx).toBeGreaterThan(secondLayerIdx);
+  });
+
+  it("数据分析模块应该在支撑证据区域内", () => {
+    const evidenceIdx = rendererSource.indexOf("以上选题的预测依据（数据支撑）");
+    const whyNowIdx = rendererSource.indexOf("为什么现在值得拍");
+    const hotWorksIdx = rendererSource.indexOf("热门作品参考");
+    const lowFollowerIdx = rendererSource.indexOf("低粉爆款归因");
+    const marketIdx = rendererSource.indexOf("市场数据支撑");
+    const evidenceEndIdx = rendererSource.indexOf("支撑证据区域结束");
+    
+    expect(evidenceIdx).toBeGreaterThan(-1);
+    expect(evidenceEndIdx).toBeGreaterThan(-1);
+    // 所有数据模块都在支撑证据区域内
+    expect(whyNowIdx).toBeGreaterThan(evidenceIdx);
+    expect(whyNowIdx).toBeLessThan(evidenceEndIdx);
+    expect(hotWorksIdx).toBeGreaterThan(evidenceIdx);
+    expect(hotWorksIdx).toBeLessThan(evidenceEndIdx);
+    expect(lowFollowerIdx).toBeGreaterThan(evidenceIdx);
+    expect(lowFollowerIdx).toBeLessThan(evidenceEndIdx);
+    expect(marketIdx).toBeGreaterThan(evidenceIdx);
+    expect(marketIdx).toBeLessThan(evidenceEndIdx);
+  });
+
+  it("应该使用 Database 图标", () => {
+    expect(rendererSource).toContain("Database");
+  });
+});
+
+describe("P3：生成开拍脚本按钮上下文传递", () => {
+  const shellSource = fs.readFileSync(
+    path.resolve(
+      __dirname,
+      "../client/src/app/components/results/results-view-shell.tsx",
+    ),
+    "utf-8",
+  );
+
+  it("handleCtaWithEditor 应该支持扩展的 directionContext 类型", () => {
+    expect(shellSource).toContain("directionTitle?: string");
+    expect(shellSource).toContain("directionDescription?: string");
+    expect(shellSource).toContain("referenceTitle?: string");
+    expect(shellSource).toContain("referenceAuthor?: string");
+    expect(shellSource).toContain("tags?: string[]");
+  });
+
+  it("应该将选题的切入角度融入 prompt", () => {
+    expect(shellSource).toContain("切入角度");
+  });
+
+  it("应该将对标参考融入 prompt", () => {
+    expect(shellSource).toContain("对标参考");
+  });
+
+  it("应该将核心标签融入 prompt", () => {
+    expect(shellSource).toContain("核心标签");
+  });
+
+  it("应该注入 topicReference 到 SSE context", () => {
+    expect(shellSource).toContain("topicReference");
+  });
+
+  it("应该注入 topicTags 到 SSE context", () => {
+    expect(shellSource).toContain("topicTags");
+  });
+
+  it("选题卡片按钮应该传递完整的选题信息", () => {
+    const rendererSource = fs.readFileSync(
+      path.resolve(
+        __dirname,
+        "../client/src/app/components/results/renderers/new-prediction-result.tsx",
+      ),
+      "utf-8",
+    );
+    // 确认卡片按钮传递了所有必要字段
+    expect(rendererSource).toContain("directionTitle: topic.title");
+    expect(rendererSource).toContain("directionDescription: topic.angle");
+    expect(rendererSource).toContain("referenceTitle: topic.referenceTitle");
+    expect(rendererSource).toContain("referenceAuthor: topic.referenceAuthor");
+    expect(rendererSource).toContain("tags: topic.tags");
   });
 });
 
@@ -160,6 +279,14 @@ describe("后端 live-predictions.ts 包含 AI 选题 LLM 调用", () => {
   it("应该包含降级处理（LLM 调用失败时降级为空列表）", () => {
     expect(backendSource).toContain("AI选题生成失败，降级为空列表");
   });
+
+  it("应该包含 tags 字段生成", () => {
+    expect(backendSource).toContain("tags");
+  });
+
+  it("应该包含 referenceAuthor 字段处理", () => {
+    expect(backendSource).toContain("referenceAuthor");
+  });
 });
 
 describe("结果持久化恢复链路包含 aiTopicSuggestions 映射", () => {
@@ -182,32 +309,42 @@ describe("结果持久化恢复链路包含 aiTopicSuggestions 映射", () => {
     expect(resultsPageSource).toContain('typeof topic.referenceTitle === "string"');
     expect(resultsPageSource).toContain('typeof topic.referenceId === "string"');
   });
+
+  it("应该处理 score 字段映射", () => {
+    expect(resultsPageSource).toContain("topic.score");
+  });
 });
 
 describe("AI 选题数据格式验证", () => {
-  it("应该能正确解析 LLM 返回的 JSON 格式", () => {
+  it("应该能正确解析 LLM 返回的 JSON 格式（含 tags 和 score）", () => {
     const mockLlmResponse = JSON.stringify({
       topics: [
         {
           title: "3天瘦5斤的减脂餐，不用挨饿也能瘦",
           angle: "用真实体重数据对比，展示减脂效果",
           referenceTitle: "我用这个方法一周瘦了8斤",
+          score: 92,
+          tags: ["#减脂餐", "#健康饮食", "#瘦身"],
         },
         {
           title: "健身教练都不会告诉你的5个减脂误区",
           angle: "反常识切入，引发好奇心",
           referenceTitle: "减脂期千万别这样吃",
+          score: 85,
+          tags: ["#减脂误区", "#健身知识"],
         },
         {
           title: "上班族的懒人减脂计划，每天只需15分钟",
           angle: "针对上班族痛点，降低执行门槛",
           referenceTitle: "不去健身房也能练出马甲线",
+          score: 78,
+          tags: ["#懒人减脂", "#上班族"],
         },
       ],
     });
 
     const parsed = JSON.parse(mockLlmResponse) as {
-      topics?: Array<{ title?: string; angle?: string; referenceTitle?: string; score?: number }>;
+      topics?: Array<{ title?: string; angle?: string; referenceTitle?: string; score?: number; tags?: string[] }>;
     };
 
     expect(parsed.topics).toBeDefined();
@@ -221,15 +358,17 @@ describe("AI 选题数据格式验证", () => {
         angle: t.angle ?? "",
         referenceTitle: t.referenceTitle,
         score: clampedScore,
+        tags: t.tags,
       };
     });
 
     expect(suggestions[0].title).toBe("3天瘦5斤的减脂餐，不用挨饿也能瘦");
+    expect(suggestions[0].score).toBe(92);
+    expect(suggestions[0].tags).toEqual(["#减脂餐", "#健康饮食", "#瘦身"]);
     expect(suggestions[1].angle).toBe("反常识切入，引发好奇心");
+    expect(suggestions[1].score).toBe(85);
     expect(suggestions[2].referenceTitle).toBe("不去健身房也能练出马甲线");
-    // score 字段默认值应为 80（未提供时）
-    expect(suggestions[0].score).toBe(80);
-    expect(suggestions[1].score).toBe(80);
+    expect(suggestions[2].score).toBe(78);
   });
 
   it("应该处理空 topics 数组", () => {
