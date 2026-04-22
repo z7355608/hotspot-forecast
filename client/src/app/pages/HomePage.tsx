@@ -3,6 +3,7 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { AIWorkbench } from "../components/AIWorkbench";
 import { AnalysisView } from "../components/AnalysisView";
 import { LevelUpModal } from "../components/LevelUpModal";
+import { LiveDemoPreview } from "../components/LiveDemoPreview";
 import { useAppStore } from "../store/app-store";
 import type {
   PredictionRequestDraft,
@@ -10,7 +11,7 @@ import type {
 } from "../store/prediction-types";
 import type { ProgressEvent } from "../lib/live-predictions-api";
 import { useOnboarding, useTrack } from "../lib/onboarding-context";
-import { Sparkles, Zap } from "lucide-react";
+import { Play, Sparkles, X, Zap } from "lucide-react";
 
 type HomeState = "input" | "analyzing";
 
@@ -24,6 +25,7 @@ export function HomePage() {
   const [activeResultId, setActiveResultId] = useState("");
   const [fading, setFading] = useState(false);
   const [focusTrigger, setFocusTrigger] = useState(0);
+  const [showDemoDialog, setShowDemoDialog] = useState(false);
 
   const [submittedEntrySource, setSubmittedEntrySource] =
     useState<PredictionRequestEntrySource | undefined>();
@@ -180,7 +182,7 @@ export function HomePage() {
             />
           </div>
 
-          {/* 3. 快速示例标签 */}
+          {/* 3. 快速示例标签 + "看看效果"弹窗触发 */}
           <div className="mx-auto max-w-3xl px-4 sm:px-6 pb-4 pt-1">
             <div className="flex flex-wrap items-center justify-center gap-2">
               <span className="text-[11px] text-gray-300 mr-1">试试看：</span>
@@ -195,8 +197,38 @@ export function HomePage() {
                   {ex.label}
                 </button>
               ))}
+
+              {/* 分隔点 */}
+              <span className="text-gray-200">&middot;</span>
+
+              {/* "看看效果"按钮 — 打开弹窗 */}
+              <button
+                type="button"
+                onClick={() => {
+                  setShowDemoDialog(true);
+                  track("demo_dialog_opened");
+                }}
+                className="inline-flex items-center gap-1 rounded-full border border-dashed border-gray-200 bg-gray-50/50 px-3 py-1.5 text-[12px] text-gray-400 transition-all hover:border-gray-300 hover:text-gray-600 hover:bg-white active:scale-95"
+              >
+                <Play className="h-3 w-3" />
+                看看效果
+              </button>
             </div>
           </div>
+
+          {/* ═══════════════════════════════════════════════════════
+              Demo 弹窗 — 点击"看看效果"后展示
+              ═══════════════════════════════════════════════════════ */}
+          {showDemoDialog && (
+            <DemoDialog
+              onClose={() => setShowDemoDialog(false)}
+              onTryIt={() => {
+                setShowDemoDialog(false);
+                setFocusTrigger((v) => v + 1);
+                workbenchRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+              }}
+            />
+          )}
         </>
       ) : (
         <AnalysisView
@@ -213,6 +245,66 @@ export function HomePage() {
           fromCache={fromCache}
         />
       )}
+    </div>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/*  Demo 弹窗组件                                                       */
+/* ------------------------------------------------------------------ */
+
+function DemoDialog({
+  onClose,
+  onTryIt,
+}: {
+  onClose: () => void;
+  onTryIt: () => void;
+}) {
+  // 点击遮罩层关闭
+  const handleBackdropClick = useCallback(
+    (e: React.MouseEvent) => {
+      if (e.target === e.currentTarget) onClose();
+    },
+    [onClose],
+  );
+
+  // ESC 关闭
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [onClose]);
+
+  // 禁止背景滚动
+  useEffect(() => {
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, []);
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm animate-fade-in"
+      onClick={handleBackdropClick}
+    >
+      <div className="relative mx-4 w-full max-w-2xl rounded-2xl bg-white shadow-2xl animate-fade-in overflow-hidden">
+        {/* 关闭按钮 */}
+        <button
+          type="button"
+          onClick={onClose}
+          className="absolute right-3 top-3 z-10 flex h-7 w-7 items-center justify-center rounded-full bg-gray-100 text-gray-400 transition-colors hover:bg-gray-200 hover:text-gray-600"
+        >
+          <X className="h-3.5 w-3.5" />
+        </button>
+
+        {/* LiveDemoPreview 内容 */}
+        <div className="max-h-[80vh] overflow-y-auto">
+          <LiveDemoPreview onTryIt={onTryIt} />
+        </div>
+      </div>
     </div>
   );
 }

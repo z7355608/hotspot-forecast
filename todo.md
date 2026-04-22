@@ -201,3 +201,11 @@
 - [x] 修复不稳定key（key={i}改为基于内容的key）
 - [x] HomePage中progressEvents更新包裹startTransition降低优先级
 - [x] 编写22个测试验证修复逻辑（全部通过）
+
+## 缺陷修复：用户输入引导提示消失
+
+- [x] 排查输入框区域的用户引导提示消失的原因（LiveDemoPreview组件在之前切换真实数据时被删除）
+- [x] 恢复LiveDemoPreview组件和DemoDialog弹窗
+- [x] 恢复首页"看看效果"按钮
+- [x] 移除"查看完整报告"按钮（/results/demo路由已不存在）
+- [x] 浏览器验证弹窗正常显示（4种输入类型tab、打字机效果、概率条动画、CTA按钮）
