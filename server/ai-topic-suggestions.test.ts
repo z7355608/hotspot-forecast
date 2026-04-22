@@ -82,7 +82,7 @@ describe("前端渲染器包含 AI 选题模块", () => {
   );
 
   it("应该包含 AI 选题模块标题", () => {
-    expect(rendererSource).toContain("AI 为你生成的爆款选题");
+    expect(rendererSource).toContain("爆款预测选题");
   });
 
   it("应该包含'拿开拍方案'按钮", () => {
@@ -107,16 +107,30 @@ describe("前端渲染器包含 AI 选题模块", () => {
     expect(rendererSource).toContain('ctaId: "shoot_plan"');
   });
 
-  it("AI 选题模块应该在建议拍摄方向之后、热门作品参考之前", () => {
-    const directionIdx = rendererSource.indexOf("建议拍摄方向");
-    const aiTopicIdx = rendererSource.indexOf("AI 为你生成的爆款选题");
+  it("爆款预测选题模块应该在第一屏结论之后、建议拍摄方向之前", () => {
+    // 用注释标记来定位位置，避免与其他文本混淆
+    const firstScreenComment = rendererSource.indexOf("第一层：结果先行");
+    const aiTopicComment = rendererSource.indexOf("爆款预测选题 — 紧接第一屏结论下方");
+    const secondLayerComment = rendererSource.indexOf("第二层：动作建议");
     const hotWorksIdx = rendererSource.indexOf("热门作品参考");
     
-    expect(directionIdx).toBeGreaterThan(-1);
-    expect(aiTopicIdx).toBeGreaterThan(-1);
+    expect(firstScreenComment).toBeGreaterThan(-1);
+    expect(aiTopicComment).toBeGreaterThan(-1);
+    expect(secondLayerComment).toBeGreaterThan(-1);
     expect(hotWorksIdx).toBeGreaterThan(-1);
-    expect(aiTopicIdx).toBeGreaterThan(directionIdx);
-    expect(aiTopicIdx).toBeLessThan(hotWorksIdx);
+    // 选题模块在第一屏之后、第二层之前
+    expect(aiTopicComment).toBeGreaterThan(firstScreenComment);
+    expect(aiTopicComment).toBeLessThan(secondLayerComment);
+    expect(aiTopicComment).toBeLessThan(hotWorksIdx);
+  });
+
+  it("应该包含引导文案'直接拍这几个一定会火'", () => {
+    expect(rendererSource).toContain("直接拍这几个一定会火");
+  });
+
+  it("应该包含爆款机率分数展示", () => {
+    expect(rendererSource).toContain("爆款机率");
+    expect(rendererSource).toContain("topic.score");
   });
 });
 
@@ -193,21 +207,29 @@ describe("AI 选题数据格式验证", () => {
     });
 
     const parsed = JSON.parse(mockLlmResponse) as {
-      topics?: Array<{ title?: string; angle?: string; referenceTitle?: string }>;
+      topics?: Array<{ title?: string; angle?: string; referenceTitle?: string; score?: number }>;
     };
 
     expect(parsed.topics).toBeDefined();
     expect(parsed.topics!.length).toBe(3);
     
-    const suggestions: AiTopicSuggestion[] = parsed.topics!.map((t) => ({
-      title: t.title ?? "未命名选题",
-      angle: t.angle ?? "",
-      referenceTitle: t.referenceTitle,
-    }));
+    const suggestions: AiTopicSuggestion[] = parsed.topics!.map((t) => {
+      const rawScore = typeof t.score === "number" ? t.score : 80;
+      const clampedScore = Math.max(70, Math.min(95, rawScore));
+      return {
+        title: t.title ?? "未命名选题",
+        angle: t.angle ?? "",
+        referenceTitle: t.referenceTitle,
+        score: clampedScore,
+      };
+    });
 
     expect(suggestions[0].title).toBe("3天瘦5斤的减脂餐，不用挨饿也能瘦");
     expect(suggestions[1].angle).toBe("反常识切入，引发好奇心");
     expect(suggestions[2].referenceTitle).toBe("不去健身房也能练出马甲线");
+    // score 字段默认值应为 80（未提供时）
+    expect(suggestions[0].score).toBe(80);
+    expect(suggestions[1].score).toBe(80);
   });
 
   it("应该处理空 topics 数组", () => {
@@ -238,5 +260,53 @@ describe("AI 选题数据格式验证", () => {
     expect(suggestions[0].angle).toBe("");
     expect(suggestions[1].title).toBe("未命名选题");
     expect(suggestions[1].angle).toBe("只有角度");
+  });
+
+  it("爆款机率分数应被 clamp 在 70-95 范围内", () => {
+    const scores = [50, 70, 88, 95, 100];
+    const clamped = scores.map(s => Math.max(70, Math.min(95, s)));
+    expect(clamped).toEqual([70, 70, 88, 95, 95]);
+  });
+});
+
+describe("需求5：基于具体选题的下一步建议", () => {
+  const backendSource = fs.readFileSync(
+    path.resolve(__dirname, "legacy/live-predictions.ts"),
+    "utf-8",
+  );
+
+  it("应该包含基于选题生成下一步建议的逻辑", () => {
+    expect(backendSource).toContain("针对选题");
+    expect(backendSource).toContain("生成脚本");
+  });
+
+  it("应该在有选题时覆盖默认的 recommendedNextTasks", () => {
+    expect(backendSource).toContain("aiTopicSuggestions.length > 0");
+    expect(backendSource).toContain("contract.recommendedNextTasks");
+  });
+});
+
+describe("需求6：搜索接口数据筛选规则", () => {
+  const backendSource = fs.readFileSync(
+    path.resolve(__dirname, "legacy/live-predictions.ts"),
+    "utf-8",
+  );
+
+  it("应该包含点赞数筛选门槛", () => {
+    expect(backendSource).toContain("MIN_LIKE_THRESHOLD");
+    expect(backendSource).toContain("1000");
+  });
+
+  it("应该包含时间范围筛选逻辑", () => {
+    expect(backendSource).toContain("ONE_MONTH_MS");
+    expect(backendSource).toContain("publishedAt");
+  });
+
+  it("应该包含点赞数倒序排序", () => {
+    expect(backendSource).toContain("(b.likeCount ?? 0) - (a.likeCount ?? 0)");
+  });
+
+  it("应该包含数据不足时的降级逻辑", () => {
+    expect(backendSource).toContain("qualityFiltered.length >= 3");
   });
 });

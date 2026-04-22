@@ -3428,5 +3428,2457 @@
       ],
       "followUps": []
     }
+  },
+  "artifact_a4c550a2-132c-42d8-b17e-e12f9e3180cd": {
+    "artifactId": "artifact_a4c550a2-132c-42d8-b17e-e12f9e3180cd",
+    "clientResultId": "run_4007b4f6-673e-46bf-ad9e-5c15016e476b",
+    "taskIntent": "opportunity_prediction",
+    "artifactType": "opportunity_memo",
+    "createdAt": "2026-04-22T06:47:49.888Z",
+    "updatedAt": "2026-04-22T06:47:49.888Z",
+    "query": "健身减脂 赛道现在发什么会火？帮我找出具体可执行的选题",
+    "type": "爆款预测",
+    "title": "健身减脂 · 机会判断",
+    "summary": "「45分钟高效燃脂、瘦腰瘦腿瘦全身🔥❗️❗️❗️40岁宝妈居家健身已瘦20斤、跟着练就能瘦💦💦45分钟跟练+拉伸、动作简单、新手友好👬#减脂有氧运动」方向已有 10 条真实内容跑通，爱健身的菜同学、爱健身的发型师、奥瑞白等已验证可行性，可以直接进入执行。",
+    "platform": [
+      "抖音"
+    ],
+    "score": 95,
+    "scoreLabel": "强推",
+    "verdict": "go_now",
+    "windowStrength": "strong_now",
+    "confidenceLabel": "中",
+    "opportunityTitle": "健身减脂 · 机会判断",
+    "coreBet": "「45分钟高效燃脂、瘦腰瘦腿瘦全身🔥❗️❗️❗️40岁宝妈居家健身已瘦20斤、跟着练就能瘦💦💦45分钟跟练+拉伸、动作简单、新手友好👬#减脂有氧运动」方向已有 10 条真实内容跑通，爱健身的菜同学、爱健身的发型师、奥瑞白等已验证可行性，可以直接进入执行。",
+    "watchable": true,
+    "shareable": true,
+    "snapshot": {
+      "id": "run_4007b4f6-673e-46bf-ad9e-5c15016e476b",
+      "dataMode": "live",
+      "taskIntent": "opportunity_prediction",
+      "taskIntentConfidence": "high",
+      "entrySource": "example",
+      "title": "健身减脂 · 机会判断",
+      "summary": "「45分钟高效燃脂、瘦腰瘦腿瘦全身🔥❗️❗️❗️40岁宝妈居家健身已瘦20斤、跟着练就能瘦💦💦45分钟跟练+拉伸、动作简单、新手友好👬#减脂有氧运动」方向已有 10 条真实内容跑通，爱健身的菜同学、爱健身的发型师、奥瑞白等已验证可行性，可以直接进入执行。",
+      "primaryCtaLabel": "开启智能监控",
+      "query": "健身减脂 赛道现在发什么会火？帮我找出具体可执行的选题",
+      "modelId": "doubao",
+      "createdAt": "2026-04-22T06:47:49.698Z",
+      "updatedAt": "2026-04-22T06:47:49.698Z",
+      "type": "爆款预测",
+      "platform": [
+        "抖音"
+      ],
+      "score": 95,
+      "scoreLabel": "强推",
+      "verdict": "go_now",
+      "confidenceLabel": "中",
+      "opportunityTitle": "健身减脂 · 机会判断",
+      "opportunityType": "anomaly_window",
+      "windowStrength": "strong_now",
+      "coreBet": "「45分钟高效燃脂、瘦腰瘦腿瘦全身🔥❗️❗️❗️40岁宝妈居家健身已瘦20斤、跟着练就能瘦💦💦45分钟跟练+拉伸、动作简单、新手友好👬#减脂有氧运动」方向已有 10 条真实内容跑通，爱健身的菜同学、爱健身的发型师、奥瑞白等已验证可行性，可以直接进入执行。",
+      "decisionBoundary": "10 条内容 + 4 个账号已补齐，「健身减脂」可以直接进入执行。",
+      "marketEvidence": {
+        "evidenceWindowLabel": "实时抓取 · 4月22日",
+        "momentumLabel": "accelerating",
+        "kolCount": 0,
+        "kocCount": 4,
+        "newCreatorCount": 4,
+        "similarContentCount": 10,
+        "growth7d": 100,
+        "lowFollowerAnomalyRatio": 40,
+        "timingLabel": "已采集 10 条内容、4 个账号，建议先做小样验证。",
+        "tierBreakdown": {
+          "headKol": 0,
+          "standardKol": 0,
+          "strongKoc": 0,
+          "standardKoc": 4
+        }
+      },
+      "supportingAccounts": [
+        {
+          "accountId": "MS4wLjABAAAAdLgrV--yf6_SaPgtzogqtg9w_VjPICc1MIWgzy1H04o",
+          "displayName": "爱健身的菜同学",
+          "handle": "45963909241",
+          "platform": "抖音",
+          "profileUrl": "https://www.douyin.com/user/MS4wLjABAAAAdLgrV--yf6_SaPgtzogqtg9w_VjPICc1MIWgzy1H04o",
+          "tierLabel": "standard_koc",
+          "followerCount": 1029,
+          "followingCount": 378,
+          "totalLikeCount": 5217,
+          "avgEngagementRate30d": null,
+          "breakoutHitRate30d": null,
+          "recentTopicClusters": [],
+          "whyIncluded": ""
+        },
+        {
+          "accountId": "MS4wLjABAAAAWLIhi-qxxxKdZH0GSEdO2NSOLDcmZxezGc_NNbQtOX4",
+          "displayName": "爱健身的发型师",
+          "handle": "249949449db",
+          "platform": "抖音",
+          "profileUrl": "https://www.douyin.com/user/MS4wLjABAAAAWLIhi-qxxxKdZH0GSEdO2NSOLDcmZxezGc_NNbQtOX4",
+          "tierLabel": "standard_koc",
+          "followerCount": 372,
+          "followingCount": 433,
+          "totalLikeCount": 13796,
+          "avgEngagementRate30d": null,
+          "breakoutHitRate30d": null,
+          "recentTopicClusters": [],
+          "whyIncluded": ""
+        },
+        {
+          "accountId": "MS4wLjABAAAAmxVcfKlJ0p8_D_kbX9LxIACoQZek3V7KmpcUZ0cikvbd5Z0Cj5qvFt-bDXzBGYDT",
+          "displayName": "奥瑞白",
+          "handle": "dyonf0brzrr4",
+          "platform": "抖音",
+          "profileUrl": "https://www.douyin.com/user/MS4wLjABAAAAmxVcfKlJ0p8_D_kbX9LxIACoQZek3V7KmpcUZ0cikvbd5Z0Cj5qvFt-bDXzBGYDT",
+          "tierLabel": "standard_koc",
+          "followerCount": 1092,
+          "followingCount": 105,
+          "totalLikeCount": 31979,
+          "avgEngagementRate30d": null,
+          "breakoutHitRate30d": null,
+          "recentTopicClusters": [],
+          "whyIncluded": ""
+        },
+        {
+          "accountId": "MS4wLjABAAAAetNdo3J5G2kuUf8lbmEUQOFtFrQ8UfweQlffw_XUN1I",
+          "displayName": "月儿",
+          "handle": "",
+          "platform": "抖音",
+          "profileUrl": "https://www.douyin.com/user/MS4wLjABAAAAetNdo3J5G2kuUf8lbmEUQOFtFrQ8UfweQlffw_XUN1I",
+          "tierLabel": "standard_koc",
+          "followerCount": 1820,
+          "followingCount": 302,
+          "totalLikeCount": 14105,
+          "avgEngagementRate30d": null,
+          "breakoutHitRate30d": null,
+          "recentTopicClusters": [],
+          "whyIncluded": ""
+        }
+      ],
+      "supportingContents": [
+        {
+          "contentId": "7629245289187430644",
+          "title": "45分钟高效燃脂，瘦腰瘦腿瘦全身🔥❗️❗️❗️40岁宝妈居家健身已瘦20斤，跟着练就能瘦💦💦45分钟跟练+拉伸，动作简单，新手友好👬#减脂有氧运动 #瘦腿提臀瘦全身 #瘦身塑形训练 #暴汗燃脂瘦全身 #瘦腰瘦腿瘦肚子",
+          "authorName": "爱健身的菜同学",
+          "platform": "抖音",
+          "publishedAt": "2026-04-16T10:58:00.000Z",
+          "contentUrl": "https://www.douyin.com/video/7629245289187430644",
+          "coverUrl": "https://p3-sign.douyinpic.com/tos-cn-p-0015/oki9mLn08A7jAObBi7NDHehBDQgfIUD0A0zgIB~tplv-dy-360p.webp?biz_tag=aweme_video&card_type=153&column_n=0&from=327834062&l=20260422144548440A9C68DD3487A18A60&lk3s=138a59ce&s=PackSourceEnum_SEARCH_SIN&sc=origin_cover&se=false&x-expires=1778047200&x-signature=QOymR38Mk15UefzC%2FSacpmY7Dbw%3D",
+          "viewCount": 0,
+          "likeCount": 10,
+          "commentCount": 0,
+          "shareCount": 0,
+          "collectCount": 3,
+          "structureSummary": "45分钟高效燃脂，瘦腰瘦腿瘦全身🔥❗️❗️❗️40岁宝妈居家健身已瘦20斤，跟着练就能瘦💦\ud83d",
+          "keywordTokens": [
+            "45分钟高效燃脂",
+            "瘦腰瘦腿瘦全身🔥❗️❗️❗️40岁宝妈居家健身已瘦20斤",
+            "跟着练就能瘦💦💦45分钟跟练+拉伸",
+            "动作简单",
+            "新手友好👬#减脂有氧运动"
+          ],
+          "whyIncluded": "",
+          "authorFollowerCount": 1029
+        },
+        {
+          "contentId": "7630857372035404145",
+          "title": "想进步听话#减脂食谱",
+          "authorName": "爱健身的发型师",
+          "platform": "抖音",
+          "publishedAt": "2026-04-20T15:03:54.000Z",
+          "contentUrl": "https://www.douyin.com/video/7630857372035404145",
+          "coverUrl": "https://p26-sign.douyinpic.com/tos-cn-i-0813c000-ce/ocAOAfUfDJDTFAHBfmEQIlEDzE8IUC8gk97DBA~tplv-dy-360p.webp?biz_tag=aweme_images&card_type=303&column_n=0&from=327834062&l=2026042214454865DE4E67828CD8A3E226&lk3s=138a59ce&s=PackSourceEnum_SEARCH_SIN&sc=origin_cover&se=false&x-expires=1778047200&x-signature=qsCLcljILuW5y1FdN31bQehuHUw%3D",
+          "viewCount": 0,
+          "likeCount": 20,
+          "commentCount": 2,
+          "shareCount": 0,
+          "collectCount": 1,
+          "structureSummary": "想进步听话#减脂食谱",
+          "keywordTokens": [
+            "想进步听话#减脂食谱"
+          ],
+          "whyIncluded": "",
+          "authorFollowerCount": 372
+        },
+        {
+          "contentId": "7630810470290667627",
+          "title": "今天的全身太猛了！牛一个周一次全身，这一次课的强度顶两节课🤭最后两个8公斤动作燃爆了👍#晶晶力量 #晶晶力量训练回放 #种草激励计划 #真实生活分享计划 #全身训练 @抖音生活服务热点宝 @DOU+上热门",
+          "authorName": "奥瑞白",
+          "platform": "抖音",
+          "publishedAt": "2026-04-20T12:01:54.000Z",
+          "contentUrl": "https://www.douyin.com/video/7630810470290667627",
+          "coverUrl": "https://p3-sign.douyinpic.com/tos-cn-p-0015/oQipbbL08AgLAl2Bi5WwHeFBDSmfIatMANjgIB~tplv-dy-360p.webp?biz_tag=aweme_video&card_type=153&column_n=0&from=327834062&l=20260422144548440A9C68DD3487A18A60&lk3s=138a59ce&s=PackSourceEnum_SEARCH_SIN&sc=origin_cover&se=false&x-expires=1778047200&x-signature=bV2TQtZVHsnECo3CABkxIDK%2BvAo%3D",
+          "viewCount": 0,
+          "likeCount": 105,
+          "commentCount": 98,
+          "shareCount": 24,
+          "collectCount": 12,
+          "structureSummary": "今天的全身太猛了！牛一个周一次全身，这一次课的强度顶两节课🤭最后两个8公斤动作燃爆了👍#晶晶",
+          "keywordTokens": [
+            "今天的全身太猛了！牛一个周一次全身",
+            "这一次课的强度顶两节课🤭最后两个8公斤动作燃爆了👍#晶晶力量",
+            "#晶晶力量训练回放",
+            "#种草激励计划",
+            "#真实生活分享计划"
+          ],
+          "whyIncluded": "",
+          "authorFollowerCount": 1092
+        },
+        {
+          "contentId": "7630079244249900706",
+          "title": "美食博主拍着拍着就倒闭了，收获了一身肥肉，今天开启CPB饮食了，你们都坚持了几天？#真实生活分享计划 #CPB饮食 #减脂 #鸡胸肉美食做法 #吃鸡胸肉一个月的变化",
+          "authorName": "月儿",
+          "platform": "抖音",
+          "publishedAt": "2026-04-18T12:44:22.000Z",
+          "contentUrl": "https://www.douyin.com/video/7630079244249900706",
+          "coverUrl": "https://p3-sign.douyinpic.com/tos-cn-p-0015/owTaafN5XCKBvAX78BAAbVBI0xBpAx8eQdeMQx~tplv-dy-360p.webp?biz_tag=aweme_video&card_type=153&column_n=0&from=327834062&l=202604221445516D30102D05C863A3DC19&lk3s=138a59ce&s=PackSourceEnum_SEARCH_SIN&sc=origin_cover&se=false&x-expires=1778047200&x-signature=RLeafg8QskuswdLmMzY5FnGtEZM%3D",
+          "viewCount": 0,
+          "likeCount": 10,
+          "commentCount": 10,
+          "shareCount": 0,
+          "collectCount": 0,
+          "structureSummary": "美食博主拍着拍着就倒闭了，收获了一身肥肉，今天开启CPB饮食了，你们都坚持了几天？#真实生活分享",
+          "keywordTokens": [
+            "美食博主拍着拍着就倒闭了",
+            "收获了一身肥肉",
+            "今天开启CPB饮食了",
+            "你们都坚持了几天？#真实生活分享计划",
+            "#CPB饮食"
+          ],
+          "whyIncluded": "",
+          "authorFollowerCount": 1820
+        },
+        {
+          "contentId": "7630753488510930929",
+          "title": "无复杂器械，解锁全身训练，4个高效动作，力量+塑形+燃脂一步到位，打造紧致有型好身材#减脂塑形 #健身干货 #热门训练计划",
+          "authorName": "苏超爱练",
+          "platform": "抖音",
+          "publishedAt": "2026-04-20T08:20:47.000Z",
+          "contentUrl": "https://www.douyin.com/video/7630753488510930929",
+          "coverUrl": "https://p26-sign.douyinpic.com/tos-cn-p-0015c000-ce/ocf7QBEV835sHyoLIDCGQWYwgCFeJTAeyYD8QE~tplv-dy-360p.webp?biz_tag=aweme_video&card_type=153&column_n=0&from=327834062&l=2026042214454865DE4E67828CD8A3E226&lk3s=138a59ce&s=PackSourceEnum_SEARCH_SIN&sc=origin_cover&se=false&x-expires=1778047200&x-signature=qNZRw5c8VYB4EKxAJDEr56hFURg%3D",
+          "viewCount": 0,
+          "likeCount": 448,
+          "commentCount": 24,
+          "shareCount": 93,
+          "collectCount": 587,
+          "structureSummary": "无复杂器械，解锁全身训练，4个高效动作，力量+塑形+燃脂一步到位，打造紧致有型好身材#减脂塑形 ",
+          "keywordTokens": [
+            "无复杂器械",
+            "解锁全身训练",
+            "4个高效动作",
+            "力量+塑形+燃脂一步到位",
+            "打造紧致有型好身材#减脂塑形"
+          ],
+          "whyIncluded": "",
+          "authorFollowerCount": 0
+        },
+        {
+          "contentId": "7629726963578334857",
+          "title": "你们不要再陷入减脂误区了  #减脂餐 #减脂 #健身 #健身干货 #健身教学",
+          "authorName": "老炮讲健身",
+          "platform": "抖音",
+          "publishedAt": "2026-04-17T13:57:20.000Z",
+          "contentUrl": "https://www.douyin.com/video/7629726963578334857",
+          "coverUrl": "https://p3-sign.douyinpic.com/tos-cn-i-dy/_offtrans__960x540_0b923cabdbe020ef7eb11a2dfe48415d_d32c8d23f3fbee7284a46d76dd06e8ee1c4c104459bf87afb179e8f4ee4601bf_vvic~tplv-dy-aweme-images-offline.image?biz_tag=aweme_video&card_type=153&column_n=0&from=327834062&l=2026042214454865DE4E67828CD8A3E226&lk3s=138a59ce&s=PackSourceEnum_SEARCH_SIN&sc=origin_cover&se=false&x-expires=1778047200&x-signature=KLYyDW4PoYsrACtl5S%2FNF1vKPpw%3D",
+          "viewCount": 0,
+          "likeCount": 67,
+          "commentCount": 2,
+          "shareCount": 10,
+          "collectCount": 11,
+          "structureSummary": "你们不要再陷入减脂误区了  #减脂餐 #减脂 #健身 #健身干货 #健身教学",
+          "keywordTokens": [
+            "你们不要再陷入减脂误区了",
+            "#减脂餐",
+            "#减脂",
+            "#健身",
+            "#健身干货"
+          ],
+          "whyIncluded": "",
+          "authorFollowerCount": 0
+        },
+        {
+          "contentId": "7630757423661958523",
+          "title": "你以为的1kg脂肪vs 真实的1kg脂肪。很多人对脂肪的体积完全没概念，以为减1kg脂肪就是掉一点点肉，实际上，1kg纯脂肪的体积比你想象中要大得多！\n\n✅ 1kg脂肪是：\n• 热量：理论上需要约7700大卡的热量缺口才能消耗\n• 体积：约等于1.1升左右，相当于两瓶普通矿泉水的体积，比多数人想象的要大得多\n\n💡 减脂真相：\n体重秤上掉1kg，大部分是水分和糖原，纯脂肪消耗的速度和体积，远比你以为的要“顽固”，所以别再为短期的体重波动焦虑了，看体脂率和围度变化才更靠谱！#减脂小知识 #减肥干货 #塑形瘦身 #健身饮食 #真实生活分享计划",
+          "authorName": "追龙打虎",
+          "platform": "抖音",
+          "publishedAt": "2026-04-20T08:36:03.000Z",
+          "contentUrl": "https://www.douyin.com/video/7630757423661958523",
+          "coverUrl": "https://p26-sign.douyinpic.com/tos-cn-i-0813c000-ce/o0WB2fel5g07DNAIA2fEAtE85JyFErdJTQV1AD~tplv-dy-360p.webp?biz_tag=aweme_images&card_type=303&column_n=0&from=327834062&l=2026042214454865DE4E67828CD8A3E226&lk3s=138a59ce&s=PackSourceEnum_SEARCH_SIN&sc=origin_cover&se=false&x-expires=1778047200&x-signature=SJjPyXM7t1EL4Mc%2FedRHvjHi%2FEk%3D",
+          "viewCount": 0,
+          "likeCount": 575,
+          "commentCount": 48,
+          "shareCount": 181,
+          "collectCount": 207,
+          "structureSummary": "你以为的1kg脂肪vs 真实的1kg脂肪。很多人对脂肪的体积完全没概念，以为减1kg脂肪就是掉一",
+          "keywordTokens": [
+            "你以为的1kg脂肪vs",
+            "真实的1kg脂肪。很多人对脂肪的体积完全没概念",
+            "以为减1kg脂肪就是掉一点点肉",
+            "实际上",
+            "1kg纯脂肪的体积比你想象中要大得多！"
+          ],
+          "whyIncluded": "",
+          "authorFollowerCount": 0
+        },
+        {
+          "contentId": "7629732168625190578",
+          "title": "三分练七分吃。健身中，饮食的作用不容小觑，别不把饮食当回事，但是也别光注重饮食，先把训练搞清楚饮食才能锦上添花 #健身 #健身干货 #健身小白必看经验 #饮食 #增肌减脂",
+          "authorName": "Good luck",
+          "platform": "抖音",
+          "publishedAt": "2026-04-17T14:17:33.000Z",
+          "contentUrl": "https://www.douyin.com/video/7629732168625190578",
+          "coverUrl": "https://p11-sign.douyinpic.com/tos-cn-i-0813/oAQIgABA7frxANGTHLONeOe3I2BBjIAAa6HaEF~tplv-dy-360p.webp?biz_tag=aweme_images&card_type=303&column_n=0&from=327834062&l=2026042214454865DE4E67828CD8A3E226&lk3s=138a59ce&s=PackSourceEnum_SEARCH_SIN&sc=origin_cover&se=false&x-expires=1778047200&x-signature=mrlK6GtvKlY2coigjoYwm8AaQSM%3D",
+          "viewCount": 0,
+          "likeCount": 512,
+          "commentCount": 48,
+          "shareCount": 73,
+          "collectCount": 206,
+          "structureSummary": "三分练七分吃。健身中，饮食的作用不容小觑，别不把饮食当回事，但是也别光注重饮食，先把训练搞清楚饮",
+          "keywordTokens": [
+            "三分练七分吃。健身中",
+            "饮食的作用不容小觑",
+            "别不把饮食当回事",
+            "但是也别光注重饮食",
+            "先把训练搞清楚饮食才能锦上添花"
+          ],
+          "whyIncluded": "",
+          "authorFollowerCount": 0
+        },
+        {
+          "contentId": "7630731976802184566",
+          "title": "一眼看懂平板支撑的正确姿势 #平板支撑 #健身干货 #减脂塑形",
+          "authorName": "花茶",
+          "platform": "抖音",
+          "publishedAt": "2026-04-20T06:57:19.000Z",
+          "contentUrl": "https://www.douyin.com/video/7630731976802184566",
+          "coverUrl": "https://p3-sign.douyinpic.com/tos-cn-p-0015/ocKBByVamgA5DKeNLDnwLeFVIAIBPCGfTga7IL~tplv-dy-360p.webp?biz_tag=aweme_video&card_type=153&column_n=0&from=327834062&l=2026042214454865DE4E67828CD8A3E226&lk3s=138a59ce&s=PackSourceEnum_SEARCH_SIN&sc=origin_cover&se=false&x-expires=1778047200&x-signature=80LMlfpeowy85IrVSrI0u2YNzJY%3D",
+          "viewCount": 0,
+          "likeCount": 224,
+          "commentCount": 4,
+          "shareCount": 43,
+          "collectCount": 162,
+          "structureSummary": "一眼看懂平板支撑的正确姿势 #平板支撑 #健身干货 #减脂塑形",
+          "keywordTokens": [
+            "一眼看懂平板支撑的正确姿势",
+            "#平板支撑",
+            "#健身干货",
+            "#减脂塑形"
+          ],
+          "whyIncluded": "",
+          "authorFollowerCount": 0
+        },
+        {
+          "contentId": "7629676219600423419",
+          "title": "健身必看！一张图分清快慢碳水。减脂期别乱吃，选对主食不挂油，掉秤事半功倍！#减脂饮食 #健身干货 #健康饮食#掉秤秘籍 #自律打卡",
+          "authorName": "横沥健身教练-海风",
+          "platform": "抖音",
+          "publishedAt": "2026-04-17T10:40:25.000Z",
+          "contentUrl": "https://www.douyin.com/video/7629676219600423419",
+          "coverUrl": "https://p11-sign.douyinpic.com/tos-cn-i-0813c000-ce/oYrbEnn9WBAaD8A3AQi3Ee0ADARwBC78Iifoii~tplv-dy-360p.webp?biz_tag=aweme_images&card_type=303&column_n=0&from=327834062&l=2026042214454865DE4E67828CD8A3E226&lk3s=138a59ce&s=PackSourceEnum_SEARCH_SIN&sc=origin_cover&se=false&x-expires=1778047200&x-signature=xwb3MFURgXUoYothrz0uen79Qgk%3D",
+          "viewCount": 0,
+          "likeCount": 78,
+          "commentCount": 4,
+          "shareCount": 20,
+          "collectCount": 44,
+          "structureSummary": "健身必看！一张图分清快慢碳水。减脂期别乱吃，选对主食不挂油，掉秤事半功倍！#减脂饮食 #健身干货",
+          "keywordTokens": [
+            "健身必看！一张图分清快慢碳水。减脂期别乱吃",
+            "选对主食不挂油",
+            "掉秤事半功倍！#减脂饮食",
+            "#健身干货",
+            "#健康饮食#掉秤秘籍"
+          ],
+          "whyIncluded": "",
+          "authorFollowerCount": 0
+        }
+      ],
+      "lowFollowerEvidence": [
+        {
+          "id": "live_low_7629245289187430644",
+          "platform": "抖音",
+          "contentForm": "短视频/图文样本",
+          "title": "45分钟高效燃脂，瘦腰瘦腿瘦全身🔥❗️❗️❗️40岁宝妈居家健身已瘦20斤，跟着练就能瘦💦💦45分钟跟练+拉伸，动作简单，新手友好👬#减脂有氧运动 #瘦腿提臀瘦全身 #瘦身塑形训练 #暴汗燃脂瘦全身 #瘦腰瘦腿瘦肚子",
+          "account": "爱健身的菜同学",
+          "contentUrl": "https://www.douyin.com/video/7629245289187430644",
+          "coverUrl": "https://p3-sign.douyinpic.com/tos-cn-p-0015/oki9mLn08A7jAObBi7NDHehBDQgfIUD0A0zgIB~tplv-dy-360p.webp?biz_tag=aweme_video&card_type=153&column_n=0&from=327834062&l=20260422144548440A9C68DD3487A18A60&lk3s=138a59ce&s=PackSourceEnum_SEARCH_SIN&sc=origin_cover&se=false&x-expires=1778047200&x-signature=QOymR38Mk15UefzC%2FSacpmY7Dbw%3D",
+          "fansLabel": "1,029 粉",
+          "fansCount": 1029,
+          "anomaly": 1,
+          "playCount": "10 点赞",
+          "engagementCount": 10,
+          "likeCount": 10,
+          "commentCount": 0,
+          "collectCount": 3,
+          "shareCount": 0,
+          "trackTags": [
+            "45分钟高效燃脂",
+            "瘦腰瘦腿瘦全身🔥❗️❗️❗️40岁宝妈居家健身已瘦20斤",
+            "跟着练就能瘦💦💦45分钟跟练+拉伸",
+            "动作简单",
+            "新手友好👬#减脂有氧运动"
+          ],
+          "suggestion": "真实宝妈案例背书，动作低门槛，精准击中居家减脂需求",
+          "publishedAt": "2026-04-16T10:58:00.000Z"
+        },
+        {
+          "id": "live_low_7630857372035404145",
+          "platform": "抖音",
+          "contentForm": "短视频/图文样本",
+          "title": "想进步听话#减脂食谱",
+          "account": "爱健身的发型师",
+          "contentUrl": "https://www.douyin.com/video/7630857372035404145",
+          "coverUrl": "https://p26-sign.douyinpic.com/tos-cn-i-0813c000-ce/ocAOAfUfDJDTFAHBfmEQIlEDzE8IUC8gk97DBA~tplv-dy-360p.webp?biz_tag=aweme_images&card_type=303&column_n=0&from=327834062&l=2026042214454865DE4E67828CD8A3E226&lk3s=138a59ce&s=PackSourceEnum_SEARCH_SIN&sc=origin_cover&se=false&x-expires=1778047200&x-signature=qsCLcljILuW5y1FdN31bQehuHUw%3D",
+          "fansLabel": "372 粉",
+          "fansCount": 372,
+          "anomaly": 1,
+          "playCount": "20 点赞",
+          "engagementCount": 20,
+          "likeCount": 20,
+          "commentCount": 2,
+          "collectCount": 1,
+          "shareCount": 0,
+          "trackTags": [
+            "想进步听话#减脂食谱"
+          ],
+          "suggestion": "短平快强指令，精准戳中减脂人群求方法的心理",
+          "publishedAt": "2026-04-20T15:03:54.000Z"
+        },
+        {
+          "id": "live_low_7630810470290667627",
+          "platform": "抖音",
+          "contentForm": "短视频/图文样本",
+          "title": "今天的全身太猛了！牛一个周一次全身，这一次课的强度顶两节课🤭最后两个8公斤动作燃爆了👍#晶晶力量 #晶晶力量训练回放 #种草激励计划 #真实生活分享计划 #全身训练 @抖音生活服务热点宝 @DOU+上热门",
+          "account": "奥瑞白",
+          "contentUrl": "https://www.douyin.com/video/7630810470290667627",
+          "coverUrl": "https://p3-sign.douyinpic.com/tos-cn-p-0015/oQipbbL08AgLAl2Bi5WwHeFBDSmfIatMANjgIB~tplv-dy-360p.webp?biz_tag=aweme_video&card_type=153&column_n=0&from=327834062&l=20260422144548440A9C68DD3487A18A60&lk3s=138a59ce&s=PackSourceEnum_SEARCH_SIN&sc=origin_cover&se=false&x-expires=1778047200&x-signature=bV2TQtZVHsnECo3CABkxIDK%2BvAo%3D",
+          "fansLabel": "1,092 粉",
+          "fansCount": 1092,
+          "anomaly": 1,
+          "playCount": "105 点赞",
+          "engagementCount": 105,
+          "likeCount": 105,
+          "commentCount": 98,
+          "collectCount": 12,
+          "shareCount": 24,
+          "trackTags": [
+            "今天的全身太猛了！牛一个周一次全身",
+            "这一次课的强度顶两节课🤭最后两个8公斤动作燃爆了👍#晶晶力量",
+            "#晶晶力量训练回放",
+            "#种草激励计划",
+            "#真实生活分享计划"
+          ],
+          "suggestion": "突出训练高性价比，真实体验感强，适配力量训练受众",
+          "publishedAt": "2026-04-20T12:01:54.000Z"
+        },
+        {
+          "id": "live_low_7630079244249900706",
+          "platform": "抖音",
+          "contentForm": "短视频/图文样本",
+          "title": "美食博主拍着拍着就倒闭了，收获了一身肥肉，今天开启CPB饮食了，你们都坚持了几天？#真实生活分享计划 #CPB饮食 #减脂 #鸡胸肉美食做法 #吃鸡胸肉一个月的变化",
+          "account": "月儿",
+          "contentUrl": "https://www.douyin.com/video/7630079244249900706",
+          "coverUrl": "https://p3-sign.douyinpic.com/tos-cn-p-0015/owTaafN5XCKBvAX78BAAbVBI0xBpAx8eQdeMQx~tplv-dy-360p.webp?biz_tag=aweme_video&card_type=153&column_n=0&from=327834062&l=202604221445516D30102D05C863A3DC19&lk3s=138a59ce&s=PackSourceEnum_SEARCH_SIN&sc=origin_cover&se=false&x-expires=1778047200&x-signature=RLeafg8QskuswdLmMzY5FnGtEZM%3D",
+          "fansLabel": "1,820 粉",
+          "fansCount": 1820,
+          "anomaly": 1,
+          "playCount": "10 点赞",
+          "engagementCount": 10,
+          "likeCount": 10,
+          "commentCount": 10,
+          "collectCount": 0,
+          "shareCount": 0,
+          "trackTags": [
+            "美食博主拍着拍着就倒闭了",
+            "收获了一身肥肉",
+            "今天开启CPB饮食了",
+            "你们都坚持了几天？#真实生活分享计划",
+            "#CPB饮食"
+          ],
+          "suggestion": "反差人设拉满，有话题性，互动提问引导用户参与",
+          "publishedAt": "2026-04-18T12:44:22.000Z"
+        }
+      ],
+      "evidenceGaps": [],
+      "whyNowItems": [
+        {
+          "sourceLabel": "内容供给",
+          "fact": "抖音 已有 10 条真实内容跑通，包括『45分钟高效燃脂，瘦腰瘦腿瘦全身🔥❗️』、『想进步听话#减脂食谱』、『今天的全身太猛了！牛一个周一次全身，这一』，同时命中 305 条热榜/热词。",
+          "inference": "这个方向已经有多条内容跑出数据，说明市场已经验证过这个内容类型。",
+          "userImpact": "可以直接参考『45分钟高效燃脂，瘦腰瘦腿瘦全身🔥❗️』、『想进步听话#减脂食谱』、『今天的全身太猛了！牛一个周一次全身，这一』的结构和表达方式。",
+          "tone": "positive"
+        },
+        {
+          "sourceLabel": "竞争格局",
+          "fact": "已有 4 个账号在做这个方向：0 个 KOL、4 个 KOC、4 个低粉账号，包括爱健身的菜同学、爱健身的发型师、奥瑞白。",
+          "inference": "中小账号占比较高，说明这个方向对新号/低粉号比较友好。",
+          "userImpact": "已有 4 个低粉账号在做，说明低粉也有机会。",
+          "tone": "positive"
+        },
+        {
+          "sourceLabel": "用户需求",
+          "fact": "已采集 36 条评论数据，说明这个方向已有真实用户在主动搜索和讨论。",
+          "inference": "评论中的高频词可以直接用作标题和内容切入点。",
+          "userImpact": "可以用评论高频词反推标题和内容切口。",
+          "tone": "positive"
+        }
+      ],
+      "bestFor": [
+        "已采集 10 条真实内容、4 个账号、305 条热榜/热词，可以基于这些样本快速判断是否值得下注。"
+      ],
+      "notFor": [
+        "如果你只想看历史榜单而不关心动作编排，这页不是纯数据看板。"
+      ],
+      "accountMatchSummary": "已采集 10 条内容和 4 个账号，可以先用小样内容快速验证，同时继续积累数据。",
+      "bestActionNow": {
+        "type": "generate_test_brief",
+        "title": "今天直接开拍",
+        "description": "真实样本和市场扩散已经补齐，适合直接进入开拍方案。",
+        "ctaLabel": "拿开拍方案",
+        "reason": "当前真实证据足以支撑直接进入执行层。"
+      },
+      "whyNotOtherActions": [
+        "当前样本已经够支撑执行，不需要继续观望。"
+      ],
+      "missIfWait": "如果继续观望，可能错过这波机会的前期窗口。",
+      "operatorPanel": {
+        "reportSummary": "证据已补齐，可以直接进入执行。",
+        "sourceNotes": [
+          "数据来源：抖音实时搜索"
+        ],
+        "platformNotes": [
+          "抖音：已采集"
+        ],
+        "benchmarkHints": [
+          "爱健身的菜同学 · KOC",
+          "爱健身的发型师 · KOC",
+          "奥瑞白 · KOC"
+        ],
+        "riskSplit": [
+          "本次采集到 10 条内容、4 个账号，各项证据方向一致。"
+        ],
+        "counterSignals": [],
+        "dataGaps": []
+      },
+      "screeningReport": {
+        "safeActionLevel": "shoot_now",
+        "evidenceAlignment": "medium",
+        "acceptedAccountIds": [
+          "MS4wLjABAAAAdLgrV--yf6_SaPgtzogqtg9w_VjPICc1MIWgzy1H04o",
+          "MS4wLjABAAAAWLIhi-qxxxKdZH0GSEdO2NSOLDcmZxezGc_NNbQtOX4",
+          "MS4wLjABAAAAmxVcfKlJ0p8_D_kbX9LxIACoQZek3V7KmpcUZ0cikvbd5Z0Cj5qvFt-bDXzBGYDT",
+          "MS4wLjABAAAAetNdo3J5G2kuUf8lbmEUQOFtFrQ8UfweQlffw_XUN1I"
+        ],
+        "acceptedContentIds": [
+          "7629245289187430644",
+          "7630857372035404145",
+          "7630810470290667627",
+          "7630079244249900706",
+          "7630753488510930929",
+          "7629726963578334857",
+          "7630757423661958523",
+          "7629732168625190578",
+          "7630731976802184566",
+          "7629676219600423419"
+        ],
+        "acceptedLowFollowerIds": [
+          "live_low_7629245289187430644",
+          "live_low_7630857372035404145",
+          "live_low_7630810470290667627",
+          "live_low_7630079244249900706"
+        ],
+        "missingEvidence": [],
+        "contradictionSummary": [
+          "各项证据方向一致。"
+        ],
+        "candidates": []
+      },
+      "primaryCard": {
+        "title": "今天直接开拍",
+        "ctaLabel": "拿开拍方案",
+        "description": "真实样本和市场扩散已经补齐，适合直接进入开拍方案。",
+        "reason": "当前真实证据足以支撑直接进入执行层。",
+        "previewSections": [
+          {
+            "title": "这次先拿走什么",
+            "items": [
+              "可以直接参考『45分钟高效燃脂，瘦腰瘦腿瘦全身🔥❗️』、『想进步听话#减脂食谱』、『今天的全身太猛了！牛一个周一次全身，这一』的结构和表达方式。",
+              "已有 4 个低粉账号在做，说明低粉也有机会。"
+            ]
+          }
+        ],
+        "continueIf": [
+          "新增支持账号、支持内容或评论意图时，可升级到更强动作。"
+        ],
+        "stopIf": [
+          "如果方向变化较大，可以考虑调整角度重新分析。"
+        ],
+        "evidenceRefs": [],
+        "actionMode": "open_deep_dive"
+      },
+      "secondaryCard": {
+        "title": "去看可抄样本",
+        "ctaLabel": "去看可抄样本",
+        "description": "优先看真实低粉样本，确认这波机会有没有可复制的早期结构。",
+        "reason": "已有低粉异常样本，最适合先验证可复制性。",
+        "previewSections": [
+          {
+            "title": "为什么是这个备选动作",
+            "items": [
+              "低粉异常样本已经出现，说明这波机会值得先拿样本做验证。"
+            ]
+          }
+        ],
+        "continueIf": [
+          "下一轮复查若补到更多真实样本，再决定是否升级主动作。"
+        ],
+        "stopIf": [
+          "如果后续证据继续稀疏，就保持观察而不是推进执行。"
+        ],
+        "evidenceRefs": [],
+        "actionMode": "open_deep_dive"
+      },
+      "fitSummary": "当前页重点是这波机会值不值得先下注、先验证还是先观察。",
+      "recommendedNextAction": {
+        "type": "generate_test_brief",
+        "title": "今天直接开拍",
+        "description": "真实样本和市场扩散已经补齐，适合直接进入开拍方案。",
+        "ctaLabel": "拿开拍方案",
+        "reason": "当前真实证据足以支撑直接进入执行层。"
+      },
+      "continueIf": [
+        "当采集到更多账号（当前 4 个）和内容样本（当前 10 条）时，可升级到更强执行动作。",
+        "热榜/热词已命中 305 条，如果继续上升可加大投入。"
+      ],
+      "stopIf": [
+        "如果多次采集后仍然只有 10 条内容和 4 个账号，建议放弃这波机会。"
+      ],
+      "commentInsight": {
+        "totalCommentsCollected": 36,
+        "highFreqKeywords": [
+          "动作"
+        ],
+        "sentimentSummary": "positive",
+        "demandSignals": [
+          "怕他一屁股坐地上[捂脸"
+        ],
+        "highlights": [
+          {
+            "contentId": "7630857372035404145",
+            "contentTitle": "想进步听话#减脂食谱",
+            "topComments": [
+              {
+                "text": "一周三练，大哥有氧也是三次吗？？",
+                "likeCount": 0,
+                "authorName": "子枫"
+              }
+            ],
+            "totalCommentCount": 1
+          },
+          {
+            "contentId": "7630810470290667627",
+            "contentTitle": "今天的全身太猛了！牛一个周一次全身，这一次课的强度顶两节课🤭最后两个8公斤动作",
+            "topComments": [
+              {
+                "text": "心都蹦到嗓子眼了我直接看了一组[捂脸][捂脸]",
+                "likeCount": 1,
+                "authorName": "云曦🌞"
+              },
+              {
+                "text": "原来这个动作是这样的，我没做对过一次[捂脸]",
+                "likeCount": 0,
+                "authorName": "听喜欢的歌"
+              },
+              {
+                "text": "这周一的吗",
+                "likeCount": 0,
+                "authorName": "小七"
+              }
+            ],
+            "totalCommentCount": 20
+          },
+          {
+            "contentId": "7630079244249900706",
+            "contentTitle": "美食博主拍着拍着就倒闭了，收获了一身肥肉，今天开启CPB饮食了，你们都坚持了几天",
+            "topComments": [
+              {
+                "text": "第一天，就多吃了一个馒头，一个苹果，一斤没掉",
+                "likeCount": 1,
+                "authorName": "瑶瑶"
+              },
+              {
+                "text": "运动加这个，半个月好疲惫，运动表现下降很明显，和体重一样。",
+                "likeCount": 0,
+                "authorName": "不会折飞机"
+              },
+              {
+                "text": "首先你奢石桌子和我一模一样，其次CPB是垃圾方法不要用",
+                "likeCount": 0,
+                "authorName": "一个大橙子🍊呀～"
+              }
+            ],
+            "totalCommentCount": 4
+          },
+          {
+            "contentId": "7630753488510930929",
+            "contentTitle": "无复杂器械，解锁全身训练，4个高效动作，力量+塑形+燃脂一步到位，打造紧致有型好",
+            "topComments": [
+              {
+                "text": "又看到老师如磁铁般的下肢力量了！！绝了！",
+                "likeCount": 1,
+                "authorName": "Chris🌙"
+              },
+              {
+                "text": "有适当的肌肉真的超级美",
+                "likeCount": 0,
+                "authorName": "一边快乐，一边忧伤"
+              },
+              {
+                "text": "昨天3kg蹲的，今天膝盖下不去了，正常吗[黄脸祈祷]",
+                "likeCount": 0,
+                "authorName": "财财小猫"
+              }
+            ],
+            "totalCommentCount": 11
+          }
+        ]
+      },
+      "normalizedBrief": {
+        "inputKind": "prompt",
+        "seedTopic": "健身减脂",
+        "industry": "健身减脂",
+        "candidatePlatforms": [
+          "douyin"
+        ],
+        "accountContext": "未提供账号连接，按公开平台数据做通用预测",
+        "competitorEvidence": [],
+        "personalizationMode": "public"
+      },
+      "platformSnapshots": [
+        {
+          "platformId": "douyin",
+          "platformName": "抖音",
+          "authMode": "public",
+          "predictionEnabled": true,
+          "callBudget": {
+            "topic": 6,
+            "link": 4,
+            "account": 5,
+            "cookieExtra": 5
+          },
+          "endpointFamilies": [
+            "fetch_hot_search_result",
+            "fetch_one_video_v2",
+            "fetch_user_post_videos",
+            "fetch_video_comments",
+            "creator_v2_*"
+          ],
+          "coreFields": [
+            "aweme_id",
+            "desc",
+            "create_time",
+            "author_id",
+            "follower_count",
+            "digg_count",
+            "comment_count",
+            "share_count",
+            "play_count",
+            "hashtag",
+            "hot_rank",
+            "traffic_source",
+            "search_keywords",
+            "audience_portrait"
+          ],
+          "capabilitySummary": [
+            "搜索",
+            "热榜",
+            "详情",
+            "评论",
+            "主页",
+            "创作者数据"
+          ],
+          "signals": [
+            "搜索需求",
+            "热榜加速度",
+            "评论反馈",
+            "账号画像"
+          ]
+        }
+      ],
+      "scoreBreakdown": {
+        "demand": 100,
+        "competition": 46,
+        "anomaly": 72,
+        "fit": 74,
+        "opportunity": 95,
+        "timing": 100,
+        "risk": 18
+      },
+      "recommendedLowFollowerSampleIds": [
+        "live_low_7629245289187430644",
+        "live_low_7630857372035404145",
+        "live_low_7630810470290667627",
+        "live_low_7630079244249900706"
+      ],
+      "hotSeedCount": 305,
+      "trendingTags": [
+        "#健身减脂",
+        "#健身减脂干货",
+        "#健身减脂操",
+        "#健身减脂饮食",
+        "#健身减脂博主"
+      ],
+      "taskPayload": {
+        "kind": "opportunity_prediction",
+        "highlight": "「45分钟高效燃脂、瘦腰瘦腿瘦全身🔥❗️❗️❗️40岁宝妈居家健身已瘦20斤、跟着练就能瘦💦💦45分钟跟练+拉伸、动作简单、新手友好👬#减脂有氧运动」方向已有 10 条真实内容跑通，爱健身的菜同学、爱健身的发型师、奥瑞白等已验证可行性，可以直接进入执行。",
+        "verdictLabel": "今天直接开拍",
+        "evidenceSummary": [
+          "抖音 已有 10 条真实内容跑通，包括『45分钟高效燃脂，瘦腰瘦腿瘦全身🔥❗️』、『想进步听话#减脂食谱』、『今天的全身太猛了！牛一个周一次全身，这一』，同时命中 305 条热榜/热词。",
+          "已有 4 个账号在做这个方向：0 个 KOL、4 个 KOC、4 个低粉账号，包括爱健身的菜同学、爱健身的发型师、奥瑞白。",
+          "已采集 36 条评论数据，说明这个方向已有真实用户在主动搜索和讨论。"
+        ],
+        "bestActionReason": "当前真实证据足以支撑直接进入执行层。",
+        "supportingProofTitles": [
+          "45分钟高效燃脂，瘦腰瘦腿瘦全身🔥❗️❗️❗️40岁宝妈居家健身已瘦20斤，跟着练就能瘦💦💦45分钟跟练+拉伸，动作简单，新手友好👬#减脂有氧运动 #瘦腿提臀瘦全身 #瘦身塑形训练 #暴汗燃脂瘦全身 #瘦腰瘦腿瘦肚子",
+          "想进步听话#减脂食谱",
+          "今天的全身太猛了！牛一个周一次全身，这一次课的强度顶两节课🤭最后两个8公斤动作燃爆了👍#晶晶力量 #晶晶力量训练回放 #种草激励计划 #真实生活分享计划 #全身训练 @抖音生活服务热点宝 @DOU+上热门",
+          "美食博主拍着拍着就倒闭了，收获了一身肥肉，今天开启CPB饮食了，你们都坚持了几天？#真实生活分享计划 #CPB饮食 #减脂 #鸡胸肉美食做法 #吃鸡胸肉一个月的变化"
+        ],
+        "trendOpportunities": [
+          {
+            "opportunityName": "减脂干货科普",
+            "stage": "validated",
+            "opportunityScore": 88,
+            "timingScore": 90,
+            "oneLiner": "受众需求旺盛，非常适合新手入场",
+            "whyNow": [
+              "已有3条千粉内账号科普内容跑通",
+              "单条科普内容最高点赞达575",
+              "热榜命中305条，用户需求明确"
+            ],
+            "doNow": "✅ 输出误区纠正、减脂常识内容",
+            "observe": "⏳ 观察同类型内容的涨粉转化数据",
+            "executableTopics": [
+              {
+                "title": "别再为体重波动焦虑啦！看这两个指标就行",
+                "hookType": "痛点钩子",
+                "angle": "减脂认知纠正",
+                "estimatedDuration": "45-60秒"
+              },
+              {
+                "title": "1kg脂肪居然有这么大？看完惊了",
+                "hookType": "好奇钩子",
+                "angle": "冷知识科普",
+                "estimatedDuration": "30-45秒"
+              },
+              {
+                "title": "减脂到底是练重要还是吃重要？",
+                "hookType": "疑问钩子",
+                "angle": "常见误区解答",
+                "estimatedDuration": "30-60秒"
+              }
+            ],
+            "evidenceSummary": "3条千粉内容跑通，单条最高赞575，热榜305条"
+          },
+          {
+            "opportunityName": "居家训练跟练",
+            "stage": "validated",
+            "opportunityScore": 85,
+            "timingScore": 86,
+            "oneLiner": "新手友好，低粉账号易跑出数据",
+            "whyNow": [
+              "千粉宝妈账号跟练内容已跑通",
+              "无器械全身训练内容获448赞",
+              "用户偏好动作简单、新手友好内容"
+            ],
+            "doNow": "✅ 拍低门槛居家跟练教学内容",
+            "observe": "⏳ 观察同类内容的完播留存数据",
+            "executableTopics": [
+              {
+                "title": "4个无器械动作，居家练完全身燃爆",
+                "hookType": "利益钩子",
+                "angle": "无器械训练",
+                "estimatedDuration": "60-90秒"
+              },
+              {
+                "title": "新手友好！45分钟居家燃脂跟练版",
+                "hookType": "利益钩子",
+                "angle": "新手跟练",
+                "estimatedDuration": "45-60秒"
+              },
+              {
+                "title": "一周练1次，强度顶两节普通训练课",
+                "hookType": "好奇钩子",
+                "angle": "高效训练方案",
+                "estimatedDuration": "30-45秒"
+              }
+            ],
+            "evidenceSummary": "千粉宝妈跟练内容跑通，无器械训练获448赞"
+          },
+          {
+            "opportunityName": "真实减脂记录",
+            "stage": "pre_burst",
+            "opportunityScore": 78,
+            "timingScore": 80,
+            "oneLiner": "信任度高，有机会差异化突围",
+            "whyNow": [
+              "素人减脂启动记录内容已出现",
+              "真实生活标签内容流量扶持明显",
+              "现有内容同质化低，竞争较小"
+            ],
+            "doNow": "✅ 拍普通人减脂日常vlog",
+            "observe": "⏳ 观察同类账号的长期涨粉速度",
+            "executableTopics": [
+              {
+                "title": "美食博主胖到130斤，今天开始减脂啦",
+                "hookType": "故事钩子",
+                "angle": "普通人减脂",
+                "estimatedDuration": "30-60秒"
+              },
+              {
+                "title": "CPB饮食打卡第3天，看看我瘦了多少",
+                "hookType": "好奇钩子",
+                "angle": "饮食法打卡",
+                "estimatedDuration": "15-30秒"
+              },
+              {
+                "title": "40岁宝妈减脂20斤，我常做的3个动作",
+                "hookType": "榜样钩子",
+                "angle": "素人经验分享",
+                "estimatedDuration": "30-45秒"
+              }
+            ],
+            "evidenceSummary": "素人减脂内容初现，真实生活标签流量加持"
+          }
+        ],
+        "overviewOneLiner": "健身减脂低粉起号空间大，干货内容易出爆款"
+      },
+      "recommendedNextTasks": [
+        {
+          "taskIntent": "trend_watch",
+          "title": "监控「健身减脂 · 机」的变化",
+          "reason": "当前得分 95，建议建立监控等待更明确的时机。",
+          "actionLabel": "开启智能监控"
+        },
+        {
+          "taskIntent": "viral_breakdown",
+          "title": "拆解「健身减脂 · 机」的爆款样本",
+          "reason": "已采集 10 条内容，拆解热门样本的结构和表达方式。",
+          "actionLabel": "拆解爆款结构"
+        },
+        {
+          "taskIntent": "topic_strategy",
+          "title": "探索「健身减脂 · 机」的选题方向",
+          "reason": "基于当前数据信号，生成可执行的选题方案。",
+          "actionLabel": "生成可执行选题"
+        }
+      ],
+      "primaryArtifact": {
+        "artifactId": "artifact_seed_run_4007b4f6-673e-46bf-ad9e-5c15016e476b",
+        "runId": "run_4007b4f6-673e-46bf-ad9e-5c15016e476b",
+        "taskIntent": "opportunity_prediction",
+        "artifactType": "opportunity_memo",
+        "title": "健身减脂 · 机会判断",
+        "summary": "「45分钟高效燃脂、瘦腰瘦腿瘦全身🔥❗️❗️❗️40岁宝妈居家健身已瘦20斤、跟着练就能瘦💦💦45分钟跟练+拉伸、动作简单、新手友好👬#减脂有氧运动」方向已有 10 条真实内容跑通，爱健身的菜同学、爱健身的发型师、奥瑞白等已验证可行性，可以直接进入执行。",
+        "payload": {
+          "kind": "opportunity_prediction",
+          "highlight": "「45分钟高效燃脂、瘦腰瘦腿瘦全身🔥❗️❗️❗️40岁宝妈居家健身已瘦20斤、跟着练就能瘦💦💦45分钟跟练+拉伸、动作简单、新手友好👬#减脂有氧运动」方向已有 10 条真实内容跑通，爱健身的菜同学、爱健身的发型师、奥瑞白等已验证可行性，可以直接进入执行。",
+          "verdictLabel": "今天直接开拍",
+          "evidenceSummary": [
+            "抖音 已有 10 条真实内容跑通，包括『45分钟高效燃脂，瘦腰瘦腿瘦全身🔥❗️』、『想进步听话#减脂食谱』、『今天的全身太猛了！牛一个周一次全身，这一』，同时命中 305 条热榜/热词。",
+            "已有 4 个账号在做这个方向：0 个 KOL、4 个 KOC、4 个低粉账号，包括爱健身的菜同学、爱健身的发型师、奥瑞白。",
+            "已采集 36 条评论数据，说明这个方向已有真实用户在主动搜索和讨论。"
+          ],
+          "bestActionReason": "当前真实证据足以支撑直接进入执行层。",
+          "supportingProofTitles": [
+            "45分钟高效燃脂，瘦腰瘦腿瘦全身🔥❗️❗️❗️40岁宝妈居家健身已瘦20斤，跟着练就能瘦💦💦45分钟跟练+拉伸，动作简单，新手友好👬#减脂有氧运动 #瘦腿提臀瘦全身 #瘦身塑形训练 #暴汗燃脂瘦全身 #瘦腰瘦腿瘦肚子",
+            "想进步听话#减脂食谱",
+            "今天的全身太猛了！牛一个周一次全身，这一次课的强度顶两节课🤭最后两个8公斤动作燃爆了👍#晶晶力量 #晶晶力量训练回放 #种草激励计划 #真实生活分享计划 #全身训练 @抖音生活服务热点宝 @DOU+上热门",
+            "美食博主拍着拍着就倒闭了，收获了一身肥肉，今天开启CPB饮食了，你们都坚持了几天？#真实生活分享计划 #CPB饮食 #减脂 #鸡胸肉美食做法 #吃鸡胸肉一个月的变化"
+          ]
+        },
+        "snapshotRefs": [],
+        "createdAt": "2026-04-22T06:47:49.698Z",
+        "updatedAt": "2026-04-22T06:47:49.698Z",
+        "watchable": true,
+        "shareable": true
+      },
+      "agentRun": {
+        "runId": "run_4007b4f6-673e-46bf-ad9e-5c15016e476b",
+        "source": "example",
+        "taskIntent": "opportunity_prediction",
+        "taskIntentConfidence": "high",
+        "status": "degraded",
+        "brief": {
+          "inputKind": "prompt",
+          "seedTopic": "健身减脂",
+          "industry": "健身减脂",
+          "candidatePlatforms": [
+            "douyin"
+          ],
+          "accountContext": "未提供账号连接，按公开平台数据做通用预测",
+          "competitorEvidence": [],
+          "personalizationMode": "public"
+        },
+        "facts": {
+          "platformSnapshots": [
+            {
+              "platformId": "douyin",
+              "platformName": "抖音",
+              "authMode": "public",
+              "predictionEnabled": true,
+              "callBudget": {
+                "topic": 6,
+                "link": 4,
+                "account": 5,
+                "cookieExtra": 5
+              },
+              "endpointFamilies": [
+                "fetch_hot_search_result",
+                "fetch_one_video_v2",
+                "fetch_user_post_videos",
+                "fetch_video_comments",
+                "creator_v2_*"
+              ],
+              "coreFields": [
+                "aweme_id",
+                "desc",
+                "create_time",
+                "author_id",
+                "follower_count",
+                "digg_count",
+                "comment_count",
+                "share_count",
+                "play_count",
+                "hashtag",
+                "hot_rank",
+                "traffic_source",
+                "search_keywords",
+                "audience_portrait"
+              ],
+              "capabilitySummary": [
+                "搜索",
+                "热榜",
+                "详情",
+                "评论",
+                "主页",
+                "创作者数据"
+              ],
+              "signals": [
+                "搜索需求",
+                "热榜加速度",
+                "评论反馈",
+                "账号画像"
+              ]
+            }
+          ],
+          "scoreBreakdown": {
+            "demand": 100,
+            "competition": 46,
+            "anomaly": 72,
+            "fit": 74,
+            "opportunity": 95,
+            "timing": 100,
+            "risk": 18
+          },
+          "evidenceRefs": {
+            "supportingAccountIds": [
+              "acct-fatloss-log",
+              "acct-office-train",
+              "acct-postpartum-fit"
+            ],
+            "supportingContentIds": [
+              "content-fatloss-30d",
+              "content-office-train",
+              "content-plateau-fix"
+            ],
+            "lowFollowerSampleIds": [
+              "f3"
+            ]
+          }
+        },
+        "judgment": {
+          "title": "健身减脂 · 机会判断",
+          "summary": "「45分钟高效燃脂、瘦腰瘦腿瘦全身🔥❗️❗️❗️40岁宝妈居家健身已瘦20斤、跟着练就能瘦💦💦45分钟跟练+拉伸、动作简单、新手友好👬#减脂有氧运动」方向已有 10 条真实内容跑通，爱健身的菜同学、爱健身的发型师、奥瑞白等已验证可行性，可以直接进入执行。",
+          "verdict": "go_now",
+          "confidenceLabel": "中",
+          "bestAction": {
+            "type": "generate_test_brief",
+            "title": "今天直接开拍",
+            "description": "真实样本和市场扩散已经补齐，适合直接进入开拍方案。",
+            "ctaLabel": "拿开拍方案",
+            "reason": "当前真实证据足以支撑直接进入执行层。"
+          }
+        },
+        "deliverables": [
+          {
+            "kind": "primary_result",
+            "title": "健身减脂 · 机会判断",
+            "description": "「45分钟高效燃脂、瘦腰瘦腿瘦全身🔥❗️❗️❗️40岁宝妈居家健身已瘦20斤、跟着练就能瘦💦💦45分钟跟练+拉伸、动作简单、新手友好👬#减脂有氧运动」方向已有 10 条真实内容跑通，爱健身的菜同学、爱健身的发型师、奥瑞白等已验证可行性，可以直接进入执行。",
+            "ctaLabel": "开启智能监控"
+          }
+        ],
+        "recommendedNextTasks": [
+          {
+            "taskIntent": "trend_watch",
+            "title": "监控「健身减脂 · 机」的变化",
+            "reason": "当前得分 95，建议建立监控等待更明确的时机。",
+            "actionLabel": "开启智能监控"
+          },
+          {
+            "taskIntent": "viral_breakdown",
+            "title": "拆解「健身减脂 · 机」的爆款样本",
+            "reason": "已采集 10 条内容，拆解热门样本的结构和表达方式。",
+            "actionLabel": "拆解爆款结构"
+          },
+          {
+            "taskIntent": "topic_strategy",
+            "title": "探索「健身减脂 · 机」的选题方向",
+            "reason": "基于当前数据信号，生成可执行的选题方案。",
+            "actionLabel": "生成可执行选题"
+          }
+        ],
+        "artifacts": [
+          {
+            "artifactId": "artifact_seed_run_4007b4f6-673e-46bf-ad9e-5c15016e476b",
+            "runId": "run_4007b4f6-673e-46bf-ad9e-5c15016e476b",
+            "taskIntent": "opportunity_prediction",
+            "artifactType": "opportunity_memo",
+            "title": "健身减脂 · 机会判断",
+            "summary": "「45分钟高效燃脂、瘦腰瘦腿瘦全身🔥❗️❗️❗️40岁宝妈居家健身已瘦20斤、跟着练就能瘦💦💦45分钟跟练+拉伸、动作简单、新手友好👬#减脂有氧运动」方向已有 10 条真实内容跑通，爱健身的菜同学、爱健身的发型师、奥瑞白等已验证可行性，可以直接进入执行。",
+            "payload": {
+              "kind": "opportunity_prediction",
+              "highlight": "「45分钟高效燃脂、瘦腰瘦腿瘦全身🔥❗️❗️❗️40岁宝妈居家健身已瘦20斤、跟着练就能瘦💦💦45分钟跟练+拉伸、动作简单、新手友好👬#减脂有氧运动」方向已有 10 条真实内容跑通，爱健身的菜同学、爱健身的发型师、奥瑞白等已验证可行性，可以直接进入执行。",
+              "verdictLabel": "今天直接开拍",
+              "evidenceSummary": [
+                "抖音 已有 10 条真实内容跑通，包括『45分钟高效燃脂，瘦腰瘦腿瘦全身🔥❗️』、『想进步听话#减脂食谱』、『今天的全身太猛了！牛一个周一次全身，这一』，同时命中 305 条热榜/热词。",
+                "已有 4 个账号在做这个方向：0 个 KOL、4 个 KOC、4 个低粉账号，包括爱健身的菜同学、爱健身的发型师、奥瑞白。",
+                "已采集 36 条评论数据，说明这个方向已有真实用户在主动搜索和讨论。"
+              ],
+              "bestActionReason": "当前真实证据足以支撑直接进入执行层。",
+              "supportingProofTitles": [
+                "45分钟高效燃脂，瘦腰瘦腿瘦全身🔥❗️❗️❗️40岁宝妈居家健身已瘦20斤，跟着练就能瘦💦💦45分钟跟练+拉伸，动作简单，新手友好👬#减脂有氧运动 #瘦腿提臀瘦全身 #瘦身塑形训练 #暴汗燃脂瘦全身 #瘦腰瘦腿瘦肚子",
+                "想进步听话#减脂食谱",
+                "今天的全身太猛了！牛一个周一次全身，这一次课的强度顶两节课🤭最后两个8公斤动作燃爆了👍#晶晶力量 #晶晶力量训练回放 #种草激励计划 #真实生活分享计划 #全身训练 @抖音生活服务热点宝 @DOU+上热门",
+                "美食博主拍着拍着就倒闭了，收获了一身肥肉，今天开启CPB饮食了，你们都坚持了几天？#真实生活分享计划 #CPB饮食 #减脂 #鸡胸肉美食做法 #吃鸡胸肉一个月的变化"
+              ]
+            },
+            "snapshotRefs": [],
+            "createdAt": "2026-04-22T06:47:49.698Z",
+            "updatedAt": "2026-04-22T06:47:49.698Z",
+            "watchable": true,
+            "shareable": true
+          }
+        ],
+        "runtimeMeta": {
+          "createdAt": "2026-04-22T06:47:49.698Z",
+          "updatedAt": "2026-04-22T06:47:49.698Z",
+          "sourceMode": "live",
+          "executionStatus": "partial_success",
+          "usedPlatforms": [
+            "douyin"
+          ],
+          "usedRouteChain": [
+            "keyword_content_search:L1:/api/v1/douyin/search/fetch_general_search_v1",
+            "topic_discovery:L1:/api/v1/douyin/search/fetch_challenge_search_v2",
+            "hot_seed:L1:/api/v1/douyin/app/v3/fetch_hot_search_list",
+            "low_fan_billboard:L1:/api/v1/douyin/billboard/fetch_hot_total_low_fan_list",
+            "hot_search_billboard:L1:/api/v1/douyin/billboard/fetch_hot_total_search_list",
+            "hot_word_billboard:L1:/api/v1/douyin/billboard/fetch_hot_total_hot_word_list"
+          ],
+          "degradeFlags": [
+            "optional_endpoint_failed",
+            "sparse_comments"
+          ],
+          "endpointHealthVersion": "2026-04-22T06:47:49.669Z"
+        },
+        "degradeFlags": [
+          "optional_endpoint_failed",
+          "sparse_comments"
+        ],
+        "taskPayload": {
+          "kind": "opportunity_prediction",
+          "highlight": "「45分钟高效燃脂、瘦腰瘦腿瘦全身🔥❗️❗️❗️40岁宝妈居家健身已瘦20斤、跟着练就能瘦💦💦45分钟跟练+拉伸、动作简单、新手友好👬#减脂有氧运动」方向已有 10 条真实内容跑通，爱健身的菜同学、爱健身的发型师、奥瑞白等已验证可行性，可以直接进入执行。",
+          "verdictLabel": "今天直接开拍",
+          "evidenceSummary": [
+            "抖音 已有 10 条真实内容跑通，包括『45分钟高效燃脂，瘦腰瘦腿瘦全身🔥❗️』、『想进步听话#减脂食谱』、『今天的全身太猛了！牛一个周一次全身，这一』，同时命中 305 条热榜/热词。",
+            "已有 4 个账号在做这个方向：0 个 KOL、4 个 KOC、4 个低粉账号，包括爱健身的菜同学、爱健身的发型师、奥瑞白。",
+            "已采集 36 条评论数据，说明这个方向已有真实用户在主动搜索和讨论。"
+          ],
+          "bestActionReason": "当前真实证据足以支撑直接进入执行层。",
+          "supportingProofTitles": [
+            "45分钟高效燃脂，瘦腰瘦腿瘦全身🔥❗️❗️❗️40岁宝妈居家健身已瘦20斤，跟着练就能瘦💦💦45分钟跟练+拉伸，动作简单，新手友好👬#减脂有氧运动 #瘦腿提臀瘦全身 #瘦身塑形训练 #暴汗燃脂瘦全身 #瘦腰瘦腿瘦肚子",
+            "想进步听话#减脂食谱",
+            "今天的全身太猛了！牛一个周一次全身，这一次课的强度顶两节课🤭最后两个8公斤动作燃爆了👍#晶晶力量 #晶晶力量训练回放 #种草激励计划 #真实生活分享计划 #全身训练 @抖音生活服务热点宝 @DOU+上热门",
+            "美食博主拍着拍着就倒闭了，收获了一身肥肉，今天开启CPB饮食了，你们都坚持了几天？#真实生活分享计划 #CPB饮食 #减脂 #鸡胸肉美食做法 #吃鸡胸肉一个月的变化"
+          ]
+        }
+      },
+      "classificationReasons": [
+        "当前示例模板更接近爆款预测任务。",
+        "prompt 明确在问爆款机会和爆款预测。",
+        "prompt 更像爆款预测和下注决策。"
+      ],
+      "aiTopicSuggestions": [
+        {
+          "title": "4个无器械居家动作！力量燃脂塑形一步到位",
+          "angle": "干货向拆解高效无器械减脂动作",
+          "referenceTitle": "无复杂器械，解锁全身训练，4个高效动作，力量+塑形+燃脂一步到位，打造紧致有型好身材#减脂塑形 #健身干货 #热门训练计划",
+          "referenceId": "7630753488510930929"
+        },
+        {
+          "title": "40岁宝妈亲测！45分钟跟练已瘦20斤新手友好",
+          "angle": "宝妈真实减脂经验+跟练内容分享",
+          "referenceTitle": "45分钟高效燃脂，瘦腰瘦腿瘦全身🔥❗️❗️❗️40岁宝妈居家健身已瘦20斤，跟着练就能瘦💦💦45分钟跟练+拉伸，动作简单，新手友好👬#减脂有氧运动 #瘦腿提臀瘦全身 #瘦身塑形训练 #暴汗燃脂瘦全身 #瘦腰瘦腿瘦肚子",
+          "referenceId": "7629245289187430644"
+        },
+        {
+          "title": "每周1次全身力量训练！1次强度顶普通2节课",
+          "angle": "分享高性价比高强度力量训练方案",
+          "referenceTitle": "今天的全身太猛了！牛一个周一次全身，这一次课的强度顶两节课🤭最后两个8公斤动作燃爆了👍#晶晶力量 #晶晶力量训练回放 #种草激励计划 #真实生活分享计划 #全身训练 @抖音生活服务热点宝 @DOU+上热门",
+          "referenceId": "7630810470290667627"
+        }
+      ],
+      "followUps": []
+    }
+  },
+  "artifact_87ac0a3c-f373-4697-a1ab-aefc3e71f426": {
+    "artifactId": "artifact_87ac0a3c-f373-4697-a1ab-aefc3e71f426",
+    "clientResultId": "run_ba0644b5-f063-491d-bc43-4caf6c7d7339",
+    "taskIntent": "opportunity_prediction",
+    "artifactType": "opportunity_memo",
+    "createdAt": "2026-04-22T06:56:12.372Z",
+    "updatedAt": "2026-04-22T06:56:12.372Z",
+    "query": "穿搭赛道现在发什么最容易爆？帮我找出具体可执行的选题",
+    "type": "爆款预测",
+    "title": "穿搭 · 机会判断",
+    "summary": "「甜妹一周穿搭合集#在车里怎么拍出高级感、#五一出游穿搭、#甜妹穿搭、#约会穿搭、#交出你的时尚穿搭」方向已有 10 条真实内容跑通，荔不开、-W、葡萄大人🍇等已验证可行性，可以直接进入执行。",
+    "platform": [
+      "抖音"
+    ],
+    "score": 95,
+    "scoreLabel": "强推",
+    "verdict": "go_now",
+    "windowStrength": "strong_now",
+    "confidenceLabel": "中",
+    "opportunityTitle": "穿搭 · 机会判断",
+    "coreBet": "「甜妹一周穿搭合集#在车里怎么拍出高级感、#五一出游穿搭、#甜妹穿搭、#约会穿搭、#交出你的时尚穿搭」方向已有 10 条真实内容跑通，荔不开、-W、葡萄大人🍇等已验证可行性，可以直接进入执行。",
+    "watchable": true,
+    "shareable": true,
+    "snapshot": {
+      "id": "run_ba0644b5-f063-491d-bc43-4caf6c7d7339",
+      "dataMode": "live",
+      "taskIntent": "opportunity_prediction",
+      "taskIntentConfidence": "medium",
+      "entrySource": "manual",
+      "title": "穿搭 · 机会判断",
+      "summary": "「甜妹一周穿搭合集#在车里怎么拍出高级感、#五一出游穿搭、#甜妹穿搭、#约会穿搭、#交出你的时尚穿搭」方向已有 10 条真实内容跑通，荔不开、-W、葡萄大人🍇等已验证可行性，可以直接进入执行。",
+      "primaryCtaLabel": "开启智能监控",
+      "query": "穿搭赛道现在发什么最容易爆？帮我找出具体可执行的选题",
+      "modelId": "doubao",
+      "createdAt": "2026-04-22T06:56:11.042Z",
+      "updatedAt": "2026-04-22T06:56:11.042Z",
+      "type": "爆款预测",
+      "platform": [
+        "抖音"
+      ],
+      "score": 95,
+      "scoreLabel": "强推",
+      "verdict": "go_now",
+      "confidenceLabel": "中",
+      "opportunityTitle": "穿搭 · 机会判断",
+      "opportunityType": "anomaly_window",
+      "windowStrength": "strong_now",
+      "coreBet": "「甜妹一周穿搭合集#在车里怎么拍出高级感、#五一出游穿搭、#甜妹穿搭、#约会穿搭、#交出你的时尚穿搭」方向已有 10 条真实内容跑通，荔不开、-W、葡萄大人🍇等已验证可行性，可以直接进入执行。",
+      "decisionBoundary": "10 条内容 + 6 个账号已补齐，「穿搭」可以直接进入执行。",
+      "marketEvidence": {
+        "evidenceWindowLabel": "实时抓取 · 4月22日",
+        "momentumLabel": "accelerating",
+        "kolCount": 2,
+        "kocCount": 4,
+        "newCreatorCount": 4,
+        "similarContentCount": 10,
+        "growth7d": 100,
+        "lowFollowerAnomalyRatio": 30,
+        "timingLabel": "已采集 10 条内容、6 个账号，建议先做小样验证。",
+        "tierBreakdown": {
+          "headKol": 1,
+          "standardKol": 1,
+          "strongKoc": 0,
+          "standardKoc": 4
+        }
+      },
+      "supportingAccounts": [
+        {
+          "accountId": "MS4wLjABAAAAUEhZQPT1Oqff4rN6QwrWrm6B7SaZDhmV5PZJFFtDo9cXp5XBIFCtrt6ThNf_nHA_",
+          "displayName": "荔不开",
+          "handle": "39452783187",
+          "platform": "抖音",
+          "profileUrl": "https://www.douyin.com/user/MS4wLjABAAAAUEhZQPT1Oqff4rN6QwrWrm6B7SaZDhmV5PZJFFtDo9cXp5XBIFCtrt6ThNf_nHA_",
+          "tierLabel": "standard_koc",
+          "followerCount": 1464,
+          "followingCount": 0,
+          "totalLikeCount": 5715,
+          "avgEngagementRate30d": null,
+          "breakoutHitRate30d": null,
+          "recentTopicClusters": [],
+          "whyIncluded": ""
+        },
+        {
+          "accountId": "MS4wLjABAAAAbv6wrP9YrEq3UjRiZS1P2kEL4Z9WOIu0193OWz2Fctze4QRK3dVLr8KxsvAl6Pgs",
+          "displayName": "-W",
+          "handle": "531.1212",
+          "platform": "抖音",
+          "profileUrl": "https://www.douyin.com/user/MS4wLjABAAAAbv6wrP9YrEq3UjRiZS1P2kEL4Z9WOIu0193OWz2Fctze4QRK3dVLr8KxsvAl6Pgs",
+          "tierLabel": "standard_koc",
+          "followerCount": 40,
+          "followingCount": 17,
+          "totalLikeCount": 408,
+          "avgEngagementRate30d": null,
+          "breakoutHitRate30d": null,
+          "recentTopicClusters": [],
+          "whyIncluded": ""
+        },
+        {
+          "accountId": "MS4wLjABAAAAg8UHEABnDHUtZw3ahZVF4OcQbKaNW8GS9s9GgOBdfoo",
+          "displayName": "葡萄大人🍇",
+          "handle": "39343743217",
+          "platform": "抖音",
+          "profileUrl": "https://www.douyin.com/user/MS4wLjABAAAAg8UHEABnDHUtZw3ahZVF4OcQbKaNW8GS9s9GgOBdfoo",
+          "tierLabel": "head_kol",
+          "followerCount": 2188747,
+          "followingCount": 214,
+          "totalLikeCount": 39117303,
+          "avgEngagementRate30d": null,
+          "breakoutHitRate30d": null,
+          "recentTopicClusters": [],
+          "whyIncluded": ""
+        },
+        {
+          "accountId": "MS4wLjABAAAA_VjU0gj1-iQbWTwmkcvDRnIsTufe_e3sHSa1UXMqyTCtsmZSTUlesfQNht5UXvKr",
+          "displayName": "太正",
+          "handle": "TaiZheng1982",
+          "platform": "抖音",
+          "profileUrl": "https://www.douyin.com/user/MS4wLjABAAAA_VjU0gj1-iQbWTwmkcvDRnIsTufe_e3sHSa1UXMqyTCtsmZSTUlesfQNht5UXvKr",
+          "tierLabel": "standard_kol",
+          "followerCount": 517089,
+          "followingCount": 105,
+          "totalLikeCount": 19361501,
+          "avgEngagementRate30d": null,
+          "breakoutHitRate30d": null,
+          "recentTopicClusters": [],
+          "whyIncluded": ""
+        },
+        {
+          "accountId": "MS4wLjABAAAA-opKPjAPYuiaRR0BkQSIL_ulvcxLhjPRUNBjCOdTh1A",
+          "displayName": "小莹子",
+          "handle": "",
+          "platform": "抖音",
+          "profileUrl": "https://www.douyin.com/user/MS4wLjABAAAA-opKPjAPYuiaRR0BkQSIL_ulvcxLhjPRUNBjCOdTh1A",
+          "tierLabel": "standard_koc",
+          "followerCount": 1109,
+          "followingCount": 262,
+          "totalLikeCount": 82920,
+          "avgEngagementRate30d": null,
+          "breakoutHitRate30d": null,
+          "recentTopicClusters": [],
+          "whyIncluded": ""
+        },
+        {
+          "accountId": "MS4wLjABAAAAFjF_jc-9Yb0d0xmIpYSafNnaCW8mAfqojdRrMjYp8tR9KY9HVcZQd1Dr6yAG3ck_",
+          "displayName": "在于此",
+          "handle": "62301390134",
+          "platform": "抖音",
+          "profileUrl": "https://www.douyin.com/user/MS4wLjABAAAAFjF_jc-9Yb0d0xmIpYSafNnaCW8mAfqojdRrMjYp8tR9KY9HVcZQd1Dr6yAG3ck_",
+          "tierLabel": "standard_koc",
+          "followerCount": 0,
+          "followingCount": 0,
+          "totalLikeCount": 0,
+          "avgEngagementRate30d": null,
+          "breakoutHitRate30d": null,
+          "recentTopicClusters": [],
+          "whyIncluded": ""
+        }
+      ],
+      "supportingContents": [
+        {
+          "contentId": "7630784134991148155",
+          "title": "甜妹一周穿搭合集#在车里怎么拍出高级感 #五一出游穿搭 #甜妹穿搭 #约会穿搭",
+          "authorName": "荔不开",
+          "platform": "抖音",
+          "publishedAt": "2026-04-20T10:19:42.000Z",
+          "contentUrl": "https://www.douyin.com/video/7630784134991148155",
+          "coverUrl": "https://p3-sign.douyinpic.com/tos-cn-i-dy/_offtrans__540x968_0f044f4f9ba67d3ba1e22be3aed91047_d32c8d23f3fbee7284a46d76dd06e8ee1c4c104459bf87afb179e8f4ee4601bf_vvic~tplv-dy-aweme-images-offline.image?biz_tag=aweme_video&card_type=153&column_n=0&from=327834062&l=2026042214542928D79745D154F6A4625C&lk3s=138a59ce&s=PackSourceEnum_SEARCH_SIN&sc=origin_cover&se=false&x-expires=1778047200&x-signature=tYKMIbrQC19QsTYNUNIcA30Kjsg%3D",
+          "viewCount": 0,
+          "likeCount": 4910,
+          "commentCount": 141,
+          "shareCount": 1601,
+          "collectCount": 1468,
+          "structureSummary": "甜妹一周穿搭合集#在车里怎么拍出高级感 #五一出游穿搭 #甜妹穿搭 #约会穿搭",
+          "keywordTokens": [
+            "甜妹一周穿搭合集#在车里怎么拍出高级感",
+            "#五一出游穿搭",
+            "#甜妹穿搭",
+            "#约会穿搭"
+          ],
+          "whyIncluded": "",
+          "authorFollowerCount": 1464
+        },
+        {
+          "contentId": "7629272661902559217",
+          "title": "#交出你的时尚穿搭 #夏季女生穿搭 \n说一说，哪套是你的风格穿搭🤏",
+          "authorName": "-W",
+          "platform": "抖音",
+          "publishedAt": "2026-04-16T08:34:25.000Z",
+          "contentUrl": "https://www.douyin.com/video/7629272661902559217",
+          "coverUrl": "https://p3-sign.douyinpic.com/tos-cn-p-0015c000-ce/o8chEWfDeQh09TpAPPVIX4hJBCiAeE37FCoEQw~tplv-dy-360p.webp?biz_tag=aweme_video&card_type=153&column_n=0&from=327834062&l=2026042214542928D79745D154F6A4625C&lk3s=138a59ce&s=PackSourceEnum_SEARCH_SIN&sc=origin_cover&se=false&x-expires=1778047200&x-signature=omx60HpweUtw%2FwKGTg0tEy%2BYah8%3D",
+          "viewCount": 0,
+          "likeCount": 68,
+          "commentCount": 66,
+          "shareCount": 24,
+          "collectCount": 15,
+          "structureSummary": "#交出你的时尚穿搭 #夏季女生穿搭 \n说一说，哪套是你的风格穿搭🤏",
+          "keywordTokens": [
+            "#交出你的时尚穿搭",
+            "#夏季女生穿搭",
+            "说一说",
+            "哪套是你的风格穿搭🤏"
+          ],
+          "whyIncluded": "",
+          "authorFollowerCount": 40
+        },
+        {
+          "contentId": "7630400052989816896",
+          "title": "斗胆试一下一衣多穿#今天穿什么 #穿搭 #今日穿搭 #ootd穿搭",
+          "authorName": "葡萄大人🍇",
+          "platform": "抖音",
+          "publishedAt": "2026-04-19T09:29:16.000Z",
+          "contentUrl": "https://www.douyin.com/video/7630400052989816896",
+          "coverUrl": "https://p3-sign.douyinpic.com/tos-cn-p-0015/o4GAA5UDWIAKewUkj0oBkfA6QgE6CBDvpId9sF~tplv-dy-360p.webp?biz_tag=aweme_video&card_type=153&column_n=0&from=327834062&l=2026042214542928D79745D154F6A4625C&lk3s=138a59ce&s=PackSourceEnum_SEARCH_SIN&sc=origin_cover&se=false&x-expires=1778047200&x-signature=3swsBxGesNUnhQFLl2MduMUlsxY%3D",
+          "viewCount": 0,
+          "likeCount": 54317,
+          "commentCount": 446,
+          "shareCount": 2707,
+          "collectCount": 2335,
+          "structureSummary": "斗胆试一下一衣多穿#今天穿什么 #穿搭 #今日穿搭 #ootd穿搭",
+          "keywordTokens": [
+            "斗胆试一下一衣多穿#今天穿什么",
+            "#穿搭",
+            "#今日穿搭",
+            "#ootd穿搭"
+          ],
+          "whyIncluded": "",
+          "authorFollowerCount": 2188747
+        },
+        {
+          "contentId": "7630476659061408634",
+          "title": "沉浸式一周开车fitcheck #轻熟穿搭 #ootd",
+          "authorName": "太正",
+          "platform": "抖音",
+          "publishedAt": "2026-04-19T14:26:33.000Z",
+          "contentUrl": "https://www.douyin.com/video/7630476659061408634",
+          "coverUrl": "https://p3-sign.douyinpic.com/tos-cn-i-dy/_offtrans__540x960_51a69f5ee374b71c030eb53a5843693e_d32c8d23f3fbee7284a46d76dd06e8ee1c4c104459bf87afb179e8f4ee4601bf_vvic~tplv-dy-aweme-images-offline.image?biz_tag=aweme_video&card_type=153&column_n=0&from=327834062&l=2026042214542928D79745D154F6A4625C&lk3s=138a59ce&s=PackSourceEnum_SEARCH_SIN&sc=origin_cover&se=false&x-expires=1778047200&x-signature=qZt4JluJdhqWYB555%2BSSpJkLqA8%3D",
+          "viewCount": 0,
+          "likeCount": 131682,
+          "commentCount": 3696,
+          "shareCount": 57121,
+          "collectCount": 4630,
+          "structureSummary": "沉浸式一周开车fitcheck #轻熟穿搭 #ootd",
+          "keywordTokens": [
+            "沉浸式一周开车fitcheck",
+            "#轻熟穿搭",
+            "#ootd"
+          ],
+          "whyIncluded": "",
+          "authorFollowerCount": 517089
+        },
+        {
+          "contentId": "7630400718498921204",
+          "title": "卖衣服哪有不疯的#发疯卖衣服 #抽象穿搭",
+          "authorName": "小莹子",
+          "platform": "抖音",
+          "publishedAt": "2026-04-19T09:31:51.000Z",
+          "contentUrl": "https://www.douyin.com/video/7630400718498921204",
+          "coverUrl": "https://p5-ex-gddgtc-sign.douyinpic.com/tos-cn-i-0813c001/oYC08ABGEACiADzofAAgIPAialkpbN7BNwFeNo~tplv-dy-360p.webp?biz_tag=aweme_images&card_type=303&column_n=0&from=327834062&l=2026042214542928D79745D154F6A4625C&lk3s=138a59ce&s=PackSourceEnum_SEARCH_SIN&sc=origin_cover&se=false&x-expires=1778047200&x-signature=yYTGRkoriPLWhCxr8xytoN3eCYU%3D",
+          "viewCount": 0,
+          "likeCount": 67563,
+          "commentCount": 2104,
+          "shareCount": 118094,
+          "collectCount": 4212,
+          "structureSummary": "卖衣服哪有不疯的#发疯卖衣服 #抽象穿搭",
+          "keywordTokens": [
+            "卖衣服哪有不疯的#发疯卖衣服",
+            "#抽象穿搭"
+          ],
+          "whyIncluded": "",
+          "authorFollowerCount": 1109
+        },
+        {
+          "contentId": "7631128183484510629",
+          "title": "就让两天在香港拍了十套的我们\n#香港 #拍照姿势 #出片 #穿搭合集",
+          "authorName": "在于此",
+          "platform": "抖音",
+          "publishedAt": "2026-04-21T08:34:47.000Z",
+          "contentUrl": "https://www.douyin.com/video/7631128183484510629",
+          "coverUrl": "https://p26-sign.douyinpic.com/tos-cn-p-0015c000-ce/ooQMTzDfQFrmBC6B0luJqfbAQr8qnheQ7g8W7N~tplv-dy-360p.webp?biz_tag=aweme_video&card_type=153&column_n=0&from=327834062&l=2026042214542928D79745D154F6A4625C&lk3s=138a59ce&s=PackSourceEnum_SEARCH_SIN&sc=origin_cover&se=false&x-expires=1778047200&x-signature=uWVVv7v5475%2F1DOGkWOWBDsHlzo%3D",
+          "viewCount": 0,
+          "likeCount": 73934,
+          "commentCount": 1453,
+          "shareCount": 17127,
+          "collectCount": 2294,
+          "structureSummary": "就让两天在香港拍了十套的我们\n#香港 #拍照姿势 #出片 #穿搭合集",
+          "keywordTokens": [
+            "就让两天在香港拍了十套的我们",
+            "#香港",
+            "#拍照姿势",
+            "#出片",
+            "#穿搭合集"
+          ],
+          "whyIncluded": "",
+          "authorFollowerCount": 0
+        },
+        {
+          "contentId": "7630660586619840994",
+          "title": "五一出游1️⃣3️⃣套穿搭分享。#女生红色连衣裙 #春天穿搭 #春日穿搭 #五一出游穿搭",
+          "authorName": "哇哇呀wawa",
+          "platform": "抖音",
+          "publishedAt": "2026-04-20T02:20:16.000Z",
+          "contentUrl": "https://www.douyin.com/video/7630660586619840994",
+          "coverUrl": "https://p3-sign.douyinpic.com/tos-cn-i-dy/_offtrans__2050x2050_5944f28b137ed3c7d6173b7693af1058_d32c8d23f3fbee7284a46d76dd06e8ee1c4c104459bf87afb179e8f4ee4601bf_vvic~tplv-dy-aweme-images-offline.image?biz_tag=aweme_images&card_type=303&column_n=0&from=327834062&l=2026042214542928D79745D154F6A4625C&lk3s=138a59ce&s=PackSourceEnum_SEARCH_SIN&sc=origin_cover&se=false&x-expires=1778047200&x-signature=zjEB7iJREdTCMxpWsJUJVjvJun8%3D",
+          "viewCount": 0,
+          "likeCount": 2408,
+          "commentCount": 29,
+          "shareCount": 801,
+          "collectCount": 2050,
+          "structureSummary": "五一出游1️⃣3️⃣套穿搭分享。#女生红色连衣裙 #春天穿搭 #春日穿搭 #五一出游穿搭",
+          "keywordTokens": [
+            "五一出游1️⃣3️⃣套穿搭分享。#女生红色连衣裙",
+            "#春天穿搭",
+            "#春日穿搭",
+            "#五一出游穿搭"
+          ],
+          "whyIncluded": "",
+          "authorFollowerCount": 0
+        },
+        {
+          "contentId": "7631104688516550501",
+          "title": "枯木逢春。#非遗有好物#用非遗打开新中式#常熟新中式穿搭绝绝子",
+          "authorName": "吃堡了撑",
+          "platform": "抖音",
+          "publishedAt": "2026-04-21T07:03:38.000Z",
+          "contentUrl": "https://www.douyin.com/video/7631104688516550501",
+          "coverUrl": "https://p3-sign.douyinpic.com/tos-cn-i-0813c000-ce/ogpAeknaDEbEyAF94EDILUOAA5ApwZfDdFIDEf~tplv-dy-360p.webp?biz_tag=aweme_images&card_type=303&column_n=0&from=327834062&l=2026042214542928D79745D154F6A4625C&lk3s=138a59ce&s=PackSourceEnum_SEARCH_SIN&sc=origin_cover&se=false&x-expires=1778047200&x-signature=MOtmDb22E%2By%2F80oPIG1mp408Mxc%3D",
+          "viewCount": 0,
+          "likeCount": 10766,
+          "commentCount": 41,
+          "shareCount": 393,
+          "collectCount": 289,
+          "structureSummary": "枯木逢春。#非遗有好物#用非遗打开新中式#常熟新中式穿搭绝绝子",
+          "keywordTokens": [
+            "枯木逢春。#非遗有好物#用非遗打开新中式#常熟新中式穿搭绝绝子"
+          ],
+          "whyIncluded": "",
+          "authorFollowerCount": 0
+        },
+        {
+          "contentId": "7631151601364847922",
+          "title": "天才穿搭博主，天赋简直拉满了！ #时尚 #服装搭配 #穿搭技巧 #穿搭 #涨知识",
+          "authorName": "全球都趣看",
+          "platform": "抖音",
+          "publishedAt": "2026-04-21T10:05:45.000Z",
+          "contentUrl": "https://www.douyin.com/video/7631151601364847922",
+          "coverUrl": "https://p3-sign.douyinpic.com/tos-cn-p-0015/ow87gBNfQopLf74OGCCzggVlAKWfBTApz5MaMQ~tplv-dy-360p.webp?biz_tag=aweme_video&card_type=153&column_n=0&from=327834062&l=202604221454302B37940A77C72BA0F7A0&lk3s=138a59ce&s=PackSourceEnum_SEARCH_SIN&sc=origin_cover&se=false&x-expires=1778047200&x-signature=oFe9ld9GnS90Avu7zW3gQ7Ns61I%3D",
+          "viewCount": 0,
+          "likeCount": 5012,
+          "commentCount": 318,
+          "shareCount": 3409,
+          "collectCount": 467,
+          "structureSummary": "天才穿搭博主，天赋简直拉满了！ #时尚 #服装搭配 #穿搭技巧 #穿搭 #涨知识",
+          "keywordTokens": [
+            "天才穿搭博主",
+            "天赋简直拉满了！",
+            "#时尚",
+            "#服装搭配",
+            "#穿搭技巧"
+          ],
+          "whyIncluded": "",
+          "authorFollowerCount": 0
+        },
+        {
+          "contentId": "7630625648742031269",
+          "title": "简单即是耐看高级。#女宝穿搭 #亲子穿搭",
+          "authorName": "一秋妈（4月23号婴小童上新专场）",
+          "platform": "抖音",
+          "publishedAt": "2026-04-20T00:04:42.000Z",
+          "contentUrl": "https://www.douyin.com/video/7630625648742031269",
+          "coverUrl": "https://p5-ex-gddgtc-sign.douyinpic.com/tos-cn-i-0813c000-ce/oQf9IA10ixq2HA7K73EVQeG2wAFtEpAW5xDeAE~tplv-dy-360p.webp?biz_tag=aweme_images&card_type=303&column_n=0&from=327834062&l=2026042214542928D79745D154F6A4625C&lk3s=138a59ce&s=PackSourceEnum_SEARCH_SIN&sc=origin_cover&se=false&x-expires=1778047200&x-signature=aOYIhj27r8I6GeLl4ZDZkUvydAY%3D",
+          "viewCount": 0,
+          "likeCount": 4150,
+          "commentCount": 249,
+          "shareCount": 128,
+          "collectCount": 323,
+          "structureSummary": "简单即是耐看高级。#女宝穿搭 #亲子穿搭",
+          "keywordTokens": [
+            "简单即是耐看高级。#女宝穿搭",
+            "#亲子穿搭"
+          ],
+          "whyIncluded": "",
+          "authorFollowerCount": 0
+        }
+      ],
+      "lowFollowerEvidence": [
+        {
+          "id": "live_low_7630784134991148155",
+          "platform": "抖音",
+          "contentForm": "短视频/图文样本",
+          "title": "甜妹一周穿搭合集#在车里怎么拍出高级感 #五一出游穿搭 #甜妹穿搭 #约会穿搭",
+          "account": "荔不开",
+          "contentUrl": "https://www.douyin.com/video/7630784134991148155",
+          "coverUrl": "https://p3-sign.douyinpic.com/tos-cn-i-dy/_offtrans__540x968_0f044f4f9ba67d3ba1e22be3aed91047_d32c8d23f3fbee7284a46d76dd06e8ee1c4c104459bf87afb179e8f4ee4601bf_vvic~tplv-dy-aweme-images-offline.image?biz_tag=aweme_video&card_type=153&column_n=0&from=327834062&l=2026042214542928D79745D154F6A4625C&lk3s=138a59ce&s=PackSourceEnum_SEARCH_SIN&sc=origin_cover&se=false&x-expires=1778047200&x-signature=tYKMIbrQC19QsTYNUNIcA30Kjsg%3D",
+          "fansLabel": "1,464 粉",
+          "fansCount": 1464,
+          "anomaly": 3,
+          "playCount": "4,910 点赞",
+          "engagementCount": 4910,
+          "likeCount": 4910,
+          "commentCount": 141,
+          "collectCount": 1468,
+          "shareCount": 1601,
+          "trackTags": [
+            "甜妹一周穿搭合集#在车里怎么拍出高级感",
+            "#五一出游穿搭",
+            "#甜妹穿搭",
+            "#约会穿搭"
+          ],
+          "suggestion": "高频场景穿搭合集，精准匹配甜妹、出游等用户需求",
+          "publishedAt": "2026-04-20T10:19:42.000Z"
+        },
+        {
+          "id": "live_low_7629272661902559217",
+          "platform": "抖音",
+          "contentForm": "短视频/图文样本",
+          "title": "#交出你的时尚穿搭 #夏季女生穿搭 \n说一说，哪套是你的风格穿搭🤏",
+          "account": "-W",
+          "contentUrl": "https://www.douyin.com/video/7629272661902559217",
+          "coverUrl": "https://p3-sign.douyinpic.com/tos-cn-p-0015c000-ce/o8chEWfDeQh09TpAPPVIX4hJBCiAeE37FCoEQw~tplv-dy-360p.webp?biz_tag=aweme_video&card_type=153&column_n=0&from=327834062&l=2026042214542928D79745D154F6A4625C&lk3s=138a59ce&s=PackSourceEnum_SEARCH_SIN&sc=origin_cover&se=false&x-expires=1778047200&x-signature=omx60HpweUtw%2FwKGTg0tEy%2BYah8%3D",
+          "fansLabel": "40 粉",
+          "fansCount": 40,
+          "anomaly": 2,
+          "playCount": "68 点赞",
+          "engagementCount": 68,
+          "likeCount": 68,
+          "commentCount": 66,
+          "collectCount": 15,
+          "shareCount": 24,
+          "trackTags": [
+            "#交出你的时尚穿搭",
+            "#夏季女生穿搭",
+            "说一说",
+            "哪套是你的风格穿搭🤏"
+          ],
+          "suggestion": "提问互动引导，覆盖夏季女生穿搭精准受众",
+          "publishedAt": "2026-04-16T08:34:25.000Z"
+        },
+        {
+          "id": "live_low_7630400718498921204",
+          "platform": "抖音",
+          "contentForm": "短视频/图文样本",
+          "title": "卖衣服哪有不疯的#发疯卖衣服 #抽象穿搭",
+          "account": "小莹子",
+          "contentUrl": "https://www.douyin.com/video/7630400718498921204",
+          "coverUrl": "https://p5-ex-gddgtc-sign.douyinpic.com/tos-cn-i-0813c001/oYC08ABGEACiADzofAAgIPAialkpbN7BNwFeNo~tplv-dy-360p.webp?biz_tag=aweme_images&card_type=303&column_n=0&from=327834062&l=2026042214542928D79745D154F6A4625C&lk3s=138a59ce&s=PackSourceEnum_SEARCH_SIN&sc=origin_cover&se=false&x-expires=1778047200&x-signature=yYTGRkoriPLWhCxr8xytoN3eCYU%3D",
+          "fansLabel": "1,109 粉",
+          "fansCount": 1109,
+          "anomaly": 61,
+          "playCount": "67,563 点赞",
+          "engagementCount": 67563,
+          "likeCount": 67563,
+          "commentCount": 2104,
+          "collectCount": 4212,
+          "shareCount": 118094,
+          "trackTags": [
+            "卖衣服哪有不疯的#发疯卖衣服",
+            "#抽象穿搭"
+          ],
+          "suggestion": "趣味反差话术引发共鸣，标签精准抓猎奇用户",
+          "publishedAt": "2026-04-19T09:31:51.000Z"
+        }
+      ],
+      "evidenceGaps": [],
+      "whyNowItems": [
+        {
+          "sourceLabel": "内容供给",
+          "fact": "抖音 已有 10 条真实内容跑通，包括『甜妹一周穿搭合集#在车里怎么拍出高级感 』、『#交出你的时尚穿搭 #夏季女生穿搭 \n说』、『斗胆试一下一衣多穿#今天穿什么 #穿搭 』，同时命中 305 条热榜/热词。",
+          "inference": "这个方向已经有多条内容跑出数据，说明市场已经验证过这个内容类型。",
+          "userImpact": "可以直接参考『甜妹一周穿搭合集#在车里怎么拍出高级感 』、『#交出你的时尚穿搭 #夏季女生穿搭 \n说』、『斗胆试一下一衣多穿#今天穿什么 #穿搭 』的结构和表达方式。",
+          "tone": "positive"
+        },
+        {
+          "sourceLabel": "竞争格局",
+          "fact": "已有 6 个账号在做这个方向：2 个 KOL、4 个 KOC、4 个低粉账号，包括荔不开、-W、葡萄大人🍇。",
+          "inference": "中小账号占比较高，说明这个方向对新号/低粉号比较友好。",
+          "userImpact": "已有 4 个低粉账号在做，说明低粉也有机会。",
+          "tone": "positive"
+        },
+        {
+          "sourceLabel": "用户需求",
+          "fact": "已采集 89 条评论数据，说明这个方向已有真实用户在主动搜索和讨论。",
+          "inference": "评论中的高频词可以直接用作标题和内容切入点。",
+          "userImpact": "可以用评论高频词反推标题和内容切口。",
+          "tone": "positive"
+        }
+      ],
+      "bestFor": [
+        "已采集 10 条真实内容、6 个账号、305 条热榜/热词，可以基于这些样本快速判断是否值得下注。"
+      ],
+      "notFor": [
+        "如果你只想看历史榜单而不关心动作编排，这页不是纯数据看板。"
+      ],
+      "accountMatchSummary": "已采集 10 条内容和 6 个账号，可以先用小样内容快速验证，同时继续积累数据。",
+      "bestActionNow": {
+        "type": "generate_test_brief",
+        "title": "今天直接开拍",
+        "description": "真实样本和市场扩散已经补齐，适合直接进入开拍方案。",
+        "ctaLabel": "拿开拍方案",
+        "reason": "当前真实证据足以支撑直接进入执行层。"
+      },
+      "whyNotOtherActions": [
+        "当前样本已经够支撑执行，不需要继续观望。"
+      ],
+      "missIfWait": "如果继续观望，可能错过这波机会的前期窗口。",
+      "operatorPanel": {
+        "reportSummary": "证据已补齐，可以直接进入执行。",
+        "sourceNotes": [
+          "数据来源：抖音实时搜索"
+        ],
+        "platformNotes": [
+          "抖音：已采集"
+        ],
+        "benchmarkHints": [
+          "荔不开 · KOC",
+          "-W · KOC",
+          "葡萄大人🍇 · 头部 KOL"
+        ],
+        "riskSplit": [
+          "本次采集到 10 条内容、6 个账号，各项证据方向一致。"
+        ],
+        "counterSignals": [],
+        "dataGaps": []
+      },
+      "screeningReport": {
+        "safeActionLevel": "shoot_now",
+        "evidenceAlignment": "medium",
+        "acceptedAccountIds": [
+          "MS4wLjABAAAAUEhZQPT1Oqff4rN6QwrWrm6B7SaZDhmV5PZJFFtDo9cXp5XBIFCtrt6ThNf_nHA_",
+          "MS4wLjABAAAAbv6wrP9YrEq3UjRiZS1P2kEL4Z9WOIu0193OWz2Fctze4QRK3dVLr8KxsvAl6Pgs",
+          "MS4wLjABAAAAg8UHEABnDHUtZw3ahZVF4OcQbKaNW8GS9s9GgOBdfoo",
+          "MS4wLjABAAAA_VjU0gj1-iQbWTwmkcvDRnIsTufe_e3sHSa1UXMqyTCtsmZSTUlesfQNht5UXvKr",
+          "MS4wLjABAAAA-opKPjAPYuiaRR0BkQSIL_ulvcxLhjPRUNBjCOdTh1A",
+          "MS4wLjABAAAAFjF_jc-9Yb0d0xmIpYSafNnaCW8mAfqojdRrMjYp8tR9KY9HVcZQd1Dr6yAG3ck_"
+        ],
+        "acceptedContentIds": [
+          "7630784134991148155",
+          "7629272661902559217",
+          "7630400052989816896",
+          "7630476659061408634",
+          "7630400718498921204",
+          "7631128183484510629",
+          "7630660586619840994",
+          "7631104688516550501",
+          "7631151601364847922",
+          "7630625648742031269"
+        ],
+        "acceptedLowFollowerIds": [
+          "live_low_7630784134991148155",
+          "live_low_7629272661902559217",
+          "live_low_7630400718498921204"
+        ],
+        "missingEvidence": [],
+        "contradictionSummary": [
+          "各项证据方向一致。"
+        ],
+        "candidates": []
+      },
+      "primaryCard": {
+        "title": "今天直接开拍",
+        "ctaLabel": "拿开拍方案",
+        "description": "真实样本和市场扩散已经补齐，适合直接进入开拍方案。",
+        "reason": "当前真实证据足以支撑直接进入执行层。",
+        "previewSections": [
+          {
+            "title": "这次先拿走什么",
+            "items": [
+              "可以直接参考『甜妹一周穿搭合集#在车里怎么拍出高级感 』、『#交出你的时尚穿搭 #夏季女生穿搭 \n说』、『斗胆试一下一衣多穿#今天穿什么 #穿搭 』的结构和表达方式。",
+              "已有 4 个低粉账号在做，说明低粉也有机会。"
+            ]
+          }
+        ],
+        "continueIf": [
+          "新增支持账号、支持内容或评论意图时，可升级到更强动作。"
+        ],
+        "stopIf": [
+          "如果方向变化较大，可以考虑调整角度重新分析。"
+        ],
+        "evidenceRefs": [],
+        "actionMode": "open_deep_dive"
+      },
+      "secondaryCard": {
+        "title": "去看可抄样本",
+        "ctaLabel": "去看可抄样本",
+        "description": "优先看真实低粉样本，确认这波机会有没有可复制的早期结构。",
+        "reason": "已有低粉异常样本，最适合先验证可复制性。",
+        "previewSections": [
+          {
+            "title": "为什么是这个备选动作",
+            "items": [
+              "低粉异常样本已经出现，说明这波机会值得先拿样本做验证。"
+            ]
+          }
+        ],
+        "continueIf": [
+          "下一轮复查若补到更多真实样本，再决定是否升级主动作。"
+        ],
+        "stopIf": [
+          "如果后续证据继续稀疏，就保持观察而不是推进执行。"
+        ],
+        "evidenceRefs": [],
+        "actionMode": "open_deep_dive"
+      },
+      "fitSummary": "当前页重点是这波机会值不值得先下注、先验证还是先观察。",
+      "recommendedNextAction": {
+        "type": "generate_test_brief",
+        "title": "今天直接开拍",
+        "description": "真实样本和市场扩散已经补齐，适合直接进入开拍方案。",
+        "ctaLabel": "拿开拍方案",
+        "reason": "当前真实证据足以支撑直接进入执行层。"
+      },
+      "continueIf": [
+        "当采集到更多账号（当前 6 个）和内容样本（当前 10 条）时，可升级到更强执行动作。",
+        "热榜/热词已命中 305 条，如果继续上升可加大投入。"
+      ],
+      "stopIf": [
+        "如果多次采集后仍然只有 10 条内容和 6 个账号，建议放弃这波机会。"
+      ],
+      "commentInsight": {
+        "totalCommentsCollected": 89,
+        "highFreqKeywords": [
+          "好看",
+          "一套",
+          "身材"
+        ],
+        "sentimentSummary": "positive",
+        "demandSignals": [
+          "哪里买的",
+          "哪里有链接[舔屏]",
+          "求链接",
+          "怎么学",
+          "求你了[流泪]",
+          "教程呀"
+        ],
+        "highlights": [
+          {
+            "contentId": "7630784134991148155",
+            "contentTitle": "甜妹一周穿搭合集#在车里怎么拍出高级感 #五一出游穿搭 #甜妹穿搭 #约会穿搭",
+            "topComments": [
+              {
+                "text": "衣服到底去哪里买的",
+                "likeCount": 6,
+                "authorName": "Hedy.."
+              },
+              {
+                "text": "我的天，美得像ai一样",
+                "likeCount": 5,
+                "authorName": "【梦想成曾】"
+              },
+              {
+                "text": "好美啊，每一套都很喜欢[色]",
+                "likeCount": 4,
+                "authorName": "Sweena520🥰"
+              }
+            ],
+            "totalCommentCount": 20
+          },
+          {
+            "contentId": "7629272661902559217",
+            "contentTitle": "#交出你的时尚穿搭 #夏季女生穿搭 \n说一说，哪套是你的风格穿搭🤏",
+            "topComments": [
+              {
+                "text": "我还是喜欢3，简单点，又舒服",
+                "likeCount": 8,
+                "authorName": "꧁¹³臧翅💞¹⁴皋飞₅₂ₒ᭄࿐"
+              },
+              {
+                "text": "2.3的集合了[比心][比心][比心][比心]",
+                "likeCount": 3,
+                "authorName": "💕💕晓晓微笑☺️☺️🎀🎀"
+              },
+              {
+                "text": "只有我喜欢1吗[懵]",
+                "likeCount": 3,
+                "authorName": "🐍-、升卿"
+              }
+            ],
+            "totalCommentCount": 13
+          },
+          {
+            "contentId": "7630400052989816896",
+            "contentTitle": "斗胆试一下一衣多穿#今天穿什么 #穿搭 #今日穿搭 #ootd穿搭",
+            "topComments": [
+              {
+                "text": "葡萄大人！紫色长裙和黑裤子最好看！！！",
+                "likeCount": 6353,
+                "authorName": "赤道拿铁"
+              },
+              {
+                "text": "葡萄一展示的时候就会切换战斗脸",
+                "likeCount": 681,
+                "authorName": "今"
+              },
+              {
+                "text": "老婆 春装分享里 亚麻蝙蝠袖小外套是谁家的啊 很需要链接 要不然你上车吧求你了[流泪]",
+                "likeCount": 175,
+                "authorName": "一點點"
+              }
+            ],
+            "totalCommentCount": 20
+          },
+          {
+            "contentId": "7630476659061408634",
+            "contentTitle": "沉浸式一周开车fitcheck #轻熟穿搭 #ootd",
+            "topComments": [
+              {
+                "text": "说真的我很少说一个男生颜值这块跟我势均力敌，他算一个",
+                "likeCount": 56,
+                "authorName": "勿复南明旧事"
+              },
+              {
+                "text": "让我谈到这样的 ，我赚一个亿我也愿意啊[流泪][流泪][流泪]",
+                "likeCount": 55,
+                "authorName": "江大海"
+              },
+              {
+                "text": "好一个老式帅哥[宕机]不是什么丑帅痞帅，完全就是硬帅。",
+                "likeCount": 42,
+                "authorName": "深夜小狗离奇事件"
+              }
+            ],
+            "totalCommentCount": 18
+          },
+          {
+            "contentId": "7630400718498921204",
+            "contentTitle": "卖衣服哪有不疯的#发疯卖衣服 #抽象穿搭",
+            "topComments": [
+              {
+                "text": "你要是这样介绍！我觉得有下单的必要了",
+                "likeCount": 30301,
+                "authorName": "亞希"
+              },
+              {
+                "text": "这么一看我有点想买了[戳手手]",
+                "likeCount": 3616,
+                "authorName": "疏知"
+              },
+              {
+                "text": "我需要这个，弥补了我每次吃饭都溅到胸口的尴尬",
+                "likeCount": 1752,
+                "authorName": "佩罗娜的第三只幽灵穿索隆身体时偷看腹肌"
+              }
+            ],
+            "totalCommentCount": 18
+          }
+        ]
+      },
+      "normalizedBrief": {
+        "inputKind": "prompt",
+        "seedTopic": "穿搭",
+        "industry": "穿搭时尚",
+        "candidatePlatforms": [
+          "douyin"
+        ],
+        "accountContext": "未提供账号连接，按公开平台数据做通用预测",
+        "competitorEvidence": [],
+        "personalizationMode": "public"
+      },
+      "platformSnapshots": [
+        {
+          "platformId": "douyin",
+          "platformName": "抖音",
+          "authMode": "public",
+          "predictionEnabled": true,
+          "callBudget": {
+            "topic": 6,
+            "link": 4,
+            "account": 5,
+            "cookieExtra": 5
+          },
+          "endpointFamilies": [
+            "fetch_hot_search_result",
+            "fetch_one_video_v2",
+            "fetch_user_post_videos",
+            "fetch_video_comments",
+            "creator_v2_*"
+          ],
+          "coreFields": [
+            "aweme_id",
+            "desc",
+            "create_time",
+            "author_id",
+            "follower_count",
+            "digg_count",
+            "comment_count",
+            "share_count",
+            "play_count",
+            "hashtag",
+            "hot_rank",
+            "traffic_source",
+            "search_keywords",
+            "audience_portrait"
+          ],
+          "capabilitySummary": [
+            "搜索",
+            "热榜",
+            "详情",
+            "评论",
+            "主页",
+            "创作者数据"
+          ],
+          "signals": [
+            "搜索需求",
+            "热榜加速度",
+            "评论反馈",
+            "账号画像"
+          ]
+        }
+      ],
+      "scoreBreakdown": {
+        "demand": 100,
+        "competition": 78,
+        "anomaly": 54,
+        "fit": 82,
+        "opportunity": 95,
+        "timing": 100,
+        "risk": 18
+      },
+      "recommendedLowFollowerSampleIds": [
+        "live_low_7630784134991148155",
+        "live_low_7629272661902559217",
+        "live_low_7630400718498921204"
+      ],
+      "hotSeedCount": 305,
+      "trendingTags": [
+        "#穿搭",
+        "#穿搭热门选题",
+        "#穿搭博主",
+        "#穿搭 女生",
+        "#穿搭男生"
+      ],
+      "taskPayload": {
+        "kind": "opportunity_prediction",
+        "highlight": "「甜妹一周穿搭合集#在车里怎么拍出高级感、#五一出游穿搭、#甜妹穿搭、#约会穿搭、#交出你的时尚穿搭」方向已有 10 条真实内容跑通，荔不开、-W、葡萄大人🍇等已验证可行性，可以直接进入执行。",
+        "verdictLabel": "今天直接开拍",
+        "evidenceSummary": [
+          "抖音 已有 10 条真实内容跑通，包括『甜妹一周穿搭合集#在车里怎么拍出高级感 』、『#交出你的时尚穿搭 #夏季女生穿搭 \n说』、『斗胆试一下一衣多穿#今天穿什么 #穿搭 』，同时命中 305 条热榜/热词。",
+          "已有 6 个账号在做这个方向：2 个 KOL、4 个 KOC、4 个低粉账号，包括荔不开、-W、葡萄大人🍇。",
+          "已采集 89 条评论数据，说明这个方向已有真实用户在主动搜索和讨论。"
+        ],
+        "bestActionReason": "当前真实证据足以支撑直接进入执行层。",
+        "supportingProofTitles": [
+          "甜妹一周穿搭合集#在车里怎么拍出高级感 #五一出游穿搭 #甜妹穿搭 #约会穿搭",
+          "#交出你的时尚穿搭 #夏季女生穿搭 \n说一说，哪套是你的风格穿搭🤏",
+          "斗胆试一下一衣多穿#今天穿什么 #穿搭 #今日穿搭 #ootd穿搭",
+          "沉浸式一周开车fitcheck #轻熟穿搭 #ootd"
+        ],
+        "trendOpportunities": [
+          {
+            "opportunityName": "场景化穿搭合集",
+            "stage": "validated",
+            "opportunityScore": 88,
+            "timingScore": 90,
+            "oneLiner": "强需求低竞争，新手非常值得做",
+            "whyNow": [
+              "已有1条1464粉低粉样本跑通",
+              "出游、约会等场景需求集中",
+              "头部暂未垄断该类垂类内容"
+            ],
+            "doNow": "结合近期节点出多套场景穿搭",
+            "observe": "观察同类型内容的流量持续性",
+            "executableTopics": [
+              {
+                "title": "五一出游5套不重样甜妹穿搭",
+                "hookType": "需求钩子",
+                "angle": "出游场景",
+                "estimatedDuration": "30-60秒"
+              },
+              {
+                "title": "约会出门3套斩男穿搭参考",
+                "hookType": "好奇钩子",
+                "angle": "约会场景",
+                "estimatedDuration": "30-45秒"
+              },
+              {
+                "title": "一周通勤穿搭不重样合集",
+                "hookType": "痛点钩子",
+                "angle": "通勤场景",
+                "estimatedDuration": "45-60秒"
+              }
+            ],
+            "evidenceSummary": "1464粉账号发甜妹一周穿搭获4910赞"
+          },
+          {
+            "opportunityName": "反差式卖货穿搭",
+            "stage": "pre_burst",
+            "opportunityScore": 85,
+            "timingScore": 88,
+            "oneLiner": "流量红利明显，可快速入场测试",
+            "whyNow": [
+              "1条1109粉低粉账号跑通",
+              "内容反差感强易引发互动",
+              "同类内容稀缺竞争极小"
+            ],
+            "doNow": "用搞笑反差形式拍穿搭卖货",
+            "observe": "观察平台对该类内容的规则导向",
+            "executableTopics": [
+              {
+                "title": "卖衣服哪有不疯的，主打出其不意",
+                "hookType": "情绪钩子",
+                "angle": "发疯人设",
+                "estimatedDuration": "15-30秒"
+              },
+              {
+                "title": "普通人穿vs博主穿，差在哪？",
+                "hookType": "对比钩子",
+                "angle": "真实反差",
+                "estimatedDuration": "30-45秒"
+              },
+              {
+                "title": "抽象穿搭挑战，第3套笑不活了",
+                "hookType": "好奇钩子",
+                "angle": "趣味挑战",
+                "estimatedDuration": "30-60秒"
+              }
+            ],
+            "evidenceSummary": "1109粉账号发发疯卖衣服获6.8万赞"
+          },
+          {
+            "opportunityName": "一衣多穿教程",
+            "stage": "validated",
+            "opportunityScore": 82,
+            "timingScore": 85,
+            "oneLiner": "受众接受度高，可长期布局",
+            "whyNow": [
+              "单条内容获5.4万赞，需求明确",
+              "实用性强用户收藏意愿高",
+              "内容可复制性强易量产"
+            ],
+            "doNow": "选基础款做不同风格搭配",
+            "observe": "观察用户对不同品类的偏好度",
+            "executableTopics": [
+              {
+                "title": "一件白T搞定一周5套穿搭",
+                "hookType": "痛点钩子",
+                "angle": "基础款搭配",
+                "estimatedDuration": "30-60秒"
+              },
+              {
+                "title": "牛仔外套的3种神仙穿法",
+                "hookType": "好奇钩子",
+                "angle": "单品复用",
+                "estimatedDuration": "30-45秒"
+              },
+              {
+                "title": "1条黑裤通勤休闲随意切换",
+                "hookType": "需求钩子",
+                "angle": "场景切换",
+                "estimatedDuration": "25-40秒"
+              }
+            ],
+            "evidenceSummary": "单条一衣多穿内容获5.4万点赞"
+          }
+        ],
+        "overviewOneLiner": "穿搭赛道多元场景、风格均有低粉爆品机会"
+      },
+      "recommendedNextTasks": [
+        {
+          "taskIntent": "trend_watch",
+          "title": "监控「穿搭 · 机会判」的变化",
+          "reason": "当前得分 95，建议建立监控等待更明确的时机。",
+          "actionLabel": "开启智能监控"
+        },
+        {
+          "taskIntent": "viral_breakdown",
+          "title": "拆解「穿搭 · 机会判」的爆款样本",
+          "reason": "已采集 10 条内容，拆解热门样本的结构和表达方式。",
+          "actionLabel": "拆解爆款结构"
+        },
+        {
+          "taskIntent": "topic_strategy",
+          "title": "探索「穿搭 · 机会判」的选题方向",
+          "reason": "基于当前数据信号，生成可执行的选题方案。",
+          "actionLabel": "生成可执行选题"
+        }
+      ],
+      "primaryArtifact": {
+        "artifactId": "artifact_seed_run_ba0644b5-f063-491d-bc43-4caf6c7d7339",
+        "runId": "run_ba0644b5-f063-491d-bc43-4caf6c7d7339",
+        "taskIntent": "opportunity_prediction",
+        "artifactType": "opportunity_memo",
+        "title": "穿搭 · 机会判断",
+        "summary": "「甜妹一周穿搭合集#在车里怎么拍出高级感、#五一出游穿搭、#甜妹穿搭、#约会穿搭、#交出你的时尚穿搭」方向已有 10 条真实内容跑通，荔不开、-W、葡萄大人🍇等已验证可行性，可以直接进入执行。",
+        "payload": {
+          "kind": "opportunity_prediction",
+          "highlight": "「甜妹一周穿搭合集#在车里怎么拍出高级感、#五一出游穿搭、#甜妹穿搭、#约会穿搭、#交出你的时尚穿搭」方向已有 10 条真实内容跑通，荔不开、-W、葡萄大人🍇等已验证可行性，可以直接进入执行。",
+          "verdictLabel": "今天直接开拍",
+          "evidenceSummary": [
+            "抖音 已有 10 条真实内容跑通，包括『甜妹一周穿搭合集#在车里怎么拍出高级感 』、『#交出你的时尚穿搭 #夏季女生穿搭 \n说』、『斗胆试一下一衣多穿#今天穿什么 #穿搭 』，同时命中 305 条热榜/热词。",
+            "已有 6 个账号在做这个方向：2 个 KOL、4 个 KOC、4 个低粉账号，包括荔不开、-W、葡萄大人🍇。",
+            "已采集 89 条评论数据，说明这个方向已有真实用户在主动搜索和讨论。"
+          ],
+          "bestActionReason": "当前真实证据足以支撑直接进入执行层。",
+          "supportingProofTitles": [
+            "甜妹一周穿搭合集#在车里怎么拍出高级感 #五一出游穿搭 #甜妹穿搭 #约会穿搭",
+            "#交出你的时尚穿搭 #夏季女生穿搭 \n说一说，哪套是你的风格穿搭🤏",
+            "斗胆试一下一衣多穿#今天穿什么 #穿搭 #今日穿搭 #ootd穿搭",
+            "沉浸式一周开车fitcheck #轻熟穿搭 #ootd"
+          ]
+        },
+        "snapshotRefs": [],
+        "createdAt": "2026-04-22T06:56:11.042Z",
+        "updatedAt": "2026-04-22T06:56:11.042Z",
+        "watchable": true,
+        "shareable": true
+      },
+      "agentRun": {
+        "runId": "run_ba0644b5-f063-491d-bc43-4caf6c7d7339",
+        "source": "home_input",
+        "taskIntent": "opportunity_prediction",
+        "taskIntentConfidence": "medium",
+        "status": "degraded",
+        "brief": {
+          "inputKind": "prompt",
+          "seedTopic": "穿搭",
+          "industry": "穿搭时尚",
+          "candidatePlatforms": [
+            "douyin"
+          ],
+          "accountContext": "未提供账号连接，按公开平台数据做通用预测",
+          "competitorEvidence": [],
+          "personalizationMode": "public"
+        },
+        "facts": {
+          "platformSnapshots": [
+            {
+              "platformId": "douyin",
+              "platformName": "抖音",
+              "authMode": "public",
+              "predictionEnabled": true,
+              "callBudget": {
+                "topic": 6,
+                "link": 4,
+                "account": 5,
+                "cookieExtra": 5
+              },
+              "endpointFamilies": [
+                "fetch_hot_search_result",
+                "fetch_one_video_v2",
+                "fetch_user_post_videos",
+                "fetch_video_comments",
+                "creator_v2_*"
+              ],
+              "coreFields": [
+                "aweme_id",
+                "desc",
+                "create_time",
+                "author_id",
+                "follower_count",
+                "digg_count",
+                "comment_count",
+                "share_count",
+                "play_count",
+                "hashtag",
+                "hot_rank",
+                "traffic_source",
+                "search_keywords",
+                "audience_portrait"
+              ],
+              "capabilitySummary": [
+                "搜索",
+                "热榜",
+                "详情",
+                "评论",
+                "主页",
+                "创作者数据"
+              ],
+              "signals": [
+                "搜索需求",
+                "热榜加速度",
+                "评论反馈",
+                "账号画像"
+              ]
+            }
+          ],
+          "scoreBreakdown": {
+            "demand": 100,
+            "competition": 78,
+            "anomaly": 54,
+            "fit": 82,
+            "opportunity": 95,
+            "timing": 100,
+            "risk": 18
+          },
+          "evidenceRefs": {
+            "supportingAccountIds": [
+              "acct-generic-operator",
+              "acct-generic-koc"
+            ],
+            "supportingContentIds": [
+              "content-generic-case",
+              "content-generic-tip"
+            ],
+            "lowFollowerSampleIds": []
+          }
+        },
+        "judgment": {
+          "title": "穿搭 · 机会判断",
+          "summary": "「甜妹一周穿搭合集#在车里怎么拍出高级感、#五一出游穿搭、#甜妹穿搭、#约会穿搭、#交出你的时尚穿搭」方向已有 10 条真实内容跑通，荔不开、-W、葡萄大人🍇等已验证可行性，可以直接进入执行。",
+          "verdict": "go_now",
+          "confidenceLabel": "中",
+          "bestAction": {
+            "type": "generate_test_brief",
+            "title": "今天直接开拍",
+            "description": "真实样本和市场扩散已经补齐，适合直接进入开拍方案。",
+            "ctaLabel": "拿开拍方案",
+            "reason": "当前真实证据足以支撑直接进入执行层。"
+          }
+        },
+        "deliverables": [
+          {
+            "kind": "primary_result",
+            "title": "穿搭 · 机会判断",
+            "description": "「甜妹一周穿搭合集#在车里怎么拍出高级感、#五一出游穿搭、#甜妹穿搭、#约会穿搭、#交出你的时尚穿搭」方向已有 10 条真实内容跑通，荔不开、-W、葡萄大人🍇等已验证可行性，可以直接进入执行。",
+            "ctaLabel": "开启智能监控"
+          }
+        ],
+        "recommendedNextTasks": [
+          {
+            "taskIntent": "trend_watch",
+            "title": "监控「穿搭 · 机会判」的变化",
+            "reason": "当前得分 95，建议建立监控等待更明确的时机。",
+            "actionLabel": "开启智能监控"
+          },
+          {
+            "taskIntent": "viral_breakdown",
+            "title": "拆解「穿搭 · 机会判」的爆款样本",
+            "reason": "已采集 10 条内容，拆解热门样本的结构和表达方式。",
+            "actionLabel": "拆解爆款结构"
+          },
+          {
+            "taskIntent": "topic_strategy",
+            "title": "探索「穿搭 · 机会判」的选题方向",
+            "reason": "基于当前数据信号，生成可执行的选题方案。",
+            "actionLabel": "生成可执行选题"
+          }
+        ],
+        "artifacts": [
+          {
+            "artifactId": "artifact_seed_run_ba0644b5-f063-491d-bc43-4caf6c7d7339",
+            "runId": "run_ba0644b5-f063-491d-bc43-4caf6c7d7339",
+            "taskIntent": "opportunity_prediction",
+            "artifactType": "opportunity_memo",
+            "title": "穿搭 · 机会判断",
+            "summary": "「甜妹一周穿搭合集#在车里怎么拍出高级感、#五一出游穿搭、#甜妹穿搭、#约会穿搭、#交出你的时尚穿搭」方向已有 10 条真实内容跑通，荔不开、-W、葡萄大人🍇等已验证可行性，可以直接进入执行。",
+            "payload": {
+              "kind": "opportunity_prediction",
+              "highlight": "「甜妹一周穿搭合集#在车里怎么拍出高级感、#五一出游穿搭、#甜妹穿搭、#约会穿搭、#交出你的时尚穿搭」方向已有 10 条真实内容跑通，荔不开、-W、葡萄大人🍇等已验证可行性，可以直接进入执行。",
+              "verdictLabel": "今天直接开拍",
+              "evidenceSummary": [
+                "抖音 已有 10 条真实内容跑通，包括『甜妹一周穿搭合集#在车里怎么拍出高级感 』、『#交出你的时尚穿搭 #夏季女生穿搭 \n说』、『斗胆试一下一衣多穿#今天穿什么 #穿搭 』，同时命中 305 条热榜/热词。",
+                "已有 6 个账号在做这个方向：2 个 KOL、4 个 KOC、4 个低粉账号，包括荔不开、-W、葡萄大人🍇。",
+                "已采集 89 条评论数据，说明这个方向已有真实用户在主动搜索和讨论。"
+              ],
+              "bestActionReason": "当前真实证据足以支撑直接进入执行层。",
+              "supportingProofTitles": [
+                "甜妹一周穿搭合集#在车里怎么拍出高级感 #五一出游穿搭 #甜妹穿搭 #约会穿搭",
+                "#交出你的时尚穿搭 #夏季女生穿搭 \n说一说，哪套是你的风格穿搭🤏",
+                "斗胆试一下一衣多穿#今天穿什么 #穿搭 #今日穿搭 #ootd穿搭",
+                "沉浸式一周开车fitcheck #轻熟穿搭 #ootd"
+              ]
+            },
+            "snapshotRefs": [],
+            "createdAt": "2026-04-22T06:56:11.042Z",
+            "updatedAt": "2026-04-22T06:56:11.042Z",
+            "watchable": true,
+            "shareable": true
+          }
+        ],
+        "runtimeMeta": {
+          "createdAt": "2026-04-22T06:56:11.042Z",
+          "updatedAt": "2026-04-22T06:56:11.042Z",
+          "sourceMode": "live",
+          "executionStatus": "partial_success",
+          "usedPlatforms": [
+            "douyin"
+          ],
+          "usedRouteChain": [
+            "keyword_content_search:L1:/api/v1/douyin/search/fetch_general_search_v1",
+            "topic_discovery:L1:/api/v1/douyin/search/fetch_challenge_search_v2",
+            "hot_seed:L1:/api/v1/douyin/app/v3/fetch_hot_search_list",
+            "low_fan_billboard:L1:/api/v1/douyin/billboard/fetch_hot_total_low_fan_list",
+            "hot_search_billboard:L1:/api/v1/douyin/billboard/fetch_hot_total_search_list",
+            "hot_word_billboard:L1:/api/v1/douyin/billboard/fetch_hot_total_hot_word_list"
+          ],
+          "degradeFlags": [
+            "optional_endpoint_failed",
+            "sparse_comments"
+          ],
+          "endpointHealthVersion": "2026-04-22T06:56:10.932Z"
+        },
+        "degradeFlags": [
+          "optional_endpoint_failed",
+          "sparse_comments"
+        ],
+        "taskPayload": {
+          "kind": "opportunity_prediction",
+          "highlight": "「甜妹一周穿搭合集#在车里怎么拍出高级感、#五一出游穿搭、#甜妹穿搭、#约会穿搭、#交出你的时尚穿搭」方向已有 10 条真实内容跑通，荔不开、-W、葡萄大人🍇等已验证可行性，可以直接进入执行。",
+          "verdictLabel": "今天直接开拍",
+          "evidenceSummary": [
+            "抖音 已有 10 条真实内容跑通，包括『甜妹一周穿搭合集#在车里怎么拍出高级感 』、『#交出你的时尚穿搭 #夏季女生穿搭 \n说』、『斗胆试一下一衣多穿#今天穿什么 #穿搭 』，同时命中 305 条热榜/热词。",
+            "已有 6 个账号在做这个方向：2 个 KOL、4 个 KOC、4 个低粉账号，包括荔不开、-W、葡萄大人🍇。",
+            "已采集 89 条评论数据，说明这个方向已有真实用户在主动搜索和讨论。"
+          ],
+          "bestActionReason": "当前真实证据足以支撑直接进入执行层。",
+          "supportingProofTitles": [
+            "甜妹一周穿搭合集#在车里怎么拍出高级感 #五一出游穿搭 #甜妹穿搭 #约会穿搭",
+            "#交出你的时尚穿搭 #夏季女生穿搭 \n说一说，哪套是你的风格穿搭🤏",
+            "斗胆试一下一衣多穿#今天穿什么 #穿搭 #今日穿搭 #ootd穿搭",
+            "沉浸式一周开车fitcheck #轻熟穿搭 #ootd"
+          ]
+        }
+      },
+      "classificationReasons": [
+        "prompt 更像爆款预测和下注决策。"
+      ],
+      "aiTopicSuggestions": [
+        {
+          "title": "甜妹一周出游穿搭合集 约会出街都能直接抄",
+          "angle": "按场景整理甜妹穿搭合集附上身效果",
+          "referenceTitle": "「甜妹一周穿搭合集#在车里怎么拍出高级感 #五一出游穿搭 #甜妹穿搭 #约会穿搭」",
+          "referenceId": "7630784134991148155"
+        },
+        {
+          "title": "普通上衣一衣多穿公式 一周不重样巨省 money",
+          "angle": "展示同一件单品的多种搭配思路",
+          "referenceTitle": "「斗胆试一下一衣多穿#今天穿什么 #穿搭 #今日穿搭 #ootd穿搭」",
+          "referenceId": "7630400052989816896"
+        },
+        {
+          "title": "服装人发疯式卖衣服 这些抽象穿搭你敢穿吗",
+          "angle": "用搞笑发疯的话术介绍穿搭反差感拉满",
+          "referenceTitle": "「卖衣服哪有不疯的#发疯卖衣服 #抽象穿搭」",
+          "referenceId": "7630400718498921204"
+        }
+      ],
+      "followUps": []
+    }
   }
 }

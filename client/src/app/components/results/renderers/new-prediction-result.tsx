@@ -613,46 +613,7 @@ function NewPredictionResultBody({ result }: ArtifactRendererProps) {
                   </div>
                 );
               })()}
-              {/* 核心建议摘要 */}
-              <p className="text-[15px] text-[#374151] leading-[26px] mb-5">
-                {result.bestActionNow?.reason || result.summary}
-              </p>
-
-              {/* 推荐级别说明 */}
-              <div className="rounded-[14px] px-4 py-3 mb-5" style={{ background: recommendLevel.bg, border: `1px solid ${recommendLevel.border}` }}>
-                <div className="flex items-center gap-2">
-                  <span className="text-[13px] font-medium" style={{ color: recommendLevel.color }}>
-                    {recommendLevel.label}
-                  </span>
-                  <span className="text-[12px] text-[#6B7280]">—</span>
-                  <span className="text-[13px] text-[#374151]">{recommendLevel.description}</span>
-                </div>
-              </div>
-
-              {/* Agent 建议的下一步任务 */}
-              {result.recommendedNextTasks?.length > 0 && (
-                <div className="space-y-2">
-                  <div className="text-[12px] text-[#6B7280] mb-1">AI 推荐的下一步</div>
-                  {result.recommendedNextTasks.map((task, i) => (
-                    <div key={i} className="flex items-center justify-between px-4 py-3 rounded-[14px] border border-[#F3F4F6] bg-[#F9FAFB] hover:bg-[#F3F4F6] transition-colors cursor-pointer"
-                      onClick={() => {
-                        window.dispatchEvent(new CustomEvent("open-deep-dive", {
-                          detail: { prompt: `基于这次爆款预测，继续帮我做「${task.title}」。要求：${task.reason}` },
-                        }));
-                      }}
-                    >
-                      <div className="flex-1 min-w-0">
-                        <div className="text-[13px] text-[#1E2939] font-medium">{task.title}</div>
-                        <div className="text-[11px] text-[#6B7280] mt-0.5 truncate">{task.reason}</div>
-                      </div>
-                      <span className="shrink-0 ml-3 inline-flex items-center gap-1 px-3 py-1.5 rounded-[10px] bg-white border border-[#E5E7EB] text-[12px] text-[#374151] hover:bg-[#F3F4F6] transition-colors">
-                        {task.actionLabel}
-                        <ArrowRight className="w-3 h-3" />
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              )}
+              {/* 需求1：移除冗余废话，只保留简洁的推荐级别标签 */}
             </div>
 
             {/* 右侧：爆发指数仪表盘 */}
@@ -678,6 +639,97 @@ function NewPredictionResultBody({ result }: ArtifactRendererProps) {
           </div>
         </div>
       </div>
+
+      {/* ================================================================ */}
+      {/* 爆款预测选题 — 紧接第一屏结论下方，确保用户立即看到              */}
+      {/* ================================================================ */}
+      {result.aiTopicSuggestions && result.aiTopicSuggestions.length > 0 && (
+        <div className="rounded-[24px] border border-[#E9E5FF] bg-gradient-to-br from-[#FAFAFF] to-[#F3F0FF] p-6 shadow-[0px_2px_8px_rgba(137,121,255,0.08)]">
+          {/* 模块标题 */}
+          <div className="flex items-center gap-2 mb-5">
+            <div className="flex items-center justify-center w-8 h-8 rounded-full bg-gradient-to-br from-[#8979FF] to-[#6C5CE7]">
+              <Sparkles className="w-4 h-4 text-white" />
+            </div>
+            <div>
+              <h3 className="text-[16px] font-semibold text-[#1E2939]">
+                爆款预测选题
+              </h3>
+              <p className="text-[12px] text-[#8979FF] mt-0.5 font-medium">直接拍这几个一定会火</p>
+            </div>
+          </div>
+
+          {/* 横向滚动卡片组 */}
+          <div className="flex gap-4 overflow-x-auto pb-2 -mx-1 px-1 snap-x snap-mandatory scrollbar-thin scrollbar-thumb-[#E9E5FF] scrollbar-track-transparent">
+            {result.aiTopicSuggestions.map((topic: AiTopicSuggestion, idx: number) => (
+              <div
+                key={`ai-topic-${idx}`}
+                className="flex-shrink-0 w-[280px] snap-start rounded-[18px] border border-[#E9E5FF] bg-white p-5 shadow-[0px_1px_4px_rgba(137,121,255,0.06)] hover:shadow-[0px_4px_16px_rgba(137,121,255,0.12)] hover:border-[#C4BBFF] transition-all duration-200 flex flex-col"
+              >
+                {/* 序号徽章 + 爆款机率 */}
+                <div className="flex items-center gap-2 mb-3">
+                  <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-gradient-to-br from-[#8979FF] to-[#6C5CE7] text-white text-[11px] font-bold">
+                    {idx + 1}
+                  </span>
+                  {topic.score != null && (
+                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-bold"
+                      style={{
+                        background: topic.score >= 85 ? "rgba(5,150,105,0.1)" : topic.score >= 70 ? "rgba(137,121,255,0.1)" : "rgba(217,119,6,0.1)",
+                        color: topic.score >= 85 ? "#059669" : topic.score >= 70 ? "#8979FF" : "#D97706",
+                      }}>
+                      <Flame className="w-3 h-3" />
+                      爆款机率 {topic.score}%
+                    </span>
+                  )}
+                </div>
+
+                {/* 爆款标题 */}
+                <h4 className="text-[15px] font-semibold text-[#1E2939] leading-[22px] mb-2 line-clamp-2">
+                  {topic.title}
+                </h4>
+
+                {/* 切入角度 */}
+                <p className="text-[12px] text-[#6B7280] leading-[18px] mb-3 flex-1">
+                  <span className="text-[#8979FF] font-medium">切入角度：</span>
+                  {topic.angle}
+                </p>
+
+                {/* 对标参考 */}
+                {topic.referenceTitle && (
+                  <div className="rounded-[10px] bg-[#F9F8FF] border border-[#F3F0FF] px-3 py-2 mb-3">
+                    <div className="flex items-center gap-1.5">
+                      <Eye className="w-3 h-3 text-[#8979FF] shrink-0" />
+                      <span className="text-[11px] text-[#6B7280]">对标参考</span>
+                    </div>
+                    <p className="text-[11px] text-[#4A5565] mt-1 leading-[16px] line-clamp-2">
+                      「{topic.referenceTitle}」
+                    </p>
+                  </div>
+                )}
+
+                {/* 行动按钮 */}
+                <button
+                  onClick={() => {
+                    window.dispatchEvent(new CustomEvent("open-cta-editor", {
+                      detail: {
+                        ctaId: "shoot_plan",
+                        directionContext: {
+                          directionTitle: topic.title,
+                          directionDescription: topic.angle,
+                          referenceTitle: topic.referenceTitle,
+                        },
+                      },
+                    }));
+                  }}
+                  className="mt-auto flex items-center justify-center gap-1.5 w-full py-2.5 rounded-[12px] bg-gradient-to-r from-[#8979FF] to-[#6C5CE7] text-white text-[13px] font-medium hover:from-[#7A6AEE] hover:to-[#5B4DD6] transition-all duration-200 shadow-[0px_2px_6px_rgba(137,121,255,0.3)]"
+                >
+                  <Rocket className="w-3.5 h-3.5" />
+                  拿开拍方案
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* ================================================================ */}
       {/* 第二层：动作建议 — 建议拍摄方向 + 下一步建议                       */}
@@ -816,91 +868,6 @@ function NewPredictionResultBody({ result }: ArtifactRendererProps) {
           )}
         </div>
       </div>
-
-      {/* ================================================================ */}
-      {/* AI 爆款选题建议 — 插入在建议拍摄方向与归因层之间                  */}
-      {/* ================================================================ */}
-
-      {result.aiTopicSuggestions && result.aiTopicSuggestions.length > 0 && (
-        <div className="rounded-[24px] border border-[#E9E5FF] bg-gradient-to-br from-[#FAFAFF] to-[#F3F0FF] p-6 shadow-[0px_2px_8px_rgba(137,121,255,0.08)]">
-          {/* 模块标题 */}
-          <div className="flex items-center gap-2 mb-5">
-            <div className="flex items-center justify-center w-8 h-8 rounded-full bg-gradient-to-br from-[#8979FF] to-[#6C5CE7]">
-              <Sparkles className="w-4 h-4 text-white" />
-            </div>
-            <div>
-              <h3 className="text-[16px] font-semibold text-[#1E2939]">
-                AI 为你生成的爆款选题
-              </h3>
-              <p className="text-[12px] text-[#6B7280] mt-0.5">基于真实采集数据推演 · 可直接使用</p>
-            </div>
-          </div>
-
-          {/* 横向滚动卡片组 */}
-          <div className="flex gap-4 overflow-x-auto pb-2 -mx-1 px-1 snap-x snap-mandatory scrollbar-thin scrollbar-thumb-[#E9E5FF] scrollbar-track-transparent">
-            {result.aiTopicSuggestions.map((topic: AiTopicSuggestion, idx: number) => (
-              <div
-                key={`ai-topic-${idx}`}
-                className="flex-shrink-0 w-[280px] snap-start rounded-[18px] border border-[#E9E5FF] bg-white p-5 shadow-[0px_1px_4px_rgba(137,121,255,0.06)] hover:shadow-[0px_4px_16px_rgba(137,121,255,0.12)] hover:border-[#C4BBFF] transition-all duration-200 flex flex-col"
-              >
-                {/* 序号徽章 */}
-                <div className="flex items-center gap-2 mb-3">
-                  <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-gradient-to-br from-[#8979FF] to-[#6C5CE7] text-white text-[11px] font-bold">
-                    {idx + 1}
-                  </span>
-                  <span className="text-[11px] text-[#8979FF] font-medium bg-[#F3F0FF] px-2 py-0.5 rounded-full">
-                    爆款选题
-                  </span>
-                </div>
-
-                {/* 爆款标题 */}
-                <h4 className="text-[15px] font-semibold text-[#1E2939] leading-[22px] mb-2 line-clamp-2">
-                  {topic.title}
-                </h4>
-
-                {/* 切入角度 */}
-                <p className="text-[12px] text-[#6B7280] leading-[18px] mb-3 flex-1">
-                  <span className="text-[#8979FF] font-medium">切入角度：</span>
-                  {topic.angle}
-                </p>
-
-                {/* 对标参考 */}
-                {topic.referenceTitle && (
-                  <div className="rounded-[10px] bg-[#F9F8FF] border border-[#F3F0FF] px-3 py-2 mb-3">
-                    <div className="flex items-center gap-1.5">
-                      <Eye className="w-3 h-3 text-[#8979FF] shrink-0" />
-                      <span className="text-[11px] text-[#6B7280]">对标参考</span>
-                    </div>
-                    <p className="text-[11px] text-[#4A5565] mt-1 leading-[16px] line-clamp-2">
-                      「{topic.referenceTitle}」
-                    </p>
-                  </div>
-                )}
-
-                {/* 行动按钮 */}
-                <button
-                  onClick={() => {
-                    window.dispatchEvent(new CustomEvent("open-cta-editor", {
-                      detail: {
-                        ctaId: "shoot_plan",
-                        directionContext: {
-                          directionTitle: topic.title,
-                          directionDescription: topic.angle,
-                          referenceTitle: topic.referenceTitle,
-                        },
-                      },
-                    }));
-                  }}
-                  className="mt-auto flex items-center justify-center gap-1.5 w-full py-2.5 rounded-[12px] bg-gradient-to-r from-[#8979FF] to-[#6C5CE7] text-white text-[13px] font-medium hover:from-[#7A6AEE] hover:to-[#5B4DD6] transition-all duration-200 shadow-[0px_2px_6px_rgba(137,121,255,0.3)]"
-                >
-                  <Rocket className="w-3.5 h-3.5" />
-                  拿开拍方案
-                </button>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
 
       {/* ================================================================ */}
       {/* 第三层：归因展开 — 全部默认折叠                                    */}

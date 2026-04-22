@@ -624,9 +624,36 @@ export async function runLivePrediction(
   }
 
    const supportingAccounts = rawAccounts.slice(0, 10);
-  // ── 语义相关性过滤：扩大候选池，用 LLM 过滤噪音 ──
+  // ── 需求6：数据质量筛选 — 点赞数门槛 + 时间范围 + 点赞数倒序排序 ──
   const allDedupedContents = dedupeById(allContents, "contentId");
-  const candidateContents = allDedupedContents.slice(0, 30); // 扩大候选池
+  // 按点赞数倒序排序，确保热门内容优先
+  allDedupedContents.sort((a, b) => (b.likeCount ?? 0) - (a.likeCount ?? 0));
+  // 点赞数筛选门槛：默认 >= 1000，确保返回的都是真正的高赞热门数据
+  const MIN_LIKE_THRESHOLD = 1000;
+  // 时间范围筛选：默认近 1 个月
+  const now = Date.now();
+  const ONE_MONTH_MS = 30 * 24 * 60 * 60 * 1000;
+  const timeWindowMs = ONE_MONTH_MS;
+  const qualityFiltered = allDedupedContents.filter((c) => {
+    // 点赞数筛选
+    if ((c.likeCount ?? 0) < MIN_LIKE_THRESHOLD) return false;
+    // 时间范围筛选（如果有 publishedAt 字段）
+    if (c.publishedAt) {
+      const pubTime = new Date(c.publishedAt).getTime();
+      if (!isNaN(pubTime) && pubTime < now - timeWindowMs) return false;
+    }
+    return true;
+  });
+  // 降级策略：数据不足时放宽时间范围，但始终保留点赞数硬门槛
+  let candidateContents: ExtractedContent[];
+  if (qualityFiltered.length >= 3) {
+    candidateContents = qualityFiltered.slice(0, 30);
+  } else {
+    // 降级：只保留点赞数门槛，取消时间范围限制
+    const likesOnlyFiltered = allDedupedContents.filter((c) => (c.likeCount ?? 0) >= MIN_LIKE_THRESHOLD);
+    candidateContents = likesOnlyFiltered.slice(0, 30); // 始终保留点赞数硬门槛，无数据时返回空数组
+    log.info(`数据质量筛选降级: 放宽时间范围，保留点赞数门槛，候选${likesOnlyFiltered.length}条`);
+  }
   let supportingContents: ExtractedContent[];
   if (candidateContents.length > 0 && effectiveSeedTopic && effectiveSeedTopic.length >= 2) {
     try {
@@ -1351,6 +1378,7 @@ ${demandSignals}
 1. 标题可以直接用作短视频标题，有爆款潜力（15-25字）
 2. 切入角度基于真实样本的成功特征推演，不是凭空编造
 3. 必须引用上方某个真实样本作为对标参考
+4. 为每个选题独立评估爆款机率分数（70-95之间的整数），基于该选题与热门样本的匹配度、评论需求信号强度、低粉爆款验证情况综合评分
 
 输出严格的 JSON 格式：
 {
@@ -1358,7 +1386,8 @@ ${demandSignals}
     {
       "title": "爆款标题（15-25字，直接可用）",
       "angle": "切入角度说明（25字以内）",
-      "referenceTitle": "引用的真实样本标题"
+      "referenceTitle": "引用的真实样本标题",
+      "score": 88
     }
   ]
 }
@@ -1382,7 +1411,7 @@ ${demandSignals}
     const topicJsonMatch = topicLlmResponse.content.match(/\{[\s\S]*\}/);
     if (topicJsonMatch) {
       const parsed = JSON.parse(topicJsonMatch[0]) as {
-        topics?: Array<{ title?: string; angle?: string; referenceTitle?: string }>;
+        topics?: Array<{ title?: string; angle?: string; referenceTitle?: string; score?: number }>;
       };
       if (Array.isArray(parsed.topics) && parsed.topics.length > 0) {
         aiTopicSuggestions = parsed.topics.slice(0, 3).map((t) => {
@@ -1390,11 +1419,15 @@ ${demandSignals}
           const refContent = t.referenceTitle
             ? supportingContents.find((c) => c.title.includes(t.referenceTitle!) || t.referenceTitle!.includes(c.title))
             : undefined;
+          // 爆款机率分数：限制在 70-95 范围内
+          const rawScore = typeof t.score === "number" ? t.score : 80;
+          const clampedScore = Math.max(70, Math.min(95, rawScore));
           return {
             title: t.title ?? "未命名选题",
             angle: t.angle ?? "",
             referenceTitle: t.referenceTitle,
             referenceId: refContent?.contentId,
+            score: clampedScore,
           };
         });
       }
@@ -1466,10 +1499,20 @@ ${demandSignals}
     createdAt: nowIso(),
     updatedAt: nowIso(),
   };
+  // Gap修复：同步覆盖 run 内的 recommendedNextTasks，确保与 enrichedResult 一致
+  const topicBasedNextTasks = aiTopicSuggestions.length > 0
+    ? aiTopicSuggestions.slice(0, 3).map((topic, idx) => ({
+        taskIntent: "topic_strategy" as const,
+        title: `针对选题${idx + 1}「${topic.title.slice(0, 10)}」生成脚本`,
+        reason: `切入角度：${topic.angle}${topic.referenceTitle ? `，对标「${topic.referenceTitle.slice(0, 12)}」` : ""}`,
+        actionLabel: `生成脚本`,
+      }))
+    : contract.recommendedNextTasks;
   const run = {
     ...contract.agentRun,
     artifacts: [primaryArtifact],
     runtimeMeta,
+    recommendedNextTasks: topicBasedNextTasks,
   };
   const enrichedResult = {
     id: runId,
@@ -1489,7 +1532,8 @@ ${demandSignals}
         ? { trendOpportunities, overviewOneLiner }
         : {}),
     },
-    recommendedNextTasks: contract.recommendedNextTasks,
+    // 需求5：基于具体选题生成下一步建议（而非基于整个赛道）
+    recommendedNextTasks: topicBasedNextTasks,
     primaryArtifact,
     agentRun: run,
     classificationReasons: contract.classification.reasons,

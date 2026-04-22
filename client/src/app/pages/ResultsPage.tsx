@@ -658,6 +658,7 @@ function normalizeRemoteResult(detail: SavedResultArtifactDetail): ResultRecord 
           angle: asString(topic.angle, ""),
           referenceTitle: typeof topic.referenceTitle === "string" ? topic.referenceTitle : undefined,
           referenceId: typeof topic.referenceId === "string" ? topic.referenceId : undefined,
+          score: typeof topic.score === "number" ? topic.score : undefined,
         }))
       : undefined,
     commentInsight: isRecord(snapshot.commentInsight)

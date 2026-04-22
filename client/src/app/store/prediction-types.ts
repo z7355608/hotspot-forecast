@@ -288,6 +288,8 @@ export interface AiTopicSuggestion {
   referenceTitle?: string;
   /** 对标样本ID */
   referenceId?: string;
+  /** 爆款机率分数（0-100） */
+  score?: number;
 }
 
 export interface PredictionCommentInsight {
