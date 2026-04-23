@@ -336,3 +336,8 @@
 - [x] 后端 breakdown-agent.ts context类型新增 topicReference/topicTags 字段
 - [x] shoot_plan prompt 显式消费 topicReference/topicTags（buildTopicContext 辅助函数）
 - [x] TypeScript编译0错误 + Legacy Bridge正常加载 + 49个测试全部通过
+
+## 用户视觉编辑需求
+
+- [x] 删除ai-workbench-shell.tsx中的示例模板按钮区域（爆款预测/爆款拆解/文案提取）
+- [x] 优化HomePage.tsx快速示例：“健身减脂 现在拍什么会火”、“拆解这条爆款视频”（含链接）、“母婴辅食 低粉爆款分析”

@@ -1050,42 +1050,7 @@ export function AIWorkbench({
         </button>
       </div>
 
-      <div className="mt-3 space-y-2">
-        <div className="flex items-center gap-2 px-1 text-xs text-gray-400">
-          <span className="rounded-full bg-gray-100 px-2 py-1 text-gray-500">示例</span>
-          <span>已填入参考数据，适合直接试跑</span>
-        </div>
-        <div className="flex items-center justify-start gap-3 overflow-x-auto pb-2 sm:justify-center">
-          {PROMPT_TEMPLATES.map((template) => {
-            const Icon = template.icon;
-            return (
-            <button
-              key={`example-${template.label}`}
-              type="button"
-              onClick={() => {
-                if (template.id === "copy-extraction") {
-                  navigate("/toolbox?tool=text_extract");
-                  return;
-                }
-                applyPromptTemplate(template);
-              }}
-              className="flex whitespace-nowrap items-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-2 text-sm text-gray-700 transition-colors hover:bg-gray-50"
-            >
-              <Icon className="h-4 w-4" />
-              <span>{template.label}</span>
-              <span className="text-[10px] leading-none text-gray-300">
-                {getHomepageAnalysisCost(
-                  template.cost,
-                  state.selectedModel,
-                  selectedPlatformConnectors.length,
-                )}
-              </span>
-            </button>
-            );
-          })}
 
-        </div>
-      </div>
 
       {showConnectorModal && (
         <>
