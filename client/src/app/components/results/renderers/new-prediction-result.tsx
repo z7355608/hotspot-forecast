@@ -15,6 +15,7 @@ import {
   FileText, Search, Zap, ChevronUp,
   Rocket, Flame, Eye, Compass,
   CheckCircle2, Clock, Lightbulb, Database,
+  ChevronLeft, ChevronRight, Video, Calendar,
 } from "lucide-react";
 import type { ArtifactRendererProps, CtaActionConfig, DeepDiveConfig, FollowUpAction, HeroMetricCard } from "../artifact-registry";
 import { registerArtifactRenderer } from "../artifact-registry";
@@ -465,6 +466,7 @@ function CollapsibleSection({ title, subtitle, children, defaultOpen = false }: 
 
 function NewPredictionResultBody({ result }: ArtifactRendererProps) {
   const [selectedDirection, setSelectedDirection] = useState(0);
+  const [activeTopicIdx, setActiveTopicIdx] = useState(0);
 
   const market = result.marketEvidence;
   const tierBreakdown = market?.tierBreakdown;
@@ -641,108 +643,194 @@ function NewPredictionResultBody({ result }: ArtifactRendererProps) {
       </div>
 
       {/* ================================================================ */}
-      {/* 【AI 预测爆款选题】— 核心交付物，第一屏最重要的模块       */}
+      {/* 【AI 预测爆款选题】— 核心交付物，单张大卡片轮播                    */}
       {/* ================================================================ */}
-      {result.aiTopicSuggestions && result.aiTopicSuggestions.length > 0 && (
-        <div className="rounded-[24px] border-2 border-[#C4BBFF] bg-gradient-to-br from-[#FAFAFF] via-[#F5F3FF] to-[#EDE9FF] p-6 shadow-[0px_4px_20px_rgba(137,121,255,0.15)]">
-          {/* 模块标题 */}
-          <div className="flex items-center gap-3 mb-6">
-            <div className="flex items-center justify-center w-10 h-10 rounded-full bg-gradient-to-br from-[#8979FF] to-[#6C5CE7] shadow-[0px_2px_8px_rgba(137,121,255,0.4)]">
-              <Sparkles className="w-5 h-5 text-white" />
+      {result.aiTopicSuggestions && result.aiTopicSuggestions.length > 0 && (() => {
+        const topics = result.aiTopicSuggestions as AiTopicSuggestion[];
+        const topic = topics[activeTopicIdx] ?? topics[0];
+        const total = topics.length;
+        const goPrev = () => setActiveTopicIdx((p) => (p - 1 + total) % total);
+        const goNext = () => setActiveTopicIdx((p) => (p + 1) % total);
+        return (
+          <div className="rounded-[24px] border-2 border-[#C4BBFF] bg-gradient-to-br from-[#FAFAFF] via-[#F5F3FF] to-[#EDE9FF] shadow-[0px_4px_20px_rgba(137,121,255,0.15)] overflow-hidden">
+            {/* 模块标题栏 */}
+            <div className="flex items-center justify-between px-6 pt-5 pb-3">
+              <div className="flex items-center gap-3">
+                <div className="flex items-center justify-center w-10 h-10 rounded-full bg-gradient-to-br from-[#8979FF] to-[#6C5CE7] shadow-[0px_2px_8px_rgba(137,121,255,0.4)]">
+                  <Sparkles className="w-5 h-5 text-white" />
+                </div>
+                <div>
+                  <h3 className="text-[18px] font-bold text-[#1E2939]">AI 预测爆款选题</h3>
+                  <p className="text-[13px] text-[#8979FF] mt-0.5 font-semibold">当前推荐结果 · 基于真实数据推演</p>
+                </div>
+              </div>
+              <span className="text-[13px] text-[#99A1AF] font-medium">共 {total} 个结果</span>
             </div>
-            <div>
-              <h3 className="text-[18px] font-bold text-[#1E2939]">
-                AI 预测爆款选题
-              </h3>
-              <p className="text-[13px] text-[#8979FF] mt-0.5 font-semibold">直接拍这几个一定会火 · 基于真实数据推演</p>
-            </div>
-          </div>
 
-          {/* 选题卡片组 */}
-          <div className="flex gap-4 overflow-x-auto pb-2 -mx-1 px-1 snap-x snap-mandatory scrollbar-thin scrollbar-thumb-[#E9E5FF] scrollbar-track-transparent">
-            {result.aiTopicSuggestions.map((topic: AiTopicSuggestion, idx: number) => (
-              <div
-                key={`ai-topic-${idx}`}
-                className="flex-shrink-0 w-[320px] snap-start rounded-[18px] border border-[#E9E5FF] bg-white p-5 shadow-[0px_2px_8px_rgba(137,121,255,0.08)] hover:shadow-[0px_6px_24px_rgba(137,121,255,0.16)] hover:border-[#B5ABFF] transition-all duration-200 flex flex-col"
-              >
-                {/* 序号徽章 + 爆款机率 */}
-                <div className="flex items-center gap-2 mb-3">
-                  <span className="inline-flex items-center justify-center w-7 h-7 rounded-full bg-gradient-to-br from-[#8979FF] to-[#6C5CE7] text-white text-[12px] font-bold shadow-sm">
-                    {idx + 1}
-                  </span>
-                  {topic.score != null && (
-                    <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[12px] font-bold"
-                      style={{
-                        background: topic.score >= 85 ? "rgba(5,150,105,0.1)" : topic.score >= 70 ? "rgba(137,121,255,0.1)" : "rgba(217,119,6,0.1)",
-                        color: topic.score >= 85 ? "#059669" : topic.score >= 70 ? "#8979FF" : "#D97706",
-                      }}>
-                      <Flame className="w-3.5 h-3.5" />
-                      爆款机率 {topic.score}%
+            {/* 卡片主体 */}
+            <div className="px-6 pb-2">
+              <div className="rounded-[18px] border border-[#E9E5FF] bg-white shadow-[0px_2px_12px_rgba(137,121,255,0.08)] overflow-hidden">
+                {/* 上半部分：左侧结论 + 右侧推荐内容 */}
+                <div className="grid grid-cols-2 gap-0">
+                  {/* 左侧：结论区 */}
+                  <div className="p-5 border-r border-[#F3F0FF]">
+                    {/* 序号 + 推荐标签 + 优先级分数 */}
+                    <div className="flex items-center justify-between mb-4">
+                      <div className="flex items-center gap-2">
+                        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[12px] font-bold bg-gradient-to-r from-[#8979FF] to-[#6C5CE7] text-white shadow-sm">
+                          推荐 #{activeTopicIdx + 1}
+                        </span>
+                        <span className="text-[13px] text-[#4A5565] font-medium truncate max-w-[140px]">{topic.title.slice(0, 8)}</span>
+                      </div>
+                      {topic.score != null && (
+                        <div className="flex flex-col items-center px-3 py-1.5 rounded-[12px] border"
+                          style={{
+                            borderColor: topic.score >= 85 ? "rgba(5,150,105,0.3)" : topic.score >= 70 ? "rgba(137,121,255,0.3)" : "rgba(217,119,6,0.3)",
+                            background: topic.score >= 85 ? "rgba(5,150,105,0.05)" : topic.score >= 70 ? "rgba(137,121,255,0.05)" : "rgba(217,119,6,0.05)",
+                          }}>
+                          <span className="text-[20px] font-black leading-none"
+                            style={{ color: topic.score >= 85 ? "#059669" : topic.score >= 70 ? "#8979FF" : "#D97706" }}>
+                            {topic.score}<span className="text-[12px] font-semibold">/100</span>
+                          </span>
+                          <span className="text-[10px] mt-0.5" style={{ color: topic.score >= 85 ? "#059669" : topic.score >= 70 ? "#8979FF" : "#D97706" }}>优先级</span>
+                        </div>
+                      )}
+                    </div>
+                    {/* 结论标签 + 大字结论 */}
+                    <div className="mb-4">
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-medium bg-[#F3F0FF] text-[#7C6BDB] mb-2">
+                        <Zap className="w-3 h-3" />结论
+                      </span>
+                      <h4 className="text-[20px] font-black text-[#1E2939] leading-[28px] mt-1">
+                        {topic.conclusion || "今天就拍，优先级最高。"}
+                      </h4>
+                      <p className="text-[13px] text-[#6B7280] mt-1 leading-[20px]">
+                        {topic.conclusionSub || topic.angle}
+                      </p>
+                    </div>
+                    {/* 两个按钮 */}
+                    <div className="flex gap-3">
+                      <button
+                        onClick={() => {
+                          window.dispatchEvent(new CustomEvent("open-cta-editor", {
+                            detail: {
+                              ctaId: "shoot_plan",
+                              directionContext: {
+                                directionTitle: topic.title,
+                                directionDescription: topic.angle,
+                                referenceTitle: topic.referenceTitle,
+                                referenceAuthor: topic.referenceAuthor,
+                                tags: topic.tags,
+                              },
+                            },
+                          }));
+                        }}
+                        className="flex items-center justify-center gap-1.5 px-5 py-2.5 rounded-[10px] bg-[#1E2939] text-white text-[13px] font-semibold hover:bg-[#111827] transition-colors shadow-sm"
+                      >
+                        <Play className="w-3.5 h-3.5" />开始拍摄
+                      </button>
+                      <button
+                        onClick={() => {
+                          window.dispatchEvent(new CustomEvent("open-cta-editor", {
+                            detail: {
+                              ctaId: "shoot_plan",
+                              directionContext: {
+                                directionTitle: topic.title,
+                                directionDescription: topic.angle,
+                                referenceTitle: topic.referenceTitle,
+                                referenceAuthor: topic.referenceAuthor,
+                                tags: topic.tags,
+                              },
+                            },
+                          }));
+                        }}
+                        className="flex items-center justify-center gap-1.5 px-5 py-2.5 rounded-[10px] border border-[#D1D5DB] text-[#374151] text-[13px] font-semibold hover:bg-[#F9FAFB] transition-colors"
+                      >
+                        <FileText className="w-3.5 h-3.5" />生成脚本
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* 右侧：推荐内容区 */}
+                  <div className="p-5 flex flex-col">
+                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-medium bg-[#F3F0FF] text-[#7C6BDB] mb-3 w-fit">
+                      <Lightbulb className="w-3 h-3" />推荐内容
                     </span>
-                  )}
+                    <h4 className="text-[18px] font-bold text-[#1E2939] leading-[26px] mb-4 flex-1">
+                      {topic.title}
+                    </h4>
+                    {/* 标签组 */}
+                    <div className="flex flex-wrap gap-1.5">
+                      {topic.tags && topic.tags.map((tag, ti) => (
+                        <span key={ti} className="inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-medium bg-[#F3F0FF] text-[#7C6BDB] border border-[#E9E5FF]">
+                          {tag}
+                        </span>
+                      ))}
+                      {topic.referenceAuthor && (
+                        <span className="inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-medium bg-[#FFF7ED] text-[#D97706] border border-[#FDE68A]">
+                          对标 @{topic.referenceAuthor}
+                        </span>
+                      )}
+                    </div>
+                  </div>
                 </div>
 
-                {/* 爆款标题 */}
-                <h4 className="text-[16px] font-bold text-[#1E2939] leading-[24px] mb-2 line-clamp-2">
-                  {topic.title}
-                </h4>
-
-                {/* 切入角度 */}
-                <p className="text-[13px] text-[#4A5565] leading-[20px] mb-3">
-                  <span className="text-[#8979FF] font-semibold">切入角度：</span>
-                  {topic.angle}
-                </p>
-
-                {/* 核心标签 */}
-                {topic.tags && topic.tags.length > 0 && (
-                  <div className="flex flex-wrap gap-1.5 mb-3">
-                    {topic.tags.map((tag, ti) => (
-                      <span key={ti} className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium bg-[#F3F0FF] text-[#7C6BDB] border border-[#E9E5FF]">
-                        {tag}
-                      </span>
-                    ))}
-                  </div>
-                )}
-
-                {/* 对标参考 */}
-                {topic.referenceTitle && (
-                  <div className="rounded-[10px] bg-[#F9F8FF] border border-[#F3F0FF] px-3 py-2.5 mb-4">
-                    <div className="flex items-center gap-1.5 mb-1">
-                      <Eye className="w-3.5 h-3.5 text-[#8979FF] shrink-0" />
-                      <span className="text-[11px] text-[#8979FF] font-medium">对标参考</span>
+                {/* 下半部分：三列详情 */}
+                <div className="grid grid-cols-3 gap-0 border-t border-[#F3F0FF] bg-[#FAFAFF]">
+                  <div className="p-4 border-r border-[#F3F0FF]">
+                    <div className="flex items-center gap-1.5 mb-2">
+                      <Video className="w-3.5 h-3.5 text-[#8979FF]" />
+                      <span className="text-[12px] font-semibold text-[#8979FF]">怎么拍</span>
                     </div>
-                    <p className="text-[12px] text-[#4A5565] leading-[18px] line-clamp-2">
-                      {topic.referenceAuthor ? `@${topic.referenceAuthor}：` : ""}「{topic.referenceTitle}」
+                    <p className="text-[12px] text-[#4A5565] leading-[18px]">
+                      {topic.howToShoot || topic.angle}
                     </p>
                   </div>
-                )}
-
-                {/* 行动按钮：生成开拍脚本 */}
-                <button
-                  onClick={() => {
-                    window.dispatchEvent(new CustomEvent("open-cta-editor", {
-                      detail: {
-                        ctaId: "shoot_plan",
-                        directionContext: {
-                          directionTitle: topic.title,
-                          directionDescription: topic.angle,
-                          referenceTitle: topic.referenceTitle,
-                          referenceAuthor: topic.referenceAuthor,
-                          tags: topic.tags,
-                        },
-                      },
-                    }));
-                  }}
-                  className="mt-auto flex items-center justify-center gap-1.5 w-full py-3 rounded-[12px] bg-gradient-to-r from-[#8979FF] to-[#6C5CE7] text-white text-[14px] font-semibold hover:from-[#7A6AEE] hover:to-[#5B4DD6] transition-all duration-200 shadow-[0px_3px_10px_rgba(137,121,255,0.35)]"
-                >
-                  <FileText className="w-4 h-4" />
-                  生成开拍脚本
-                </button>
+                  <div className="p-4 border-r border-[#F3F0FF]">
+                    <div className="flex items-center gap-1.5 mb-2">
+                      <Calendar className="w-3.5 h-3.5 text-[#D97706]" />
+                      <span className="text-[12px] font-semibold text-[#D97706]">为什么现在</span>
+                    </div>
+                    <p className="text-[12px] text-[#4A5565] leading-[18px]">
+                      {topic.whyNow || "当前赛道热度上升，竞争窗口期。"}
+                    </p>
+                  </div>
+                  <div className="p-4">
+                    <div className="flex items-center gap-1.5 mb-2">
+                      <Rocket className="w-3.5 h-3.5 text-[#059669]" />
+                      <span className="text-[12px] font-semibold text-[#059669]">推荐动作</span>
+                    </div>
+                    <p className="text-[12px] text-[#4A5565] leading-[18px]">
+                      先拍这一条 / 不满意再换一个
+                    </p>
+                  </div>
+                </div>
               </div>
-            ))}
+            </div>
+
+            {/* 底部导航：左右箭头 + 圆点指示器 */}
+            <div className="flex items-center justify-between px-6 py-4">
+              <button onClick={goPrev} disabled={total <= 1}
+                className="flex items-center justify-center w-8 h-8 rounded-full border border-[#E9E5FF] bg-white text-[#8979FF] hover:bg-[#F3F0FF] disabled:opacity-30 transition-colors">
+                <ChevronLeft className="w-4 h-4" />
+              </button>
+              <div className="flex items-center gap-3">
+                <span className="text-[12px] text-[#99A1AF]">不满意可切换下一条</span>
+                <div className="flex gap-1.5">
+                  {topics.map((_, i) => (
+                    <button key={i} onClick={() => setActiveTopicIdx(i)}
+                      className={`w-2 h-2 rounded-full transition-all ${i === activeTopicIdx ? "bg-[#8979FF] w-5" : "bg-[#E9E5FF] hover:bg-[#D4CFFF]"}`} />
+                  ))}
+                </div>
+              </div>
+              <button onClick={goNext} disabled={total <= 1}
+                className="flex items-center justify-center w-8 h-8 rounded-full border border-[#E9E5FF] bg-white text-[#8979FF] hover:bg-[#F3F0FF] disabled:opacity-30 transition-colors">
+                <ChevronRight className="w-4 h-4" />
+              </button>
+            </div>
           </div>
-        </div>
-      )}
+        );
+      })()}
 
       {/* ================================================================ */}
       {/* 第二层：动作建议 — 建议拍摄方向 + 下一步建议                       */}

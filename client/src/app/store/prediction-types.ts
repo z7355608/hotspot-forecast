@@ -294,6 +294,14 @@ export interface AiTopicSuggestion {
   score?: number;
   /** 核心标签（如 #居家减脂 #无器械健身） */
   tags?: string[];
+  /** 结论文案（如“今天就拍，优先级最高。”） */
+  conclusion?: string;
+  /** 结论副文案（如“更容易带来收藏、评论和求链接。”） */
+  conclusionSub?: string;
+  /** 怎么拍（具体拍摄方法描述） */
+  howToShoot?: string;
+  /** 为什么现在（时机判断理由） */
+  whyNow?: string;
 }
 
 export interface PredictionCommentInsight {

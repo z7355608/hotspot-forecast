@@ -1388,7 +1388,11 @@ ${demandSignals}
       "angle": "切入角度说明（25字以内）",
       "referenceTitle": "引用的真实样本标题",
       "score": 88,
-      "tags": ["#标签1", "#标签2", "#标签3"]
+      "tags": ["#标签1", "#标签2", "#标签3"],
+      "conclusion": "一句话结论（如“今天就拍，优先级最高。”）",
+      "conclusionSub": "副文案（如“更容易带来收藏、评论和求链接。”）",
+      "howToShoot": "具体怎么拍（30字以内）",
+      "whyNow": "为什么现在拍（30字以内）"
     }
   ]
 }
@@ -1396,6 +1400,10 @@ ${demandSignals}
 注意：
 - 标题要有钩子感，能在前3秒抓住用户
 - 切入角度要具体，不要笼统的“拍一个XX视频”
+- conclusion 必须是一句话的强确定性结论，如“今天就拍，优先级最高。”“适合连拍，不止一条。”“适合批量复制扩展。”
+- conclusionSub 说明这个选题能带来什么价值（收藏/评论/转发/关注）
+- howToShoot 要具体到拍摄方法，不要笼统
+- whyNow 要说明当前时机为什么适合拍这个
 - 必须基于真实数据推演，不能脱离数据的编造
 - tags 必须是 2-4 个与该选题直接相关的核心标签，每个以 # 开头`;
 
@@ -1405,7 +1413,7 @@ ${demandSignals}
         { role: "system", content: "你是短视频爆款内容策划师，严格按 JSON 格式输出，不要输出任何其他内容。" },
         { role: "user", content: topicPrompt },
       ],
-      maxTokens: 1200,
+      maxTokens: 2000,
       temperature: 0.4,
       timeoutMs: 20000,
     });
@@ -1413,7 +1421,7 @@ ${demandSignals}
     const topicJsonMatch = topicLlmResponse.content.match(/\{[\s\S]*\}/);
     if (topicJsonMatch) {
       const parsed = JSON.parse(topicJsonMatch[0]) as {
-        topics?: Array<{ title?: string; angle?: string; referenceTitle?: string; score?: number; tags?: string[] }>;
+        topics?: Array<{ title?: string; angle?: string; referenceTitle?: string; score?: number; tags?: string[]; conclusion?: string; conclusionSub?: string; howToShoot?: string; whyNow?: string }>;
       };
       if (Array.isArray(parsed.topics) && parsed.topics.length > 0) {
         aiTopicSuggestions = parsed.topics.slice(0, 3).map((t) => {
@@ -1435,6 +1443,10 @@ ${demandSignals}
             referenceAuthor: refContent?.authorName ?? undefined,
             score: clampedScore,
             tags: normalizedTags.length > 0 ? normalizedTags : undefined,
+            conclusion: typeof t.conclusion === "string" ? t.conclusion : undefined,
+            conclusionSub: typeof t.conclusionSub === "string" ? t.conclusionSub : undefined,
+            howToShoot: typeof t.howToShoot === "string" ? t.howToShoot : undefined,
+            whyNow: typeof t.whyNow === "string" ? t.whyNow : undefined,
           };
         });
       }

@@ -95,24 +95,24 @@ describe("P1：前端渲染器 — AI 预测爆款选题模块", () => {
     expect(rendererSource).toContain("AI 预测爆款选题");
   });
 
-  it("应该包含引导文案'直接拍这几个一定会火'", () => {
-    expect(rendererSource).toContain("直接拍这几个一定会火");
+  it("应该包含引导文案'当前推荐结果'", () => {
+    expect(rendererSource).toContain("当前推荐结果");
   });
 
   it("应该包含 aiTopicSuggestions 数据读取", () => {
     expect(rendererSource).toContain("result.aiTopicSuggestions");
   });
 
-  it("应该包含对标参考展示", () => {
-    expect(rendererSource).toContain("对标参考");
+  it("应该包含对标作者标签展示", () => {
+    expect(rendererSource).toContain("对标 @");
   });
 
-  it("应该包含切入角度展示", () => {
-    expect(rendererSource).toContain("切入角度");
+  it("应该包含推荐内容区域", () => {
+    expect(rendererSource).toContain("推荐内容");
   });
 
-  it("应该包含爆款机率分数展示", () => {
-    expect(rendererSource).toContain("爆款机率");
+  it("应该包含优先级分数展示", () => {
+    expect(rendererSource).toContain("优先级");
     expect(rendererSource).toContain("topic.score");
   });
 
@@ -124,8 +124,8 @@ describe("P1：前端渲染器 — AI 预测爆款选题模块", () => {
     expect(rendererSource).toContain("topic.referenceAuthor");
   });
 
-  it("应该包含'生成开拍脚本'按钮", () => {
-    expect(rendererSource).toContain("生成开拍脚本");
+  it("应该包含'生成脚本'按钮", () => {
+    expect(rendererSource).toContain("生成脚本");
   });
 
   it("应该通过 open-cta-editor 事件触发行动", () => {

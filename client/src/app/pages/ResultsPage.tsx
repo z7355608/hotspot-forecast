@@ -661,6 +661,10 @@ function normalizeRemoteResult(detail: SavedResultArtifactDetail): ResultRecord 
           referenceAuthor: typeof topic.referenceAuthor === "string" ? topic.referenceAuthor : undefined,
           score: typeof topic.score === "number" ? topic.score : undefined,
           tags: Array.isArray(topic.tags) ? (topic.tags as unknown[]).filter((t): t is string => typeof t === "string") : undefined,
+          conclusion: typeof topic.conclusion === "string" ? topic.conclusion : undefined,
+          conclusionSub: typeof topic.conclusionSub === "string" ? topic.conclusionSub : undefined,
+          howToShoot: typeof topic.howToShoot === "string" ? topic.howToShoot : undefined,
+          whyNow: typeof topic.whyNow === "string" ? topic.whyNow : undefined,
         }))
       : undefined,
     commentInsight: isRecord(snapshot.commentInsight)
