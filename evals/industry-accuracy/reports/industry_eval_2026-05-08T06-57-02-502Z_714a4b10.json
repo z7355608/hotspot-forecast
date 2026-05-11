@@ -1,0 +1,1580 @@
+{
+  "batchId": "industry_eval_2026-05-08T06-57-02-502Z_714a4b10",
+  "createdAt": "2026-05-08T06:57:02.502Z",
+  "updatedAt": "2026-05-08T07:09:25.462Z",
+  "expiresAt": "2026-05-11T06:57:02.502Z",
+  "status": "failed",
+  "cycleHours": 72,
+  "checkpointHours": [
+    6,
+    12,
+    24,
+    48
+  ],
+  "targetAccuracyRate": 50,
+  "platforms": [
+    "douyin"
+  ],
+  "tracks": [
+    {
+      "track": "ai工具",
+      "prompt": "ai工具赛道现在发什么最容易爆？请给我3个明确、可执行、适合中腰部账号跟进的短视频选题。",
+      "status": "data_insufficient",
+      "createdAt": "2026-05-08T06:57:02.502Z",
+      "updatedAt": "2026-05-08T06:58:37.699Z",
+      "predictedTopics": [
+        {
+          "topicId": "topic_dcf1f616-0d8d-49dc-b640-fd5ddfa353b8",
+          "title": "普通人必学的3个AI工具 效率直接翻3倍",
+          "angle": "实用向，面向普通用户讲AI工具提效方法",
+          "predictedScore": 88,
+          "tags": [
+            "#AI工具",
+            "#效率提升",
+            "#实用技巧"
+          ],
+          "checkpoints": [
+            {
+              "checkpointHour": 6,
+              "dueAt": "2026-05-08T12:57:02.502Z",
+              "status": "pending",
+              "searchedKeywords": [],
+              "matches": []
+            },
+            {
+              "checkpointHour": 12,
+              "dueAt": "2026-05-08T18:57:02.502Z",
+              "status": "pending",
+              "searchedKeywords": [],
+              "matches": []
+            },
+            {
+              "checkpointHour": 24,
+              "dueAt": "2026-05-09T06:57:02.502Z",
+              "status": "pending",
+              "searchedKeywords": [],
+              "matches": []
+            },
+            {
+              "checkpointHour": 48,
+              "dueAt": "2026-05-10T06:57:02.502Z",
+              "status": "pending",
+              "searchedKeywords": [],
+              "matches": []
+            }
+          ]
+        },
+        {
+          "topicId": "topic_1d94ddbc-c17a-4f11-a5f9-0c03e53508c2",
+          "title": "不会编程也能用 这几个AI工具零门槛上手",
+          "angle": "低门槛向，面向新手讲AI工具入门方法",
+          "predictedScore": 82,
+          "tags": [
+            "#AI工具",
+            "#新手教程",
+            "#零门槛"
+          ],
+          "checkpoints": [
+            {
+              "checkpointHour": 6,
+              "dueAt": "2026-05-08T12:57:02.502Z",
+              "status": "pending",
+              "searchedKeywords": [],
+              "matches": []
+            },
+            {
+              "checkpointHour": 12,
+              "dueAt": "2026-05-08T18:57:02.502Z",
+              "status": "pending",
+              "searchedKeywords": [],
+              "matches": []
+            },
+            {
+              "checkpointHour": 24,
+              "dueAt": "2026-05-09T06:57:02.502Z",
+              "status": "pending",
+              "searchedKeywords": [],
+              "matches": []
+            },
+            {
+              "checkpointHour": 48,
+              "dueAt": "2026-05-10T06:57:02.502Z",
+              "status": "pending",
+              "searchedKeywords": [],
+              "matches": []
+            }
+          ]
+        },
+        {
+          "topicId": "topic_45090d2e-3d1f-401a-b0eb-341fe42a7d4d",
+          "title": "用AI工具做副业 上个月我赚了2000多",
+          "angle": "变现向，讲AI工具的副业变现实操方法",
+          "predictedScore": 78,
+          "tags": [
+            "#AI工具",
+            "#副业赚钱",
+            "#变现思路"
+          ],
+          "checkpoints": [
+            {
+              "checkpointHour": 6,
+              "dueAt": "2026-05-08T12:57:02.502Z",
+              "status": "pending",
+              "searchedKeywords": [],
+              "matches": []
+            },
+            {
+              "checkpointHour": 12,
+              "dueAt": "2026-05-08T18:57:02.502Z",
+              "status": "pending",
+              "searchedKeywords": [],
+              "matches": []
+            },
+            {
+              "checkpointHour": 24,
+              "dueAt": "2026-05-09T06:57:02.502Z",
+              "status": "pending",
+              "searchedKeywords": [],
+              "matches": []
+            },
+            {
+              "checkpointHour": 48,
+              "dueAt": "2026-05-10T06:57:02.502Z",
+              "status": "pending",
+              "searchedKeywords": [],
+              "matches": []
+            }
+          ]
+        }
+      ],
+      "predictionRunId": "run_6cf5fc31-44b8-460b-bb36-c25e263c5ea2",
+      "evidenceQuality": {
+        "supportingContents": 0,
+        "supportingAccounts": 0,
+        "lowFollowerEvidence": 0,
+        "whyNowItems": 3,
+        "evidenceGaps": [
+          "当前缺少足够的支持账号样本。",
+          "当前缺少足够的支持内容样本。",
+          "评论数据可以进一步采集，补充后分析会更精准。"
+        ],
+        "degradeFlags": [],
+        "usableForAccuracyEval": false,
+        "reason": "真实内容样本只有 0 条，低于最小门槛 3 条；该结果只能作为选题草案，不能作为爆款预测准确率样本。"
+      },
+      "error": "真实内容样本只有 0 条，低于最小门槛 3 条；该结果只能作为选题草案，不能作为爆款预测准确率样本。"
+    },
+    {
+      "track": "健身减脂",
+      "prompt": "健身减脂赛道现在发什么最容易爆？请给我3个明确、可执行、适合中腰部账号跟进的短视频选题。",
+      "status": "data_insufficient",
+      "createdAt": "2026-05-08T06:57:02.502Z",
+      "updatedAt": "2026-05-08T06:59:21.233Z",
+      "predictedTopics": [
+        {
+          "topicId": "topic_7c94d464-0472-4bd3-bd56-b97c1cd191a2",
+          "title": "在家不用器械 3个动作一周瘦肚子2厘米",
+          "angle": "无器械居家瘦腹动作干货分享",
+          "predictedScore": 90,
+          "tags": [
+            "#健身减脂",
+            "#居家健身",
+            "#瘦肚子"
+          ],
+          "checkpoints": [
+            {
+              "checkpointHour": 6,
+              "dueAt": "2026-05-08T12:57:02.502Z",
+              "status": "pending",
+              "searchedKeywords": [],
+              "matches": []
+            },
+            {
+              "checkpointHour": 12,
+              "dueAt": "2026-05-08T18:57:02.502Z",
+              "status": "pending",
+              "searchedKeywords": [],
+              "matches": []
+            },
+            {
+              "checkpointHour": 24,
+              "dueAt": "2026-05-09T06:57:02.502Z",
+              "status": "pending",
+              "searchedKeywords": [],
+              "matches": []
+            },
+            {
+              "checkpointHour": 48,
+              "dueAt": "2026-05-10T06:57:02.502Z",
+              "status": "pending",
+              "searchedKeywords": [],
+              "matches": []
+            }
+          ]
+        },
+        {
+          "topicId": "topic_9ebd132d-98fe-4228-8af5-d52dd54351ea",
+          "title": "减脂期别挨饿 这5种饱腹食物随便吃不长肉",
+          "angle": "减脂期友好饱腹食物清单科普",
+          "predictedScore": 85,
+          "tags": [
+            "#健身减脂",
+            "#减脂饮食",
+            "#减脂餐"
+          ],
+          "checkpoints": [
+            {
+              "checkpointHour": 6,
+              "dueAt": "2026-05-08T12:57:02.502Z",
+              "status": "pending",
+              "searchedKeywords": [],
+              "matches": []
+            },
+            {
+              "checkpointHour": 12,
+              "dueAt": "2026-05-08T18:57:02.502Z",
+              "status": "pending",
+              "searchedKeywords": [],
+              "matches": []
+            },
+            {
+              "checkpointHour": 24,
+              "dueAt": "2026-05-09T06:57:02.502Z",
+              "status": "pending",
+              "searchedKeywords": [],
+              "matches": []
+            },
+            {
+              "checkpointHour": 48,
+              "dueAt": "2026-05-10T06:57:02.502Z",
+              "status": "pending",
+              "searchedKeywords": [],
+              "matches": []
+            }
+          ]
+        },
+        {
+          "topicId": "topic_417aa3f6-d8ea-41bb-a157-a5681f5c5fef",
+          "title": "懒人福音 每天15分钟轻松燃掉300大卡",
+          "angle": "低时间成本懒人燃脂方案分享",
+          "predictedScore": 78,
+          "tags": [
+            "#健身减脂",
+            "#懒人健身",
+            "#燃脂"
+          ],
+          "checkpoints": [
+            {
+              "checkpointHour": 6,
+              "dueAt": "2026-05-08T12:57:02.502Z",
+              "status": "pending",
+              "searchedKeywords": [],
+              "matches": []
+            },
+            {
+              "checkpointHour": 12,
+              "dueAt": "2026-05-08T18:57:02.502Z",
+              "status": "pending",
+              "searchedKeywords": [],
+              "matches": []
+            },
+            {
+              "checkpointHour": 24,
+              "dueAt": "2026-05-09T06:57:02.502Z",
+              "status": "pending",
+              "searchedKeywords": [],
+              "matches": []
+            },
+            {
+              "checkpointHour": 48,
+              "dueAt": "2026-05-10T06:57:02.502Z",
+              "status": "pending",
+              "searchedKeywords": [],
+              "matches": []
+            }
+          ]
+        }
+      ],
+      "predictionRunId": "run_60dc427c-d9b8-4635-8ea9-4fb8a16fdbd3",
+      "evidenceQuality": {
+        "supportingContents": 0,
+        "supportingAccounts": 0,
+        "lowFollowerEvidence": 0,
+        "whyNowItems": 3,
+        "evidenceGaps": [
+          "当前缺少足够的支持账号样本。",
+          "当前缺少足够的支持内容样本。",
+          "评论数据可以进一步采集，补充后分析会更精准。"
+        ],
+        "degradeFlags": [],
+        "usableForAccuracyEval": false,
+        "reason": "真实内容样本只有 0 条，低于最小门槛 3 条；该结果只能作为选题草案，不能作为爆款预测准确率样本。"
+      },
+      "error": "真实内容样本只有 0 条，低于最小门槛 3 条；该结果只能作为选题草案，不能作为爆款预测准确率样本。"
+    },
+    {
+      "track": "母婴育儿",
+      "prompt": "母婴育儿赛道现在发什么最容易爆？请给我3个明确、可执行、适合中腰部账号跟进的短视频选题。",
+      "status": "data_insufficient",
+      "createdAt": "2026-05-08T06:57:02.502Z",
+      "updatedAt": "2026-05-08T07:00:02.796Z",
+      "predictedTopics": [
+        {
+          "topicId": "topic_c5681ca1-7e2c-4c9c-b0c3-9cf5b2b9e3b8",
+          "title": "新手宝妈必看！3个哄睡绝招10分钟搞定夜醒",
+          "angle": "实用技巧类，聚焦新手宝妈高频哄睡痛点",
+          "predictedScore": 88,
+          "tags": [
+            "#母婴育儿",
+            "#新手宝妈",
+            "#宝宝哄睡技巧"
+          ],
+          "checkpoints": [
+            {
+              "checkpointHour": 6,
+              "dueAt": "2026-05-08T12:57:02.502Z",
+              "status": "pending",
+              "searchedKeywords": [],
+              "matches": []
+            },
+            {
+              "checkpointHour": 12,
+              "dueAt": "2026-05-08T18:57:02.502Z",
+              "status": "pending",
+              "searchedKeywords": [],
+              "matches": []
+            },
+            {
+              "checkpointHour": 24,
+              "dueAt": "2026-05-09T06:57:02.502Z",
+              "status": "pending",
+              "searchedKeywords": [],
+              "matches": []
+            },
+            {
+              "checkpointHour": 48,
+              "dueAt": "2026-05-10T06:57:02.502Z",
+              "status": "pending",
+              "searchedKeywords": [],
+              "matches": []
+            }
+          ]
+        },
+        {
+          "topicId": "topic_1544353e-e9b6-433a-9317-dd2e1aac5378",
+          "title": "别瞎买！宝宝辅食添加这5个坑千万别踩",
+          "angle": "避坑指南类，瞄准辅食添加新手误区",
+          "predictedScore": 82,
+          "tags": [
+            "#母婴育儿",
+            "#宝宝辅食",
+            "#育儿避坑"
+          ],
+          "checkpoints": [
+            {
+              "checkpointHour": 6,
+              "dueAt": "2026-05-08T12:57:02.502Z",
+              "status": "pending",
+              "searchedKeywords": [],
+              "matches": []
+            },
+            {
+              "checkpointHour": 12,
+              "dueAt": "2026-05-08T18:57:02.502Z",
+              "status": "pending",
+              "searchedKeywords": [],
+              "matches": []
+            },
+            {
+              "checkpointHour": 24,
+              "dueAt": "2026-05-09T06:57:02.502Z",
+              "status": "pending",
+              "searchedKeywords": [],
+              "matches": []
+            },
+            {
+              "checkpointHour": 48,
+              "dueAt": "2026-05-10T06:57:02.502Z",
+              "status": "pending",
+              "searchedKeywords": [],
+              "matches": []
+            }
+          ]
+        },
+        {
+          "topicId": "topic_b1776cd0-26d7-4578-bd3d-938a046aba5d",
+          "title": "亲测有效！宝宝学说话快的3个日常小方法",
+          "angle": "早教启蒙类，聚焦语言发育家长需求",
+          "predictedScore": 78,
+          "tags": [
+            "#母婴育儿",
+            "#宝宝早教",
+            "#语言发育"
+          ],
+          "checkpoints": [
+            {
+              "checkpointHour": 6,
+              "dueAt": "2026-05-08T12:57:02.502Z",
+              "status": "pending",
+              "searchedKeywords": [],
+              "matches": []
+            },
+            {
+              "checkpointHour": 12,
+              "dueAt": "2026-05-08T18:57:02.502Z",
+              "status": "pending",
+              "searchedKeywords": [],
+              "matches": []
+            },
+            {
+              "checkpointHour": 24,
+              "dueAt": "2026-05-09T06:57:02.502Z",
+              "status": "pending",
+              "searchedKeywords": [],
+              "matches": []
+            },
+            {
+              "checkpointHour": 48,
+              "dueAt": "2026-05-10T06:57:02.502Z",
+              "status": "pending",
+              "searchedKeywords": [],
+              "matches": []
+            }
+          ]
+        }
+      ],
+      "predictionRunId": "run_d9d3f7cc-7d89-4ee2-b46e-94f75839d60a",
+      "evidenceQuality": {
+        "supportingContents": 0,
+        "supportingAccounts": 0,
+        "lowFollowerEvidence": 0,
+        "whyNowItems": 3,
+        "evidenceGaps": [
+          "当前缺少足够的支持账号样本。",
+          "当前缺少足够的支持内容样本。",
+          "评论数据可以进一步采集，补充后分析会更精准。"
+        ],
+        "degradeFlags": [],
+        "usableForAccuracyEval": false,
+        "reason": "真实内容样本只有 0 条，低于最小门槛 3 条；该结果只能作为选题草案，不能作为爆款预测准确率样本。"
+      },
+      "error": "真实内容样本只有 0 条，低于最小门槛 3 条；该结果只能作为选题草案，不能作为爆款预测准确率样本。"
+    },
+    {
+      "track": "职场效率",
+      "prompt": "职场效率赛道现在发什么最容易爆？请给我3个明确、可执行、适合中腰部账号跟进的短视频选题。",
+      "status": "data_insufficient",
+      "createdAt": "2026-05-08T06:57:02.502Z",
+      "updatedAt": "2026-05-08T07:00:47.013Z",
+      "predictedTopics": [
+        {
+          "topicId": "topic_55ca0593-3315-4773-99ad-6927e1155d3b",
+          "title": "通勤10分钟搞定今日工作清单 效率直接翻倍",
+          "angle": "碎片化时间利用提升职场效率",
+          "predictedScore": 90,
+          "tags": [
+            "#职场效率",
+            "#时间管理",
+            "#工作技巧"
+          ],
+          "checkpoints": [
+            {
+              "checkpointHour": 6,
+              "dueAt": "2026-05-08T12:57:02.502Z",
+              "status": "pending",
+              "searchedKeywords": [],
+              "matches": []
+            },
+            {
+              "checkpointHour": 12,
+              "dueAt": "2026-05-08T18:57:02.502Z",
+              "status": "pending",
+              "searchedKeywords": [],
+              "matches": []
+            },
+            {
+              "checkpointHour": 24,
+              "dueAt": "2026-05-09T06:57:02.502Z",
+              "status": "pending",
+              "searchedKeywords": [],
+              "matches": []
+            },
+            {
+              "checkpointHour": 48,
+              "dueAt": "2026-05-10T06:57:02.502Z",
+              "status": "pending",
+              "searchedKeywords": [],
+              "matches": []
+            }
+          ]
+        },
+        {
+          "topicId": "topic_379c323e-0e6a-488a-aa0c-0d61c3183fb6",
+          "title": "开会再也不用瞎记 3步整理出可落地执行纪要",
+          "angle": "具体场景技巧解决职场低效痛点",
+          "predictedScore": 85,
+          "tags": [
+            "#职场效率",
+            "#会议技巧",
+            "#办公技巧"
+          ],
+          "checkpoints": [
+            {
+              "checkpointHour": 6,
+              "dueAt": "2026-05-08T12:57:02.502Z",
+              "status": "pending",
+              "searchedKeywords": [],
+              "matches": []
+            },
+            {
+              "checkpointHour": 12,
+              "dueAt": "2026-05-08T18:57:02.502Z",
+              "status": "pending",
+              "searchedKeywords": [],
+              "matches": []
+            },
+            {
+              "checkpointHour": 24,
+              "dueAt": "2026-05-09T06:57:02.502Z",
+              "status": "pending",
+              "searchedKeywords": [],
+              "matches": []
+            },
+            {
+              "checkpointHour": 48,
+              "dueAt": "2026-05-10T06:57:02.502Z",
+              "status": "pending",
+              "searchedKeywords": [],
+              "matches": []
+            }
+          ]
+        },
+        {
+          "topicId": "topic_a142e122-7b07-4e90-a881-b206b7943dec",
+          "title": "改掉这3个摸鱼小习惯 每天早下班两小时",
+          "angle": "反常识纠错视角提升职场效率",
+          "predictedScore": 80,
+          "tags": [
+            "#职场效率",
+            "#工作习惯",
+            "#职场提升"
+          ],
+          "checkpoints": [
+            {
+              "checkpointHour": 6,
+              "dueAt": "2026-05-08T12:57:02.502Z",
+              "status": "pending",
+              "searchedKeywords": [],
+              "matches": []
+            },
+            {
+              "checkpointHour": 12,
+              "dueAt": "2026-05-08T18:57:02.502Z",
+              "status": "pending",
+              "searchedKeywords": [],
+              "matches": []
+            },
+            {
+              "checkpointHour": 24,
+              "dueAt": "2026-05-09T06:57:02.502Z",
+              "status": "pending",
+              "searchedKeywords": [],
+              "matches": []
+            },
+            {
+              "checkpointHour": 48,
+              "dueAt": "2026-05-10T06:57:02.502Z",
+              "status": "pending",
+              "searchedKeywords": [],
+              "matches": []
+            }
+          ]
+        }
+      ],
+      "predictionRunId": "run_86f24794-4c39-4b4f-bde5-81ceacb91174",
+      "evidenceQuality": {
+        "supportingContents": 0,
+        "supportingAccounts": 0,
+        "lowFollowerEvidence": 0,
+        "whyNowItems": 3,
+        "evidenceGaps": [
+          "当前缺少足够的支持账号样本。",
+          "当前缺少足够的支持内容样本。",
+          "评论数据可以进一步采集，补充后分析会更精准。"
+        ],
+        "degradeFlags": [],
+        "usableForAccuracyEval": false,
+        "reason": "真实内容样本只有 0 条，低于最小门槛 3 条；该结果只能作为选题草案，不能作为爆款预测准确率样本。"
+      },
+      "error": "真实内容样本只有 0 条，低于最小门槛 3 条；该结果只能作为选题草案，不能作为爆款预测准确率样本。"
+    },
+    {
+      "track": "小红书美妆",
+      "prompt": "小红书美妆赛道现在发什么最容易爆？请给我3个明确、可执行、适合中腰部账号跟进的短视频选题。",
+      "status": "data_insufficient",
+      "createdAt": "2026-05-08T06:57:02.502Z",
+      "updatedAt": "2026-05-08T07:01:25.555Z",
+      "predictedTopics": [
+        {
+          "topicId": "topic_831e03ad-ce63-43cf-b1b3-97ea94feb25f",
+          "title": "新手必看 5步搞定日常出门快速淡妆",
+          "angle": "新手友好的日常妆实用步骤教学",
+          "predictedScore": 90,
+          "tags": [
+            "#美妆教程",
+            "#新手化妆",
+            "#日常淡妆"
+          ],
+          "checkpoints": [
+            {
+              "checkpointHour": 6,
+              "dueAt": "2026-05-08T12:57:02.502Z",
+              "status": "pending",
+              "searchedKeywords": [],
+              "matches": []
+            },
+            {
+              "checkpointHour": 12,
+              "dueAt": "2026-05-08T18:57:02.502Z",
+              "status": "pending",
+              "searchedKeywords": [],
+              "matches": []
+            },
+            {
+              "checkpointHour": 24,
+              "dueAt": "2026-05-09T06:57:02.502Z",
+              "status": "pending",
+              "searchedKeywords": [],
+              "matches": []
+            },
+            {
+              "checkpointHour": 48,
+              "dueAt": "2026-05-10T06:57:02.502Z",
+              "status": "pending",
+              "searchedKeywords": [],
+              "matches": []
+            }
+          ]
+        },
+        {
+          "topicId": "topic_7c503546-9425-4e96-bbf7-d72490069754",
+          "title": "夏天持妆小技巧 出油脱妆全都搞定",
+          "angle": "夏季场景针对性解决持妆痛点",
+          "predictedScore": 85,
+          "tags": [
+            "#美妆技巧",
+            "#持妆小妙招",
+            "#夏季美妆"
+          ],
+          "checkpoints": [
+            {
+              "checkpointHour": 6,
+              "dueAt": "2026-05-08T12:57:02.502Z",
+              "status": "pending",
+              "searchedKeywords": [],
+              "matches": []
+            },
+            {
+              "checkpointHour": 12,
+              "dueAt": "2026-05-08T18:57:02.502Z",
+              "status": "pending",
+              "searchedKeywords": [],
+              "matches": []
+            },
+            {
+              "checkpointHour": 24,
+              "dueAt": "2026-05-09T06:57:02.502Z",
+              "status": "pending",
+              "searchedKeywords": [],
+              "matches": []
+            },
+            {
+              "checkpointHour": 48,
+              "dueAt": "2026-05-10T06:57:02.502Z",
+              "status": "pending",
+              "searchedKeywords": [],
+              "matches": []
+            }
+          ]
+        },
+        {
+          "topicId": "topic_61d93b87-07b4-4314-bd8e-754053eb1d05",
+          "title": "不同脸型怎么选妆容 看完你就会了",
+          "angle": "分脸型的个性化妆容适配指南",
+          "predictedScore": 78,
+          "tags": [
+            "#美妆干货",
+            "#脸型化妆",
+            "#妆容搭配"
+          ],
+          "checkpoints": [
+            {
+              "checkpointHour": 6,
+              "dueAt": "2026-05-08T12:57:02.502Z",
+              "status": "pending",
+              "searchedKeywords": [],
+              "matches": []
+            },
+            {
+              "checkpointHour": 12,
+              "dueAt": "2026-05-08T18:57:02.502Z",
+              "status": "pending",
+              "searchedKeywords": [],
+              "matches": []
+            },
+            {
+              "checkpointHour": 24,
+              "dueAt": "2026-05-09T06:57:02.502Z",
+              "status": "pending",
+              "searchedKeywords": [],
+              "matches": []
+            },
+            {
+              "checkpointHour": 48,
+              "dueAt": "2026-05-10T06:57:02.502Z",
+              "status": "pending",
+              "searchedKeywords": [],
+              "matches": []
+            }
+          ]
+        }
+      ],
+      "predictionRunId": "run_688bdda6-d946-49fc-820c-bbb3dc5dc3de",
+      "evidenceQuality": {
+        "supportingContents": 0,
+        "supportingAccounts": 0,
+        "lowFollowerEvidence": 0,
+        "whyNowItems": 3,
+        "evidenceGaps": [
+          "当前缺少足够的支持账号样本。",
+          "当前缺少足够的支持内容样本。",
+          "评论数据可以进一步采集，补充后分析会更精准。"
+        ],
+        "degradeFlags": [],
+        "usableForAccuracyEval": false,
+        "reason": "真实内容样本只有 0 条，低于最小门槛 3 条；该结果只能作为选题草案，不能作为爆款预测准确率样本。"
+      },
+      "error": "真实内容样本只有 0 条，低于最小门槛 3 条；该结果只能作为选题草案，不能作为爆款预测准确率样本。"
+    },
+    {
+      "track": "家居收纳",
+      "prompt": "家居收纳赛道现在发什么最容易爆？请给我3个明确、可执行、适合中腰部账号跟进的短视频选题。",
+      "status": "data_insufficient",
+      "createdAt": "2026-05-08T06:57:02.502Z",
+      "updatedAt": "2026-05-08T07:02:07.782Z",
+      "predictedTopics": [
+        {
+          "topicId": "topic_37b08774-0477-4c83-996c-be00a7fc14fe",
+          "title": "出租屋小空间收纳 一招让你家多出10平",
+          "angle": "从实用扩容角度讲小户型收纳技巧",
+          "predictedScore": 88,
+          "tags": [
+            "#家居收纳",
+            "#小户型收纳",
+            "#出租屋改造"
+          ],
+          "checkpoints": [
+            {
+              "checkpointHour": 6,
+              "dueAt": "2026-05-08T12:57:02.502Z",
+              "status": "pending",
+              "searchedKeywords": [],
+              "matches": []
+            },
+            {
+              "checkpointHour": 12,
+              "dueAt": "2026-05-08T18:57:02.502Z",
+              "status": "pending",
+              "searchedKeywords": [],
+              "matches": []
+            },
+            {
+              "checkpointHour": 24,
+              "dueAt": "2026-05-09T06:57:02.502Z",
+              "status": "pending",
+              "searchedKeywords": [],
+              "matches": []
+            },
+            {
+              "checkpointHour": 48,
+              "dueAt": "2026-05-10T06:57:02.502Z",
+              "status": "pending",
+              "searchedKeywords": [],
+              "matches": []
+            }
+          ]
+        },
+        {
+          "topicId": "topic_48cafd9f-3a37-4026-b727-a95963d6f547",
+          "title": "换季衣柜乱成一团 3个整理技巧10分钟搞定",
+          "angle": "聚焦换季场景解决衣柜收纳痛点",
+          "predictedScore": 82,
+          "tags": [
+            "#家居收纳",
+            "#衣柜收纳",
+            "#换季整理"
+          ],
+          "checkpoints": [
+            {
+              "checkpointHour": 6,
+              "dueAt": "2026-05-08T12:57:02.502Z",
+              "status": "pending",
+              "searchedKeywords": [],
+              "matches": []
+            },
+            {
+              "checkpointHour": 12,
+              "dueAt": "2026-05-08T18:57:02.502Z",
+              "status": "pending",
+              "searchedKeywords": [],
+              "matches": []
+            },
+            {
+              "checkpointHour": 24,
+              "dueAt": "2026-05-09T06:57:02.502Z",
+              "status": "pending",
+              "searchedKeywords": [],
+              "matches": []
+            },
+            {
+              "checkpointHour": 48,
+              "dueAt": "2026-05-10T06:57:02.502Z",
+              "status": "pending",
+              "searchedKeywords": [],
+              "matches": []
+            }
+          ]
+        },
+        {
+          "topicId": "topic_81dffcf3-199a-406a-a68f-36f12eb29706",
+          "title": "厨房台面乱糟糟 零成本收纳方法亲测好用",
+          "angle": "主打零成本解决厨房收纳难题",
+          "predictedScore": 76,
+          "tags": [
+            "#家居收纳",
+            "#厨房收纳",
+            "#生活小技巧"
+          ],
+          "checkpoints": [
+            {
+              "checkpointHour": 6,
+              "dueAt": "2026-05-08T12:57:02.502Z",
+              "status": "pending",
+              "searchedKeywords": [],
+              "matches": []
+            },
+            {
+              "checkpointHour": 12,
+              "dueAt": "2026-05-08T18:57:02.502Z",
+              "status": "pending",
+              "searchedKeywords": [],
+              "matches": []
+            },
+            {
+              "checkpointHour": 24,
+              "dueAt": "2026-05-09T06:57:02.502Z",
+              "status": "pending",
+              "searchedKeywords": [],
+              "matches": []
+            },
+            {
+              "checkpointHour": 48,
+              "dueAt": "2026-05-10T06:57:02.502Z",
+              "status": "pending",
+              "searchedKeywords": [],
+              "matches": []
+            }
+          ]
+        }
+      ],
+      "predictionRunId": "run_35584ae4-2c12-468c-b288-ec14522d2674",
+      "evidenceQuality": {
+        "supportingContents": 0,
+        "supportingAccounts": 0,
+        "lowFollowerEvidence": 0,
+        "whyNowItems": 3,
+        "evidenceGaps": [
+          "当前缺少足够的支持账号样本。",
+          "当前缺少足够的支持内容样本。",
+          "评论数据可以进一步采集，补充后分析会更精准。"
+        ],
+        "degradeFlags": [],
+        "usableForAccuracyEval": false,
+        "reason": "真实内容样本只有 0 条，低于最小门槛 3 条；该结果只能作为选题草案，不能作为爆款预测准确率样本。"
+      },
+      "error": "真实内容样本只有 0 条，低于最小门槛 3 条；该结果只能作为选题草案，不能作为爆款预测准确率样本。"
+    },
+    {
+      "track": "本地生活探店",
+      "prompt": "本地生活探店赛道现在发什么最容易爆？请给我3个明确、可执行、适合中腰部账号跟进的短视频选题。",
+      "status": "data_insufficient",
+      "createdAt": "2026-05-08T06:57:02.502Z",
+      "updatedAt": "2026-05-08T07:03:21.171Z",
+      "predictedTopics": [
+        {
+          "topicId": "topic_5bad8391-8744-4eb3-81bb-7d9fb452478a",
+          "title": "人均30吃撑！家门口藏的平价美食店找到了",
+          "angle": "主打高性价比社区宝藏店探店",
+          "predictedScore": 88,
+          "tags": [
+            "#本地美食",
+            "#探店",
+            "#平价美食"
+          ],
+          "checkpoints": [
+            {
+              "checkpointHour": 6,
+              "dueAt": "2026-05-08T12:57:02.502Z",
+              "status": "pending",
+              "searchedKeywords": [],
+              "matches": []
+            },
+            {
+              "checkpointHour": 12,
+              "dueAt": "2026-05-08T18:57:02.502Z",
+              "status": "pending",
+              "searchedKeywords": [],
+              "matches": []
+            },
+            {
+              "checkpointHour": 24,
+              "dueAt": "2026-05-09T06:57:02.502Z",
+              "status": "pending",
+              "searchedKeywords": [],
+              "matches": []
+            },
+            {
+              "checkpointHour": 48,
+              "dueAt": "2026-05-10T06:57:02.502Z",
+              "status": "pending",
+              "searchedKeywords": [],
+              "matches": []
+            }
+          ]
+        },
+        {
+          "topicId": "topic_487a81f0-74b5-40ba-afeb-ad4f73763c83",
+          "title": "下班别回家！5家适合打工人的深夜食堂清单",
+          "angle": "垂直针对打工人夜间就餐场景探店",
+          "predictedScore": 82,
+          "tags": [
+            "#本地探店",
+            "#打工人美食",
+            "#深夜食堂"
+          ],
+          "checkpoints": [
+            {
+              "checkpointHour": 6,
+              "dueAt": "2026-05-08T12:57:02.502Z",
+              "status": "pending",
+              "searchedKeywords": [],
+              "matches": []
+            },
+            {
+              "checkpointHour": 12,
+              "dueAt": "2026-05-08T18:57:02.502Z",
+              "status": "pending",
+              "searchedKeywords": [],
+              "matches": []
+            },
+            {
+              "checkpointHour": 24,
+              "dueAt": "2026-05-09T06:57:02.502Z",
+              "status": "pending",
+              "searchedKeywords": [],
+              "matches": []
+            },
+            {
+              "checkpointHour": 48,
+              "dueAt": "2026-05-10T06:57:02.502Z",
+              "status": "pending",
+              "searchedKeywords": [],
+              "matches": []
+            }
+          ]
+        },
+        {
+          "topicId": "topic_84e80af8-e297-4cf4-bd16-b20818d78d63",
+          "title": "别再踩坑！本地点餐不踩雷的3个小技巧",
+          "angle": "探店衍生实用避坑技巧输出",
+          "predictedScore": 75,
+          "tags": [
+            "#本地生活",
+            "#探店避坑",
+            "#美食攻略"
+          ],
+          "checkpoints": [
+            {
+              "checkpointHour": 6,
+              "dueAt": "2026-05-08T12:57:02.502Z",
+              "status": "pending",
+              "searchedKeywords": [],
+              "matches": []
+            },
+            {
+              "checkpointHour": 12,
+              "dueAt": "2026-05-08T18:57:02.502Z",
+              "status": "pending",
+              "searchedKeywords": [],
+              "matches": []
+            },
+            {
+              "checkpointHour": 24,
+              "dueAt": "2026-05-09T06:57:02.502Z",
+              "status": "pending",
+              "searchedKeywords": [],
+              "matches": []
+            },
+            {
+              "checkpointHour": 48,
+              "dueAt": "2026-05-10T06:57:02.502Z",
+              "status": "pending",
+              "searchedKeywords": [],
+              "matches": []
+            }
+          ]
+        }
+      ],
+      "predictionRunId": "run_e9b09f52-c012-434c-9651-2d922d761303",
+      "evidenceQuality": {
+        "supportingContents": 0,
+        "supportingAccounts": 0,
+        "lowFollowerEvidence": 0,
+        "whyNowItems": 3,
+        "evidenceGaps": [
+          "当前缺少足够的支持账号样本。",
+          "当前缺少足够的支持内容样本。",
+          "评论数据可以进一步采集，补充后分析会更精准。"
+        ],
+        "degradeFlags": [],
+        "usableForAccuracyEval": false,
+        "reason": "真实内容样本只有 0 条，低于最小门槛 3 条；该结果只能作为选题草案，不能作为爆款预测准确率样本。"
+      },
+      "error": "真实内容样本只有 0 条，低于最小门槛 3 条；该结果只能作为选题草案，不能作为爆款预测准确率样本。"
+    },
+    {
+      "track": "数码科技",
+      "prompt": "数码科技赛道现在发什么最容易爆？请给我3个明确、可执行、适合中腰部账号跟进的短视频选题。",
+      "status": "data_insufficient",
+      "createdAt": "2026-05-08T06:57:02.502Z",
+      "updatedAt": "2026-05-08T07:05:00.344Z",
+      "predictedTopics": [
+        {
+          "topicId": "topic_efbc840c-d2b2-4075-a82b-9330b2e599c4",
+          "title": "新手必看 日常数码设备使用隐藏技巧分享",
+          "angle": "面向新手科普实用数码使用小技巧",
+          "predictedScore": 85,
+          "tags": [
+            "#数码科技",
+            "#数码技巧",
+            "#实用分享"
+          ],
+          "checkpoints": [
+            {
+              "checkpointHour": 6,
+              "dueAt": "2026-05-08T12:57:02.502Z",
+              "status": "pending",
+              "searchedKeywords": [],
+              "matches": []
+            },
+            {
+              "checkpointHour": 12,
+              "dueAt": "2026-05-08T18:57:02.502Z",
+              "status": "pending",
+              "searchedKeywords": [],
+              "matches": []
+            },
+            {
+              "checkpointHour": 24,
+              "dueAt": "2026-05-09T06:57:02.502Z",
+              "status": "pending",
+              "searchedKeywords": [],
+              "matches": []
+            },
+            {
+              "checkpointHour": 48,
+              "dueAt": "2026-05-10T06:57:02.502Z",
+              "status": "pending",
+              "searchedKeywords": [],
+              "matches": []
+            }
+          ]
+        },
+        {
+          "topicId": "topic_e160e1bb-242c-432d-a82c-98c49a113c98",
+          "title": "避坑提醒 这些数码使用误区你中了几个",
+          "angle": "盘点常见的数码产品错误使用习惯",
+          "predictedScore": 82,
+          "tags": [
+            "#数码科技",
+            "#避坑指南",
+            "#数码科普"
+          ],
+          "checkpoints": [
+            {
+              "checkpointHour": 6,
+              "dueAt": "2026-05-08T12:57:02.502Z",
+              "status": "pending",
+              "searchedKeywords": [],
+              "matches": []
+            },
+            {
+              "checkpointHour": 12,
+              "dueAt": "2026-05-08T18:57:02.502Z",
+              "status": "pending",
+              "searchedKeywords": [],
+              "matches": []
+            },
+            {
+              "checkpointHour": 24,
+              "dueAt": "2026-05-09T06:57:02.502Z",
+              "status": "pending",
+              "searchedKeywords": [],
+              "matches": []
+            },
+            {
+              "checkpointHour": 48,
+              "dueAt": "2026-05-10T06:57:02.502Z",
+              "status": "pending",
+              "searchedKeywords": [],
+              "matches": []
+            }
+          ]
+        },
+        {
+          "topicId": "topic_56430bb7-9bf0-4d65-a895-957523550a43",
+          "title": "超实用 百元内数码小配件真实使用体验",
+          "angle": "分享高性价比平价数码配件使用感受",
+          "predictedScore": 78,
+          "tags": [
+            "#数码科技",
+            "#数码配件",
+            "#性价比"
+          ],
+          "checkpoints": [
+            {
+              "checkpointHour": 6,
+              "dueAt": "2026-05-08T12:57:02.502Z",
+              "status": "pending",
+              "searchedKeywords": [],
+              "matches": []
+            },
+            {
+              "checkpointHour": 12,
+              "dueAt": "2026-05-08T18:57:02.502Z",
+              "status": "pending",
+              "searchedKeywords": [],
+              "matches": []
+            },
+            {
+              "checkpointHour": 24,
+              "dueAt": "2026-05-09T06:57:02.502Z",
+              "status": "pending",
+              "searchedKeywords": [],
+              "matches": []
+            },
+            {
+              "checkpointHour": 48,
+              "dueAt": "2026-05-10T06:57:02.502Z",
+              "status": "pending",
+              "searchedKeywords": [],
+              "matches": []
+            }
+          ]
+        }
+      ],
+      "predictionRunId": "run_431fd956-3b86-4435-8a53-efec9eb74c8d",
+      "evidenceQuality": {
+        "supportingContents": 0,
+        "supportingAccounts": 0,
+        "lowFollowerEvidence": 0,
+        "whyNowItems": 3,
+        "evidenceGaps": [
+          "当前缺少足够的支持账号样本。",
+          "当前缺少足够的支持内容样本。",
+          "评论数据可以进一步采集，补充后分析会更精准。"
+        ],
+        "degradeFlags": [],
+        "usableForAccuracyEval": false,
+        "reason": "真实内容样本只有 0 条，低于最小门槛 3 条；该结果只能作为选题草案，不能作为爆款预测准确率样本。"
+      },
+      "error": "真实内容样本只有 0 条，低于最小门槛 3 条；该结果只能作为选题草案，不能作为爆款预测准确率样本。"
+    },
+    {
+      "track": "宠物萌宠",
+      "prompt": "宠物萌宠赛道现在发什么最容易爆？请给我3个明确、可执行、适合中腰部账号跟进的短视频选题。",
+      "status": "data_insufficient",
+      "createdAt": "2026-05-08T06:57:02.502Z",
+      "updatedAt": "2026-05-08T07:05:43.933Z",
+      "predictedTopics": [
+        {
+          "topicId": "topic_73a34486-3f11-4d47-8cee-7293a963db8b",
+          "title": "家里猫咪干的傻事，看完直接笑到直不起腰",
+          "angle": "记录宠物日常搞笑瞬间切入",
+          "predictedScore": 85,
+          "tags": [
+            "#宠物日常",
+            "#萌宠",
+            "#猫咪搞笑"
+          ],
+          "checkpoints": [
+            {
+              "checkpointHour": 6,
+              "dueAt": "2026-05-08T12:57:02.502Z",
+              "status": "pending",
+              "searchedKeywords": [],
+              "matches": []
+            },
+            {
+              "checkpointHour": 12,
+              "dueAt": "2026-05-08T18:57:02.502Z",
+              "status": "pending",
+              "searchedKeywords": [],
+              "matches": []
+            },
+            {
+              "checkpointHour": 24,
+              "dueAt": "2026-05-09T06:57:02.502Z",
+              "status": "pending",
+              "searchedKeywords": [],
+              "matches": []
+            },
+            {
+              "checkpointHour": 48,
+              "dueAt": "2026-05-10T06:57:02.502Z",
+              "status": "pending",
+              "searchedKeywords": [],
+              "matches": []
+            }
+          ]
+        },
+        {
+          "topicId": "topic_65bcc4f8-61d6-43bc-be87-849e91c4bc4a",
+          "title": "下班回家开门瞬间，我家狗的反应太好哭了",
+          "angle": "主打宠物与主人的情感羁绊切入",
+          "predictedScore": 82,
+          "tags": [
+            "#宠物和主人",
+            "#萌宠",
+            "#养狗日常"
+          ],
+          "checkpoints": [
+            {
+              "checkpointHour": 6,
+              "dueAt": "2026-05-08T12:57:02.502Z",
+              "status": "pending",
+              "searchedKeywords": [],
+              "matches": []
+            },
+            {
+              "checkpointHour": 12,
+              "dueAt": "2026-05-08T18:57:02.502Z",
+              "status": "pending",
+              "searchedKeywords": [],
+              "matches": []
+            },
+            {
+              "checkpointHour": 24,
+              "dueAt": "2026-05-09T06:57:02.502Z",
+              "status": "pending",
+              "searchedKeywords": [],
+              "matches": []
+            },
+            {
+              "checkpointHour": 48,
+              "dueAt": "2026-05-10T06:57:02.502Z",
+              "status": "pending",
+              "searchedKeywords": [],
+              "matches": []
+            }
+          ]
+        },
+        {
+          "topicId": "topic_401a9ff3-a7a0-4292-8632-9a1f8a0507e2",
+          "title": "教你3招，新手也能快速听懂猫主子话",
+          "angle": "实用养宠技巧科普切入",
+          "predictedScore": 78,
+          "tags": [
+            "#养宠技巧",
+            "#萌宠",
+            "#养猫知识"
+          ],
+          "checkpoints": [
+            {
+              "checkpointHour": 6,
+              "dueAt": "2026-05-08T12:57:02.502Z",
+              "status": "pending",
+              "searchedKeywords": [],
+              "matches": []
+            },
+            {
+              "checkpointHour": 12,
+              "dueAt": "2026-05-08T18:57:02.502Z",
+              "status": "pending",
+              "searchedKeywords": [],
+              "matches": []
+            },
+            {
+              "checkpointHour": 24,
+              "dueAt": "2026-05-09T06:57:02.502Z",
+              "status": "pending",
+              "searchedKeywords": [],
+              "matches": []
+            },
+            {
+              "checkpointHour": 48,
+              "dueAt": "2026-05-10T06:57:02.502Z",
+              "status": "pending",
+              "searchedKeywords": [],
+              "matches": []
+            }
+          ]
+        }
+      ],
+      "predictionRunId": "run_896d6653-b1e8-4c47-9f8e-1d3919138218",
+      "evidenceQuality": {
+        "supportingContents": 0,
+        "supportingAccounts": 0,
+        "lowFollowerEvidence": 0,
+        "whyNowItems": 3,
+        "evidenceGaps": [
+          "当前缺少足够的支持账号样本。",
+          "当前缺少足够的支持内容样本。",
+          "评论数据可以进一步采集，补充后分析会更精准。"
+        ],
+        "degradeFlags": [],
+        "usableForAccuracyEval": false,
+        "reason": "真实内容样本只有 0 条，低于最小门槛 3 条；该结果只能作为选题草案，不能作为爆款预测准确率样本。"
+      },
+      "error": "真实内容样本只有 0 条，低于最小门槛 3 条；该结果只能作为选题草案，不能作为爆款预测准确率样本。"
+    },
+    {
+      "track": "餐饮加盟",
+      "prompt": "餐饮加盟赛道现在发什么最容易爆？请给我3个明确、可执行、适合中腰部账号跟进的短视频选题。",
+      "status": "data_insufficient",
+      "createdAt": "2026-05-08T06:57:02.502Z",
+      "updatedAt": "2026-05-08T07:06:21.369Z",
+      "predictedTopics": [
+        {
+          "topicId": "topic_d79c74b2-79b6-49ee-853b-c8a8975221dc",
+          "title": "新手开餐饮店 加盟前这3个坑千万别踩",
+          "angle": "科普加盟避坑常识降低决策风险",
+          "predictedScore": 85,
+          "tags": [
+            "#餐饮加盟",
+            "#创业避坑",
+            "#开店指南"
+          ],
+          "checkpoints": [
+            {
+              "checkpointHour": 6,
+              "dueAt": "2026-05-08T12:57:02.502Z",
+              "status": "pending",
+              "searchedKeywords": [],
+              "matches": []
+            },
+            {
+              "checkpointHour": 12,
+              "dueAt": "2026-05-08T18:57:02.502Z",
+              "status": "pending",
+              "searchedKeywords": [],
+              "matches": []
+            },
+            {
+              "checkpointHour": 24,
+              "dueAt": "2026-05-09T06:57:02.502Z",
+              "status": "pending",
+              "searchedKeywords": [],
+              "matches": []
+            },
+            {
+              "checkpointHour": 48,
+              "dueAt": "2026-05-10T06:57:02.502Z",
+              "status": "pending",
+              "searchedKeywords": [],
+              "matches": []
+            }
+          ]
+        },
+        {
+          "topicId": "topic_810fa94b-19dd-471f-8fb6-d5a8d076a9bb",
+          "title": "餐饮加盟怎么算回本周期 教你2步算清楚",
+          "angle": "实用成本核算方法解决加盟决策痛点",
+          "predictedScore": 82,
+          "tags": [
+            "#餐饮加盟",
+            "#创业干货",
+            "#成本核算"
+          ],
+          "checkpoints": [
+            {
+              "checkpointHour": 6,
+              "dueAt": "2026-05-08T12:57:02.502Z",
+              "status": "pending",
+              "searchedKeywords": [],
+              "matches": []
+            },
+            {
+              "checkpointHour": 12,
+              "dueAt": "2026-05-08T18:57:02.502Z",
+              "status": "pending",
+              "searchedKeywords": [],
+              "matches": []
+            },
+            {
+              "checkpointHour": 24,
+              "dueAt": "2026-05-09T06:57:02.502Z",
+              "status": "pending",
+              "searchedKeywords": [],
+              "matches": []
+            },
+            {
+              "checkpointHour": 48,
+              "dueAt": "2026-05-10T06:57:02.502Z",
+              "status": "pending",
+              "searchedKeywords": [],
+              "matches": []
+            }
+          ]
+        },
+        {
+          "topicId": "topic_c6895a05-aa09-4c79-a17f-ace0e7470120",
+          "title": "不想加盟被割韭菜 先问品牌这5个问题",
+          "angle": "加盟谈判提问清单降低踩坑概率",
+          "predictedScore": 78,
+          "tags": [
+            "#餐饮加盟",
+            "#创业技巧",
+            "#防骗指南"
+          ],
+          "checkpoints": [
+            {
+              "checkpointHour": 6,
+              "dueAt": "2026-05-08T12:57:02.502Z",
+              "status": "pending",
+              "searchedKeywords": [],
+              "matches": []
+            },
+            {
+              "checkpointHour": 12,
+              "dueAt": "2026-05-08T18:57:02.502Z",
+              "status": "pending",
+              "searchedKeywords": [],
+              "matches": []
+            },
+            {
+              "checkpointHour": 24,
+              "dueAt": "2026-05-09T06:57:02.502Z",
+              "status": "pending",
+              "searchedKeywords": [],
+              "matches": []
+            },
+            {
+              "checkpointHour": 48,
+              "dueAt": "2026-05-10T06:57:02.502Z",
+              "status": "pending",
+              "searchedKeywords": [],
+              "matches": []
+            }
+          ]
+        }
+      ],
+      "predictionRunId": "run_710e83ac-60bd-48ac-8ec7-71481fe6c392",
+      "evidenceQuality": {
+        "supportingContents": 0,
+        "supportingAccounts": 0,
+        "lowFollowerEvidence": 0,
+        "whyNowItems": 3,
+        "evidenceGaps": [
+          "当前缺少足够的支持账号样本。",
+          "当前缺少足够的支持内容样本。",
+          "评论数据可以进一步采集，补充后分析会更精准。"
+        ],
+        "degradeFlags": [],
+        "usableForAccuracyEval": false,
+        "reason": "真实内容样本只有 0 条，低于最小门槛 3 条；该结果只能作为选题草案，不能作为爆款预测准确率样本。"
+      },
+      "error": "真实内容样本只有 0 条，低于最小门槛 3 条；该结果只能作为选题草案，不能作为爆款预测准确率样本。"
+    }
+  ],
+  "summary": {
+    "totalTracks": 10,
+    "completedTracks": 0,
+    "dataInsufficientTracks": 10,
+    "totalTopics": 30,
+    "evaluatedCheckpoints": 0,
+    "accurateCheckpoints": 0,
+    "accuracyRate": 0,
+    "averageAccuracy": 0,
+    "averagePredictedScore": 0,
+    "averageActualScore": 0,
+    "coverageRate": 0,
+    "targetAccuracyRate": 50,
+    "passesTarget": false,
+    "overestimated": [],
+    "underestimated": [],
+    "byTrack": [
+      {
+        "track": "ai工具",
+        "evaluatedCheckpoints": 0,
+        "accuracyRate": 0,
+        "averageAccuracy": 0
+      },
+      {
+        "track": "健身减脂",
+        "evaluatedCheckpoints": 0,
+        "accuracyRate": 0,
+        "averageAccuracy": 0
+      },
+      {
+        "track": "母婴育儿",
+        "evaluatedCheckpoints": 0,
+        "accuracyRate": 0,
+        "averageAccuracy": 0
+      },
+      {
+        "track": "职场效率",
+        "evaluatedCheckpoints": 0,
+        "accuracyRate": 0,
+        "averageAccuracy": 0
+      },
+      {
+        "track": "小红书美妆",
+        "evaluatedCheckpoints": 0,
+        "accuracyRate": 0,
+        "averageAccuracy": 0
+      },
+      {
+        "track": "家居收纳",
+        "evaluatedCheckpoints": 0,
+        "accuracyRate": 0,
+        "averageAccuracy": 0
+      },
+      {
+        "track": "本地生活探店",
+        "evaluatedCheckpoints": 0,
+        "accuracyRate": 0,
+        "averageAccuracy": 0
+      },
+      {
+        "track": "数码科技",
+        "evaluatedCheckpoints": 0,
+        "accuracyRate": 0,
+        "averageAccuracy": 0
+      },
+      {
+        "track": "宠物萌宠",
+        "evaluatedCheckpoints": 0,
+        "accuracyRate": 0,
+        "averageAccuracy": 0
+      },
+      {
+        "track": "餐饮加盟",
+        "evaluatedCheckpoints": 0,
+        "accuracyRate": 0,
+        "averageAccuracy": 0
+      }
+    ],
+    "conclusion": "本批次 10 个行业词全部真实内容样本不足，不能进入准确率验证；当前问题优先级是修复采样成功率，而不是等待检查点。"
+  }
+}

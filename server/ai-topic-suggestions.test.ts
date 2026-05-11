@@ -1,8 +1,8 @@
 /**
  * AI 选题生成模块测试
  * ===================
- * 验证 AiTopicSuggestion 类型定义、数据透传、前端渲染器包含新模块、
- * P1-P3 重构验证（选题方案+支撑证据+脚本生成衔接）
+ * 验证 AiTopicSuggestion 类型定义、数据透传、前端预测决策页包含关键模块、
+ * P1-P3 重构验证（预测结论+预测依据+下一步生成衔接）。
  */
 import { describe, it, expect } from "vitest";
 import * as fs from "node:fs";
@@ -91,65 +91,44 @@ describe("P1：前端渲染器 — AI 预测爆款选题模块", () => {
     "utf-8",
   );
 
-  it("应该包含 AI 选题模块标题'AI 预测爆款选题'", () => {
-    expect(rendererSource).toContain("AI 预测爆款选题");
+  it("应该包含核心结果徽章「爆款预测结果」", () => {
+    expect(rendererSource).toContain("爆款预测结果");
   });
 
-  it("应该包含引导文案'当前推荐结果'", () => {
-    expect(rendererSource).toContain("当前推荐结果");
+  it("应该包含主行动「按这个预测生成内容方案」", () => {
+    expect(rendererSource).toContain("按这个预测生成内容方案");
   });
 
   it("应该包含 aiTopicSuggestions 数据读取", () => {
     expect(rendererSource).toContain("result.aiTopicSuggestions");
   });
 
-  it("应该包含对标作者标签展示", () => {
-    expect(rendererSource).toContain("对标 @");
+  it("应该包含代表性参考视频展示", () => {
+    expect(rendererSource).toContain("代表性参考视频");
+    expect(rendererSource).toContain("video.authorName");
   });
 
-  it("应该包含推荐内容区域", () => {
-    expect(rendererSource).toContain("推荐内容");
-  });
-
-  it("应该包含优先级分数展示", () => {
-    expect(rendererSource).toContain("优先级");
-    expect(rendererSource).toContain("topic.score");
+  it("应该包含爆发指数与评分解释", () => {
+    expect(rendererSource).toContain("爆发指数");
+    expect(rendererSource).toContain("plan.score");
+    expect(rendererSource).toContain("scoreExplanation");
   });
 
   it("应该包含核心标签展示", () => {
-    expect(rendererSource).toContain("topic.tags");
+    expect(rendererSource).toContain("plan.hashtagSuggestions");
   });
 
-  it("应该包含对标作者展示", () => {
-    expect(rendererSource).toContain("topic.referenceAuthor");
-  });
-
-  it("应该包含'生成脚本'按钮", () => {
-    expect(rendererSource).toContain("生成脚本");
+  it("应该包含参考视频作者展示", () => {
+    expect(rendererSource).toContain("video.authorName");
   });
 
   it("应该通过 open-cta-editor 事件触发行动", () => {
     expect(rendererSource).toContain("open-cta-editor");
-    expect(rendererSource).toContain('ctaId: "shoot_plan"');
-  });
-
-  it("选题模块应该在第一屏结论之后、建议拍摄方向之前", () => {
-    const firstScreenComment = rendererSource.indexOf("第一层：结果先行");
-    const aiTopicComment = rendererSource.indexOf("AI 预测爆款选题】— 核心交付物");
-    const secondLayerComment = rendererSource.indexOf("第二层：动作建议");
-    const hotWorksIdx = rendererSource.indexOf("热门作品参考");
-    
-    expect(firstScreenComment).toBeGreaterThan(-1);
-    expect(aiTopicComment).toBeGreaterThan(-1);
-    expect(secondLayerComment).toBeGreaterThan(-1);
-    expect(hotWorksIdx).toBeGreaterThan(-1);
-    expect(aiTopicComment).toBeGreaterThan(firstScreenComment);
-    expect(aiTopicComment).toBeLessThan(secondLayerComment);
-    expect(aiTopicComment).toBeLessThan(hotWorksIdx);
+    expect(rendererSource).toContain('id: "shoot_plan"');
   });
 });
 
-describe("P2：支撑证据区域", () => {
+describe("P2：预测依据区域", () => {
   const rendererSource = fs.readFileSync(
     path.resolve(
       __dirname,
@@ -158,44 +137,30 @@ describe("P2：支撑证据区域", () => {
     "utf-8",
   );
 
-  it("应该包含支撑证据分割线和标题", () => {
-    expect(rendererSource).toContain("以上选题的预测依据（数据支撑）");
+  it("应该包含预测依据锚点和标题", () => {
+    expect(rendererSource).toContain('id="data-signals"');
+    expect(rendererSource).toContain("预测依据");
+    expect(rendererSource).toContain("为什么这个机会值得跟？");
   });
 
-  it("支撑证据区域应该在选题模块和动作建议之后", () => {
-    const aiTopicIdx = rendererSource.indexOf("AI 预测爆款选题");
-    const evidenceIdx = rendererSource.indexOf("以上选题的预测依据（数据支撑）");
-    const secondLayerIdx = rendererSource.indexOf("第二层：动作建议");
-    
-    expect(aiTopicIdx).toBeGreaterThan(-1);
+  it("预测依据区域应该在下一步行动之前", () => {
+    const evidenceIdx = rendererSource.indexOf("为什么这个机会值得跟？");
+    const nextActionsIdx = rendererSource.indexOf("下一步行动");
+    expect(nextActionsIdx).toBeGreaterThan(-1);
     expect(evidenceIdx).toBeGreaterThan(-1);
-    expect(secondLayerIdx).toBeGreaterThan(-1);
-    expect(evidenceIdx).toBeGreaterThan(secondLayerIdx);
+    expect(evidenceIdx).toBeLessThan(nextActionsIdx);
   });
 
-  it("数据分析模块应该在支撑证据区域内", () => {
-    const evidenceIdx = rendererSource.indexOf("以上选题的预测依据（数据支撑）");
-    const whyNowIdx = rendererSource.indexOf("为什么现在值得拍");
-    const hotWorksIdx = rendererSource.indexOf("热门作品参考");
-    const lowFollowerIdx = rendererSource.indexOf("低粉爆款归因");
-    const marketIdx = rendererSource.indexOf("市场数据支撑");
-    const evidenceEndIdx = rendererSource.indexOf("支撑证据区域结束");
-    
-    expect(evidenceIdx).toBeGreaterThan(-1);
-    expect(evidenceEndIdx).toBeGreaterThan(-1);
-    // 所有数据模块都在支撑证据区域内
-    expect(whyNowIdx).toBeGreaterThan(evidenceIdx);
-    expect(whyNowIdx).toBeLessThan(evidenceEndIdx);
-    expect(hotWorksIdx).toBeGreaterThan(evidenceIdx);
-    expect(hotWorksIdx).toBeLessThan(evidenceEndIdx);
-    expect(lowFollowerIdx).toBeGreaterThan(evidenceIdx);
-    expect(lowFollowerIdx).toBeLessThan(evidenceEndIdx);
-    expect(marketIdx).toBeGreaterThan(evidenceIdx);
-    expect(marketIdx).toBeLessThan(evidenceEndIdx);
+  it("预测依据区域应该使用 signalCards 和数字化图表", () => {
+    expect(rendererSource).toContain("plan.signalCards");
+    expect(rendererSource).toContain("SignalCardArticle");
+    expect(rendererSource).toContain("MiniBarChart");
+    expect(rendererSource).toContain("useAnimatedNumber");
   });
 
-  it("应该使用 Database 图标", () => {
-    expect(rendererSource).toContain("Database");
+  it("应该使用数据趋势相关图标", () => {
+    expect(rendererSource).toContain("TrendingUp");
+    expect(rendererSource).toContain("BarChart3");
   });
 });
 
@@ -236,7 +201,7 @@ describe("P3：生成开拍脚本按钮上下文传递", () => {
     expect(shellSource).toContain("topicTags");
   });
 
-  it("选题卡片按钮应该传递完整的选题信息", () => {
+  it("下一步生成按钮应该传递预测切口上下文", () => {
     const rendererSource = fs.readFileSync(
       path.resolve(
         __dirname,
@@ -244,12 +209,11 @@ describe("P3：生成开拍脚本按钮上下文传递", () => {
       ),
       "utf-8",
     );
-    // 确认卡片按钮传递了所有必要字段
-    expect(rendererSource).toContain("directionTitle: topic.title");
-    expect(rendererSource).toContain("directionDescription: topic.angle");
-    expect(rendererSource).toContain("referenceTitle: topic.referenceTitle");
-    expect(rendererSource).toContain("referenceAuthor: topic.referenceAuthor");
-    expect(rendererSource).toContain("tags: topic.tags");
+    // 预测页只传递切口/判断/结构上下文，不在结果页直接交付完整脚本。
+    expect(rendererSource).toContain("directionTitle: plan.recommendedCut");
+    expect(rendererSource).toContain("directionDescription: plan.expertJudgement");
+    expect(rendererSource).toContain("howToShoot");
+    expect(rendererSource).toContain("whyNow");
   });
 });
 
@@ -258,14 +222,24 @@ describe("后端 live-predictions.ts 包含 AI 选题 LLM 调用", () => {
     path.resolve(__dirname, "legacy/live-predictions.ts"),
     "utf-8",
   );
+  // 2026-04-29:topic prompt 抽出到 prompts/topic-prompt-builder.ts(让 evals 可独立用)。
+  // prompt 文本断言改去看 builder 文件。
+  const topicPromptBuilderSource = fs.readFileSync(
+    path.resolve(__dirname, "legacy/prompts/topic-prompt-builder.ts"),
+    "utf-8",
+  );
 
   it("应该包含 aiTopicSuggestions 变量声明", () => {
     expect(backendSource).toContain("let aiTopicSuggestions: AiTopicSuggestion[]");
   });
 
-  it("应该包含 AI 选题 LLM 调用的 prompt", () => {
-    expect(backendSource).toContain("短视频爆款内容策划师");
-    expect(backendSource).toContain("真实采集的热门样本");
+  it("应该调用 buildTopicMessages(prompt 抽出到 builder)", () => {
+    expect(backendSource).toContain("buildTopicMessages");
+  });
+
+  it("topic-prompt-builder 应该包含选题 prompt 的核心字符串", () => {
+    expect(topicPromptBuilderSource).toContain("短视频爆款内容策划师");
+    expect(topicPromptBuilderSource).toContain("真实采集的热门样本");
   });
 
   it("应该包含 aiTopicSuggestions 注入到结果对象", () => {
@@ -277,7 +251,8 @@ describe("后端 live-predictions.ts 包含 AI 选题 LLM 调用", () => {
   });
 
   it("应该包含降级处理（LLM 调用失败时降级为空列表）", () => {
-    expect(backendSource).toContain("AI选题生成失败，降级为空列表");
+    // Phase 5B-revised: 拆回独立调用，日志为「选题建议 LLM 调用失败，降级为空列表」
+    expect(backendSource).toContain("选题建议 LLM 调用失败");
   });
 
   it("应该包含 tags 字段生成", () => {
@@ -290,28 +265,35 @@ describe("后端 live-predictions.ts 包含 AI 选题 LLM 调用", () => {
 });
 
 describe("结果持久化恢复链路包含 aiTopicSuggestions 映射", () => {
-  const resultsPageSource = fs.readFileSync(
-    path.resolve(__dirname, "../client/src/app/pages/ResultsPage.tsx"),
+  const normalizeResultSource = fs.readFileSync(
+    path.resolve(__dirname, "../client/src/app/lib/normalize-result.ts"),
     "utf-8",
   );
 
   it("normalizeRemoteResult 应该包含 aiTopicSuggestions 的映射逻辑", () => {
-    expect(resultsPageSource).toContain("aiTopicSuggestions");
-    expect(resultsPageSource).toContain("snapshot.aiTopicSuggestions");
+    expect(normalizeResultSource).toContain("aiTopicSuggestions");
+    expect(normalizeResultSource).toContain("snapshot.aiTopicSuggestions");
   });
 
   it("应该正确映射 title 和 angle 字段", () => {
-    expect(resultsPageSource).toContain('asString(topic.title, "未命名选题")');
-    expect(resultsPageSource).toContain('asString(topic.angle, "")');
+    expect(normalizeResultSource).toContain('asString(topic.title, "未命名选题")');
+    expect(normalizeResultSource).toContain('asString(topic.angle, "")');
   });
 
   it("应该处理可选的 referenceTitle 和 referenceId", () => {
-    expect(resultsPageSource).toContain('typeof topic.referenceTitle === "string"');
-    expect(resultsPageSource).toContain('typeof topic.referenceId === "string"');
+    expect(normalizeResultSource).toContain('typeof topic.referenceTitle === "string"');
+    expect(normalizeResultSource).toContain('typeof topic.referenceId === "string"');
   });
 
   it("应该处理 score 字段映射", () => {
-    expect(resultsPageSource).toContain("topic.score");
+    expect(normalizeResultSource).toContain("topic.score");
+  });
+
+  it("应该处理切口级评论、供给缺口、低粉分数字段映射", () => {
+    expect(normalizeResultSource).toContain("topic.commentScore");
+    expect(normalizeResultSource).toContain("topic.supplyGapScore");
+    expect(normalizeResultSource).toContain("topic.lowFollowerScore");
+    expect(normalizeResultSource).toContain("topic.evidenceContentIds");
   });
 });
 
@@ -431,9 +413,9 @@ describe("需求6：搜索接口数据筛选规则", () => {
     "utf-8",
   );
 
-  it("应该包含点赞数筛选门槛", () => {
-    expect(backendSource).toContain("MIN_LIKE_THRESHOLD");
-    expect(backendSource).toContain("1000");
+  it("应该包含样本质量入选门槛", () => {
+    expect(backendSource).toContain("filterContentsBySampleQuality");
+    expect(backendSource).toContain("sampleQualityGate");
   });
 
   it("应该包含时间范围筛选逻辑", () => {
@@ -446,6 +428,6 @@ describe("需求6：搜索接口数据筛选规则", () => {
   });
 
   it("应该包含数据不足时的降级逻辑", () => {
-    expect(backendSource).toContain("qualityFiltered.length >= 3");
+    expect(backendSource).toContain("sample_quality_insufficient");
   });
 });

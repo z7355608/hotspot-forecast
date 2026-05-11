@@ -19,38 +19,22 @@
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
-import { sanitizeHtml } from "@/app/lib/sanitize-html";
 import {
   ArrowLeft,
-  Bookmark,
   Check,
   ChevronRight,
   Coins,
   Eye,
-  RefreshCw,
   RotateCcw,
-  Sparkles,
   Zap,
 } from "lucide-react";
 import { getModelOption, type ResultRecord, getChargedCost } from "../../store/app-data";
 import { useAppStore } from "../../store/app-store";
-import { getMomentumLabelText } from "../../store/result-evidence-adapter";
-import { TASK_INTENT_META } from "../../store/agent-runtime";
-import {
-  ENTRY_SOURCE_META,
-  formatDateTime,
-  getExecutionStatusLabel,
-  getWatchStatusLabel,
-  INPUT_FOCUS_META,
-  OPPORTUNITY_META,
-  TASK_CONFIDENCE_META,
-  WINDOW_META,
-} from "./results-view-meta";
 import { PlaceholderFollowUp } from "./results-shared";
+import { ConnectorsGuideBanner } from "../ConnectorsGuideBanner";
 import { PaywallModal, type PaywallContext } from "../PaywallModal";
 import { CozeEditorDrawer } from "../CozeEditorDrawer";
 import { generateCtaMarkdown, generateFollowUpMarkdown } from "../../lib/cta-markdown-generator";
-import { generateDirectResultMarkdown } from "../../lib/direct-result-markdown";
 
 /* ---- 引入 Registry 和所有渲染器 ---- */
 import { resolveRenderer, type CtaActionConfig } from "./artifact-registry";
@@ -239,25 +223,15 @@ export function ResultsView({
   } | null>(null);
 
   /* ---- Derived data ---- */
-  const resultModel = getModelOption(result.modelId);
   const selectedModel = getModelOption(state.selectedModel);
   // 检查 taskPayload 是否包含 trendOpportunities（用于强制覆盖意图分类结果）
   const hasTrendOpps = Array.isArray((result.taskPayload as unknown as Record<string, unknown>)?.trendOpportunities) && ((result.taskPayload as unknown as Record<string, unknown>).trendOpportunities as unknown[]).length > 0;
-  const taskMeta = hasTrendOpps ? TASK_INTENT_META["opportunity_prediction"] : TASK_INTENT_META[result.taskIntent];
   const canWatch = result.primaryArtifact.watchable;
 
   // Registry 解析
   const registration = resolveRenderer(result);
   const RendererComponent = registration?.component ?? null;
 
-  // 直接需求模式：当任务类型是 direct_request 时，
-  // 用户输入的是直接需求，不适合结构化卡片渲染，直接用编辑器展示
-  const isDirectMode = result.taskIntent === "direct_request";
-  const directMarkdown = useMemo(
-    () => (isDirectMode ? generateDirectResultMarkdown(result) : ""),
-    [isDirectMode, result],
-  );
-  const heroMetricCards = registration?.getHeroMetrics(result) ?? [];
   const deepDiveConfig = registration?.getDeepDiveConfig(result) ?? {
     title: "继续深挖",
     description: "展开更多细节。",
@@ -266,14 +240,6 @@ export function ResultsView({
   };
   const ctaActions = registration?.getCtaActions(result) ?? [];
   const followUpActions = registration?.getFollowUpActions(result) ?? [];
-
-  // opportunity_prediction 专属标签数据
-  // 当 taskPayload 包含 trendOpportunities 时，也视为 opportunity 模式
-  const isOpportunity = result.taskIntent === "opportunity_prediction" || hasTrendOpps;
-  const windowMeta = WINDOW_META[result.windowStrength];
-  const opportunityLabel = OPPORTUNITY_META[result.opportunityType];
-  const inputKind = result.normalizedBrief?.inputKind ?? "prompt";
-  const inputFocus = INPUT_FOCUS_META[inputKind];
 
   // Artifact 状态
   const stateResult = state.results.find((item) => item.id === result.id);
@@ -470,10 +436,12 @@ export function ResultsView({
       // 注入爆款预测上下文（opportunity_prediction 类型，或包含 trendOpportunities）
       if (payload?.kind === "opportunity_prediction" || result.taskIntent === "opportunity_prediction" || hasTrendOpps) {
         // 注入真实搜索到的内容样本
-        const topContents = (result.supportingContents || []).slice(0, 5).map(c => ({
+        const topContents = (result.supportingContents || []).slice(0, 5).map((c, i) => ({
+          id: `C${i + 1}`,
           title: c.title,
           author: c.authorName,
           platform: c.platform,
+          publishedAt: c.publishedAt,
           likes: c.likeCount,
           comments: c.commentCount,
           shares: c.shareCount,
@@ -497,7 +465,8 @@ export function ResultsView({
           topContents,
           topAccounts,
           marketEvidence: result.marketEvidence,
-          lowFollowerEvidence: (result.lowFollowerEvidence || []).slice(0, 3).map(e => ({
+          lowFollowerEvidence: (result.lowFollowerEvidence || []).slice(0, 3).map((e, i) => ({
+            id: `L${i + 1}`,
             title: e.title,
             account: e.account,
             fans: e.fansLabel,
@@ -697,10 +666,10 @@ export function ResultsView({
 
   /* ---- Render ---- */
   return (
-    <div className="mx-auto max-w-5xl space-y-4 px-4 pb-10 pt-8 sm:px-6 sm:pt-10">
+    <div className="mx-auto max-w-[1440px] space-y-5 px-4 pb-10 pt-8 sm:px-6 sm:pt-10 2xl:max-w-[1520px]">
       {/* ========== 顶部：查询回显 + 重新提问 ========== */}
       <div className="flex flex-col items-start gap-2 px-1 sm:flex-row sm:items-center sm:justify-between">
-        <p className="min-w-0 w-full break-words text-xs leading-relaxed text-gray-400 line-clamp-2 sm:flex-1">
+        <p className="min-w-0 w-full break-words text-[13px] leading-5 text-gray-400 line-clamp-2 sm:flex-1">
           {result.query}
         </p>
         {result.taskIntent === "breakdown_sample" ? (
@@ -763,69 +732,10 @@ export function ResultsView({
 
       {/* 保存/观察面板已移除：不再在结果页展示 */}
 
-      {/* ========== 直接需求模式：用编辑器展示而非结构化卡片 ========== */}
-      {isDirectMode ? (
-        <div className="rounded-3xl border border-gray-100 bg-white shadow-sm overflow-hidden">
-          {/* 编辑器头部 */}
-          <div className="border-b border-gray-50 px-5 py-4 sm:px-7">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gray-900">
-                  <Sparkles className="h-4 w-4 text-white" />
-                </div>
-                <div>
-                  <h2 className="text-sm font-medium text-gray-900">{result.title || result.opportunityTitle || "分析报告"}</h2>
-                  <p className="text-[11px] text-gray-400">{taskMeta.description}</p>
-                </div>
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="rounded bg-gray-900 px-2 py-0.5 text-xs text-white">{taskMeta.label}</span>
-                <span className="rounded bg-gray-100 px-2 py-0.5 text-xs text-gray-500">{resultModel.name}</span>
-              </div>
-            </div>
-          </div>
-
-          {/* AI 状态条 */}
-          <div className="flex items-center gap-2 border-b border-gray-50 bg-gray-50/50 px-6 py-2">
-            <Sparkles className="h-3.5 w-3.5 text-amber-500" />
-            <span className="text-[11px] text-gray-500">分析已完成</span>
-          </div>
-
-          {/* Markdown 内容区 */}
-          <div className="px-8 py-6 prose prose-sm prose-gray max-w-none">
-            <div
-              dangerouslySetInnerHTML={{
-                __html: sanitizeHtml(directMarkdown
-                  .replace(/^# (.+)$/gm, '<h1 class="text-xl font-bold text-gray-900 mb-4">$1</h1>')
-                  .replace(/^## (.+)$/gm, '<h2 class="text-base font-semibold text-gray-800 mt-6 mb-3">$1</h2>')
-                  .replace(/^### (.+)$/gm, '<h3 class="text-sm font-medium text-gray-700 mt-4 mb-2">$1</h3>')
-                  .replace(/^> (.+)$/gm, '<blockquote class="border-l-2 border-gray-200 pl-4 text-xs text-gray-500 my-3">$1</blockquote>')
-                  .replace(/^- (.+)$/gm, '<li class="text-sm text-gray-700 ml-4">$1</li>')
-                  .replace(/^---$/gm, '<hr class="my-4 border-gray-100" />')
-                  .replace(/\*\*(.+?)\*\*/g, '<strong class="font-semibold text-gray-900">$1</strong>')
-                  .replace(/\*(.+?)\*/g, '<em class="text-gray-600">$1</em>')
-                  .replace(/\|(.+)\|/g, (match) => {
-                    if (match.includes('---')) return '';
-                    const cells = match.split('|').filter(Boolean).map(c => c.trim());
-                    return `<div class="flex gap-4 py-1.5 text-xs border-b border-gray-50">${cells.map(c => `<span class="flex-1 text-gray-600">${c}</span>`).join('')}</div>`;
-                  })
-                  .replace(/\n\n/g, '<br/>')
-                  .replace(/\n/g, ' ')),
-              }}
-            />
-          </div>
-
-          {/* 底部信息 */}
-          <div className="border-t border-gray-100 px-6 py-3">
-            <div className="flex items-center justify-between text-[11px] text-gray-400">
-              <span>模型：{resultModel.name}</span>
-              <span>余额：{state.credits} 积分</span>
-            </div>
-          </div>
-        </div>
-      ) : (
       <>
       {/* Hero Header 已移入渲染器第一层，此处不再重复 */}
+
+      {result.taskIntent === "opportunity_prediction" && <ConnectorsGuideBanner />}
 
       {/* ========== 任务专属内容（Dumb Renderer） ========== */}
       {RendererComponent ? (
@@ -849,7 +759,6 @@ export function ResultsView({
         )
       )}
       </>
-      )}
 
       {/* Agent建议下一步 + CTA动作面板已移除：已融入渲染器内部 */}
 

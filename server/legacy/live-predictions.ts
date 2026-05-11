@@ -19,9 +19,9 @@ import {
   buildAgentContract,
   getTaskIntentHistoryType,
 } from "../../client/src/app/store/agent-runtime.js";
-import { classifyIntentWithLLM } from "./intent-agent.js";
+import { classifyIntentWithLLM, tryFastPath, type LLMIntentResult } from "./intent-agent.js";
 import { parseInput } from "./input-parser.js";
-import { extractTaskParams } from "./payload-extractor.js";
+import { extractTaskParams, llmExtractAndClassify } from "./payload-extractor.js";
 import type {
   AiTopicSuggestion,
   PredictionBestAction,
@@ -32,6 +32,9 @@ import type {
   TrendOpportunity,
 } from "../../client/src/app/store/prediction-types.js";
 import { callLLM } from "./llm-gateway.js";
+import { stripJsonFences } from "./json-extract.js";
+import { resolveSystemPrompt } from "./prompt-engine.js";
+import { buildTopicMessages } from "./prompts/topic-prompt-builder.js";
 import { getTikHub, postTikHub } from "./tikhub.js";
 import {
   runLowFollowerAlgorithm,
@@ -59,6 +62,8 @@ import {
   extractAccounts,
   extractContents,
   extractIdsFromEvidenceItems,
+  filterContentsBySampleQuality,
+  filterContentsByTrackSpecificRules,
   getCandidatePlatforms,
   getNumber,
   inferInputKind,
@@ -74,13 +79,23 @@ import { fetchCommentInsight } from "./comment-collector.js";
 import { runTopicStrategyBranch } from "./topic-strategy-bridge.js";
 import { runViralBreakdownBranch, shouldUseViralBreakdownBranch } from "./viral-breakdown-branch.js";
 import { filterContentsByRelevance, filterKeywordsByRelevance } from "./semantic-filter.js";
+import { validateSearchKeywords } from "../services/search-keyword-validator.js";
+import { pickDouyinCoverFallback } from "../services/cover-url-fallback.js";
 import { analyzeSampleReplicability } from "./low-follower-advisor.js";
+import { mapPromptToTag } from "./content-tag-cache.js";
+import { extractCityFromPrompt } from "./city-cache.js";
+import { augmentContents } from "../services/content-augmentation/registry.js";
 
 export type ContentSampleItem = {
   title: string;
   platform: string;
   likeCount?: number;
   viewCount?: number;
+  commentCount?: number;
+  collectCount?: number;
+  shareCount?: number;
+  authorFollowerCount?: number;
+  whyIncluded?: string;
 };
 export type AccountSampleItem = {
   displayName: string;
@@ -103,6 +118,88 @@ export type ProgressEvent =
       accountSamples: AccountSampleItem[];
       highlights: string[];
     };
+
+const DOUYIN_RESCUE_SEARCH_ROUTES = [
+  "/api/v1/douyin/search/fetch_general_search_v1",
+  "/api/v1/douyin/search/fetch_video_search_v1",
+] as const;
+const MIN_CONTENTS_BEFORE_RESCUE = 8;
+const TARGET_RESCUE_CONTENTS = 10;
+
+function buildDouyinRescueSearchPayload(keyword: string) {
+  return {
+    keyword,
+    cursor: 0,
+    sort_type: "0",
+    publish_time: "7",
+    filter_duration: "0",
+    content_type: "0",
+    search_id: "",
+    backtrace: "",
+  };
+}
+
+async function rescueDouyinKeywordSampling(
+  keywords: string[],
+  minContents = 3,
+): Promise<{
+  contents: ExtractedContent[];
+  accounts: ExtractedAccount[];
+  usedRouteChain: string[];
+}> {
+  const cleanKeywords = [...new Set(keywords.map((kw) => kw.trim()).filter((kw) => kw.length >= 2))].slice(0, 5);
+  const contents: ExtractedContent[] = [];
+  const accounts: ExtractedAccount[] = [];
+  const usedRouteChain: string[] = [];
+
+  for (const keyword of cleanKeywords) {
+    for (const path of DOUYIN_RESCUE_SEARCH_ROUTES) {
+      try {
+        const resp = await postTikHub<Record<string, unknown>>(
+          path,
+          buildDouyinRescueSearchPayload(keyword),
+        );
+        if (!resp.ok) {
+          log.warn(
+            { keyword, path, httpStatus: resp.httpStatus, businessCode: resp.businessCode },
+            "抖音补救采样接口返回失败",
+          );
+          continue;
+        }
+
+        const routeContents = extractContents("douyin", "keyword_content_search", resp.payload);
+        const routeAccounts = extractAccounts("douyin", "keyword_content_search", resp.payload);
+        if (routeContents.length === 0) {
+          log.info({ keyword, path }, "抖音补救采样未提取到内容，尝试下一路由");
+          continue;
+        }
+
+        contents.push(...routeContents);
+        accounts.push(...routeAccounts);
+        usedRouteChain.push(`keyword_content_search:rescue:${path}`);
+        log.info(
+          { keyword, path, contents: routeContents.length, accounts: routeAccounts.length },
+          "抖音补救采样成功",
+        );
+        if (dedupeById(contents, "contentId").length >= minContents) {
+          break;
+        }
+      } catch (err) {
+        log.warn({ err, keyword, path }, "抖音补救采样异常");
+      }
+    }
+
+    if (dedupeById(contents, "contentId").length >= minContents) {
+      break;
+    }
+  }
+
+  return {
+    contents: dedupeById(contents, "contentId"),
+    accounts: dedupeById(accounts, "accountId"),
+    usedRouteChain,
+  };
+}
 
 /**
  * 低粉爆款榜数据提取
@@ -143,7 +240,10 @@ function extractLowFanBillboardContents(
     const followerCount = typeof rec.fans_cnt === "number" ? rec.fans_cnt : null;
     const authorName = String(rec.nick_name || "未知作者");
     const publishTime = typeof rec.publish_time === "number" ? rec.publish_time : null;
-    const coverUrl = typeof rec.item_cover_url === "string" ? rec.item_cover_url : null;
+    let coverUrl = typeof rec.item_cover_url === "string" ? rec.item_cover_url : null;
+    if (!coverUrl && platform === "douyin" && contentId) {
+      coverUrl = pickDouyinCoverFallback(contentId);
+    }
     const contentUrl = platform === "douyin" ? `https://www.douyin.com/video/${contentId}` : undefined;
 
     contents.push({
@@ -180,29 +280,17 @@ export async function runLivePrediction(
   }
 
   // ----------------------------------------------------------------
-  // Step -0.5: 如果是爆款拆解模板且有视频链接，走专用拆解分支
+  // Step -0.5: 模板/技能强路由命中时立即走拆解分支（最高优先级）
   // ----------------------------------------------------------------
   if (shouldUseViralBreakdownBranch(draft)) {
     return runViralBreakdownBranch(draft, onProgress);
   }
 
   // ----------------------------------------------------------------
-  // Step 0: LLM 意图识别（与平台数据采集并行起动，不占用额外时间）
+  // Step A: 并行解析（前置阻塞，给 LLM 留够时间——豆包冷启首字 ~1-3s，再加余量）
+  // 把 parseInput + extractTaskParams + connectorStore 一起前置，
+  // 解析结果将作为意图识别的结构化输入信号。
   // ----------------------------------------------------------------
-  const intentPromise = classifyIntentWithLLM({
-    prompt: draft.prompt,
-    selectedSkillId: draft.selectedSkillId,
-    entryTemplateId: draft.entryTemplateId,
-    hasExternalLinks: draft.evidenceItems.some((item) => /^https?:\/\//.test(item.source)),
-    hasMediaItems: draft.evidenceItems.length > 0,
-    hasConnectedPlatforms: draft.connectedPlatforms.length > 0,
-    modelId: "doubao",
-  }).catch((err) => {
-    log.warn({ err: err }, "LLM 意图识别失败，降级到正则规则");
-    return null;
-  });
-
-  // Step 0b: 并行启动 Task Payload 动态提取
   const connectorStore = await readConnectorStore();
   const connectorEntries = Object.entries(connectorStore).filter(([, v]) => v != null);
   const firstConnector = connectorEntries.length > 0 ? connectorEntries[0][1] : null;
@@ -212,49 +300,215 @@ export async function runLivePrediction(
     followerCount: undefined as number | undefined,
     accountName: firstConnector?.handle ?? undefined,
   };
-  const payloadPromise = extractTaskParams(draft.prompt, true, userProfile).catch((err) => {
-    log.warn({ err: err }, "Task Payload 提取失败");
-    return null;
-  });
-
-  // Step 0c: 如果 Prompt 中包含 URL 或分享口令，并行解析多模态输入
   const hasUrlOrToken = /https?:\/\//.test(draft.prompt) ||
     (draft.evidenceItems.some((item) => /https?:\/\//.test(item.source)));
-  const inputParsePromise = hasUrlOrToken
-    ? parseInput(draft.prompt).catch((err) => {
-        log.warn({ err: err }, "多模态输入解析失败");
-        return null;
-      })
-    : Promise.resolve(null);
 
-  const connectors = getCandidatePlatforms(draft).map((platform) =>
+  const parseTimeoutMs = 6000;
+  const timeoutPromise = <T,>(p: Promise<T>, ms: number, label: string): Promise<T | null> => {
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    return Promise.race<T | null>([
+      p.catch((err) => {
+        log.warn({ err }, `${label} 失败`);
+        return null;
+      }),
+      new Promise<null>((resolve) => {
+        timer = setTimeout(() => {
+          log.warn(`${label} 超时（${ms}ms），跳过`);
+          resolve(null);
+        }, ms);
+      }),
+    ]).finally(() => {
+      if (timer) clearTimeout(timer);
+    });
+  };
+
+  // ----------------------------------------------------------------
+  // Step A+B 合并（Phase 5A）：原本「Task Payload 提取 LLM」+「意图识别 LLM」两次串行
+  // 改为「parseInput（无 LLM） + 一次合并 LLM 调用」并行。
+  // 主流程 LLM 计数：Step A+B 从 2 次降到 1 次（fast path 命中时仍是 1 次，知道意图后只跑 payload）。
+  // ----------------------------------------------------------------
+  const mediaCount = draft.evidenceItems.reduce(
+    (acc, item) => {
+      if (item.kind === "video") acc.video++;
+      else if (item.kind === "image") acc.image++;
+      else if (item.kind === "file") acc.file++;
+      return acc;
+    },
+    { video: 0, image: 0, file: 0 },
+  );
+
+  const intentReqBase = {
+    prompt: draft.prompt,
+    selectedSkillId: draft.selectedSkillId,
+    entryTemplateId: draft.entryTemplateId,
+    hasExternalLinks: draft.evidenceItems.some((item) => /^https?:\/\//.test(item.source)),
+    hasMediaItems: draft.evidenceItems.length > 0,
+    hasConnectedPlatforms: draft.connectedPlatforms.length > 0,
+    mediaCount,
+    modelId: "doubao" as const,
+  };
+
+  const fastIntent = tryFastPath(intentReqBase);
+
+  // Step A+B 串行（v2）：先 parseInput 拿到 URL/视频/文档的解析信号，再喂给合并 LLM。
+  // 旧版本曾把这俩做成 Promise.all 并行省 ~2s，但意图识别会丢失 parsedInputSummary，
+  // 对「只贴 URL 不加动作动词」的 prompt 会误判。改回串行换质量。
+  const parsedInputResult = hasUrlOrToken
+    ? await timeoutPromise(parseInput(draft.prompt), parseTimeoutMs, "多模态输入解析")
+    : null;
+
+  // 合并调用同时承担 payload 提取（旧 6s 上限）+ 意图识别（旧无外层超时，依赖 LLM 网关 60s）。
+  // 给 12s = 旧 extract 6s × 2 倍头部空间，避免合并后比单独跑还快超时。
+  const mergedExtractTimeoutMs = 12_000;
+  const mergedResult = await timeoutPromise(
+    llmExtractAndClassify({
+      prompt: draft.prompt,
+      userProfile,
+      knownIntent: fastIntent
+        ? { taskIntent: fastIntent.taskIntent, confidence: fastIntent.confidence, reasons: fastIntent.reasons }
+        : undefined,
+      intentSignals: {
+        mediaCount,
+        hasExternalLinks: intentReqBase.hasExternalLinks,
+        hasMediaItems: intentReqBase.hasMediaItems,
+        hasConnectedPlatforms: intentReqBase.hasConnectedPlatforms,
+        parsedInputKind: parsedInputResult?.kind,
+        parsedInputPlatform: parsedInputResult?.platform,
+        parsedInputTitle: parsedInputResult?.title,
+      },
+    }),
+    mergedExtractTimeoutMs,
+    "Step A+B 合并提取",
+  );
+
+  // 用 quickExtract（regex）+ 合并调用返回的 payload 复算 ExtractedTaskParams（无第二次 LLM）
+  const extractedPayload = await extractTaskParams(
+    draft.prompt,
+    true,
+    userProfile,
+    mergedResult?.payload,
+  ).catch(() => null);
+
+  // 意图：fast path > 合并调用 > 兜底
+  let llmIntent: LLMIntentResult;
+  if (fastIntent) {
+    llmIntent = fastIntent;
+  } else if (mergedResult?.intent) {
+    llmIntent = {
+      taskIntent: mergedResult.intent.taskIntent as LLMIntentResult["taskIntent"],
+      confidence: mergedResult.intent.confidence,
+      candidateIntents: mergedResult.intent.candidateIntents as LLMIntentResult["candidateIntents"],
+      reasons: mergedResult.intent.reasons,
+      llmUsed: true,
+    };
+  } else {
+    log.warn("Step A+B 合并调用失败，降级独立 intent 调用");
+    llmIntent = await classifyIntentWithLLM({
+      ...intentReqBase,
+      parsedInputSummary: parsedInputResult
+        ? {
+            kind: parsedInputResult.kind,
+            platform: parsedInputResult.platform,
+            title: parsedInputResult.title,
+            hasContent: !!parsedInputResult.extractedText,
+          }
+        : undefined,
+      extractedPayloadSummary: extractedPayload
+        ? {
+            hasAwemeId: !!extractedPayload.awemeId,
+            hasNoteId: !!extractedPayload.noteId,
+            hasUniqueId: !!extractedPayload.uniqueId,
+            industry: extractedPayload.industry ?? undefined,
+          }
+        : undefined,
+    });
+  }
+
+  // ----------------------------------------------------------------
+  // Step C: 意图驱动的 pipeline 分流（仅 viral_breakdown 切分支，其他保持主流程）
+  // ----------------------------------------------------------------
+  if (shouldUseViralBreakdownBranch(draft, llmIntent, parsedInputResult)) {
+    log.info(`意图分流: ${llmIntent.taskIntent} → runViralBreakdownBranch`);
+    return runViralBreakdownBranch(draft, onProgress);
+  }
+  log.info(`意图分流: ${llmIntent.taskIntent} (${llmIntent.confidence}) → runLivePrediction 主流程`);
+
+  const candidatePlatforms = getCandidatePlatforms(draft);
+  log.info(
+    {
+      selectedPlatforms: draft.selectedPlatforms,
+      connectedPlatforms: draft.connectedPlatforms,
+      candidates: candidatePlatforms,
+    },
+    "平台决策",
+  );
+  const connectors = candidatePlatforms.map((platform) =>
     createConnectorLike(platform, connectorStore[platform]),
   );
   const baseArtifacts = buildPredictionArtifacts(draft, connectors, []);
   const inputKind = inferInputKind(draft);
   const { awemeId, noteId } = extractIdsFromEvidenceItems(draft.evidenceItems);
 
-  // 等待 LLM payload 提取结果，获取多个 searchKeywords
-  const extractedPayload = await payloadPromise;
+  // 复用前置阻塞 Step A 已经 await 的 extractedPayload，获取多个 searchKeywords
   const originalSeedTopic = baseArtifacts.normalizedBrief.seedTopic;
 
   // 构建搜索关键词列表（最多 2 个，节省 API 调用量）
   let searchKeywords: string[] = [];
+  // 标记：当 PayloadExtractor (LLM) 成功提取出关键词时，跳过下游的 LLM 主题校验，
+  // 避免 LLM-on-LLM 二次审计把对的关键词误判成偏离（豆包对中英混合判断不稳）。
+  let trustExtractor = false;
   if (extractedPayload?.searchKeywords?.length) {
     searchKeywords = extractedPayload.searchKeywords;
+    trustExtractor = true;
   } else if (extractedPayload?.keyword?.trim()) {
     searchKeywords = [extractedPayload.keyword.trim()];
+    trustExtractor = true;
   }
+  // 过滤掉"流程性"通用词（用户的提问方式而非要搜的内容），LLM 偶尔会把它们误当成关键词
+  const GENERIC_PROCESS_WORDS = [
+    "低粉爆款", "可复制方向", "复制方向", "赛道分析", "选题策略",
+    "选题方向", "方向分析", "爆款分析", "赛道判断", "机会判断",
+    "复盘", "7天", "最近7天", "30天", "近30天",
+  ];
+  searchKeywords = searchKeywords.filter((kw) => !GENERIC_PROCESS_WORDS.includes(kw));
+
   if (searchKeywords.length === 0) {
     if (originalSeedTopic && originalSeedTopic !== "爆款预测" && originalSeedTopic.length > 2) {
       searchKeywords = [originalSeedTopic];
     } else {
-      const fallbackKeyword = draft.prompt.replace(/[\s，、？?!低粉有没有机会吗赛道怎么样]+/g, "").slice(0, 8);
+      // 兜底：直接把用户原 prompt（截断）作为搜索词，让 TikHub 自己做模糊匹配。
+      // 比之前那个"strip 关键词后 slice(0,8)"的正则更稳——正则会把"母婴辅食赛道最近7天..."
+      // 切成"母婴辅食最近7天"这种废词，反而搜不到任何东西。
+      const fallbackKeyword = draft.prompt.trim().slice(0, 30);
       if (fallbackKeyword.length >= 2) {
         searchKeywords = [fallbackKeyword];
       }
     }
   }
+
+  // 轻量校验：提取词与用户问题主题漂移时回退到原始 prompt 侧关键词。
+  // 仅在 PayloadExtractor 没给出结果（走到 fallback 兜底）时才校验，避免 LLM-on-LLM 误判。
+  if (!trustExtractor && searchKeywords.length > 0) {
+    try {
+      const { aligned, confidence } = await validateSearchKeywords(draft.prompt, searchKeywords.slice(0, 3));
+      if (!aligned && confidence < 0.25) {
+        const revert =
+          originalSeedTopic && originalSeedTopic !== "爆款预测" && originalSeedTopic.length > 2
+            ? originalSeedTopic
+            : draft.prompt.replace(/\s+/g, " ").trim().slice(0, 40);
+        if (revert.length >= 2) {
+          log.info(
+            { aligned, confidence, before: searchKeywords.slice(0, 3), revert: revert.slice(0, 60) },
+            "searchKeywords 主题校验未通过，回退为原始问题侧关键词",
+          );
+          searchKeywords = [revert];
+        }
+      }
+    } catch (err) {
+      log.warn({ err }, "searchKeywords 校验异常，保留提取结果");
+    }
+  }
+
   log.info(`搜索关键词: [${searchKeywords.join(", ")}] (original seedTopic: "${originalSeedTopic}")`);
 
   const effectiveSeedTopic = searchKeywords[0] ?? originalSeedTopic;
@@ -315,11 +569,26 @@ export async function runLivePrediction(
     }
   }
 
+  // ── Phase 2: 垂类标签映射（用 LLM 把 seedTopic 映射到抖音 38 顶级垂类，
+  // 注入到 4 个互动率榜单的 tags 参数；非内容方向类输入返回 null 时回退全量榜） ──
+  const contentTagFilter = await mapPromptToTag(effectiveSeedTopic).catch((err) => {
+    log.warn({ err }, "垂类映射失败");
+    return null;
+  });
+  const contentTagsForRunner = contentTagFilter ? [contentTagFilter] : undefined;
+
+  // ── Phase 3: 城市提取（关键词匹配 prompt 里的城市名，命中则注入 city_hot_billboard） ──
+  const cityHit = await extractCityFromPrompt(draft.prompt).catch((err) => {
+    log.warn({ err }, "城市提取失败");
+    return null;
+  });
+  const cityCodeForRunner = cityHit?.cityCode;
+
   const runs: PlatformRunSummary[] = [];
 
   // 对每个平台，用所有 searchKeywords 并行搜索，合并结果
   // ★ 所有平台并行执行，避免顺序等待导致超时
-  const candidatePlatforms = getCandidatePlatforms(draft);
+  // 注意：candidatePlatforms 在前面已计算（约 L230），直接复用即可
   const platformPromises = candidatePlatforms.map(async (platform) => {
     const platformName = PLATFORM_NAMES[platform as keyof typeof PLATFORM_NAMES] ?? platform;
     onProgress?.({ type: "platform_start", platform, platformName });
@@ -353,6 +622,8 @@ export async function runLivePrediction(
           task,
           runId: `live_run_${randomUUID()}`,
           cookie: cookie ?? undefined,
+          contentTags: contentTagsForRunner,
+          cityCode: cityCodeForRunner,
         }),
       ),
     );
@@ -484,6 +755,8 @@ export async function runLivePrediction(
           const result = await runWatchTaskWithFallback({
             task: fallbackTask,
             runId: `live_run_fallback_${randomUUID()}`,
+            contentTags: contentTagsForRunner,
+            cityCode: cityCodeForRunner,
           });
           onProgress?.({
             type: "platform_done",
@@ -551,15 +824,81 @@ export async function runLivePrediction(
       if (capability === "comments") {
         commentCount += countComments(payload);
       }
-      // 低粉爆款榜数据提取：data.data.objs[] 结构与标准 aweme_info 不同，需要单独处理
-      if (capability === "low_fan_billboard" && payload && typeof payload === "object") {
+      // 互动率榜单家族数据提取：data.data.objs[] 结构与标准 aweme_info 不同，需要单独处理
+      // low_fan / high_like / high_fan / high_play 四个榜单的响应结构相同，统一走 extractLowFanBillboardContents
+      if (
+        (capability === "low_fan_billboard" ||
+          capability === "high_like_billboard" ||
+          capability === "high_fan_billboard" ||
+          capability === "high_play_billboard") &&
+        payload &&
+        typeof payload === "object"
+      ) {
         const objs = extractLowFanBillboardContents(payload, run.platform);
+        // 给每条标注 whyIncluded 反映来源榜单（用于后续语义过滤决策与前端展示）
+        const billboardLabel: Record<string, string> = {
+          low_fan_billboard: "低粉爆款榜入选",
+          high_like_billboard: "高点赞率榜入选",
+          high_fan_billboard: "高涨粉率榜入选",
+          high_play_billboard: "高完播率榜入选",
+        };
+        for (const obj of objs) {
+          obj.whyIncluded = billboardLabel[capability] ?? obj.whyIncluded;
+        }
         allContents.push(...objs);
-        log.info(`低粉爆款榜提取: ${objs.length} 条内容`);
+        log.info(`${billboardLabel[capability] ?? capability} 提取: ${objs.length} 条内容`);
       }
       if (capability === "hot_search_billboard" || capability === "hot_word_billboard") {
         hotSeedCount += countHotSeed(payload);
       }
+      // 同城热点榜：并入 hotSeedCount 信号；提取话题文本并入 trendingTags（最多 5 个）
+      if (capability === "city_hot_billboard" && payload && typeof payload === "object") {
+        const inner = (payload as Record<string, unknown>).data as Record<string, unknown> | undefined;
+        const objs = Array.isArray(inner?.objs) ? (inner!.objs as Array<Record<string, unknown>>) : [];
+        if (objs.length > 0) {
+          hotSeedCount += objs.length;
+          const cityTopics: string[] = [];
+          for (const obj of objs.slice(0, 5)) {
+            const sentence = obj.sentence;
+            if (typeof sentence === "string" && sentence.trim()) {
+              cityTopics.push(sentence.trim().slice(0, 30));
+            }
+          }
+          if (cityTopics.length > 0) {
+            log.info(`同城热点榜提取: ${objs.length} 条话题，${cityTopics.length} 条进入 trendingTags`);
+            // cityHotTopics 后续会在 trendingTags 构建时合并（见 result.trendingTags 处）
+            (run.snapshot as Record<string, unknown>).__cityHotTopics = cityTopics;
+          }
+        }
+      }
+    }
+  }
+
+  if (allContents.length < MIN_CONTENTS_BEFORE_RESCUE && candidatePlatforms.includes("douyin")) {
+    const rescue = await rescueDouyinKeywordSampling(
+      [...searchKeywords, effectiveSeedTopic].filter(Boolean),
+      TARGET_RESCUE_CONTENTS,
+    );
+    if (rescue.contents.length > 0) {
+      allContents.push(...rescue.contents);
+      allAccounts.push(...rescue.accounts);
+      for (const chain of rescue.usedRouteChain) {
+        if (!usedRouteChain.includes(chain)) usedRouteChain.push(chain);
+      }
+      degradeFlags.add("rescue_keyword_sampling");
+      log.info(
+        {
+          contents: rescue.contents.length,
+          accounts: rescue.accounts.length,
+          keywords: searchKeywords.slice(0, 3),
+        },
+        "主采样结果不足，已使用抖音关键词补救采样",
+      );
+    } else {
+      log.warn(
+        { keywords: searchKeywords.slice(0, 3) },
+        "主采样结果不足，抖音关键词补救采样仍未拿到内容",
+      );
     }
   }
 
@@ -624,36 +963,71 @@ export async function runLivePrediction(
   }
 
    const supportingAccounts = rawAccounts.slice(0, 10);
-  // ── 需求6：数据质量筛选 — 点赞数门槛 + 时间范围 + 点赞数倒序排序 ──
+  // ── 样本质量门槛 — 时间范围 + 互动真实性 + 基础可审计字段 ──
+  // 不设绝对互动门槛：本地生活、新兴话题、小众赛道的热门数据本来就不到 1000 赞。
+  // 入选逻辑改为“有近期发布时间 + 有至少一种真实互动 + 标题/作者/ID 可审计”，
+  // 粉丝数作为加分项而非硬门槛，避免 TikHub 字段缺失时误杀有效样本。
   const allDedupedContents = dedupeById(allContents, "contentId");
-  // 按点赞数倒序排序，确保热门内容优先
   allDedupedContents.sort((a, b) => (b.likeCount ?? 0) - (a.likeCount ?? 0));
-  // 点赞数筛选门槛：默认 >= 1000，确保返回的都是真正的高赞热门数据
-  const MIN_LIKE_THRESHOLD = 1000;
-  // 时间范围筛选：默认近 1 个月
   const now = Date.now();
   const ONE_MONTH_MS = 30 * 24 * 60 * 60 * 1000;
   const timeWindowMs = ONE_MONTH_MS;
-  const qualityFiltered = allDedupedContents.filter((c) => {
-    // 点赞数筛选
-    if ((c.likeCount ?? 0) < MIN_LIKE_THRESHOLD) return false;
-    // 时间范围筛选（如果有 publishedAt 字段）
+  const timeFilteredContents = allDedupedContents.filter((c) => {
     if (c.publishedAt) {
       const pubTime = new Date(c.publishedAt).getTime();
       if (!isNaN(pubTime) && pubTime < now - timeWindowMs) return false;
     }
     return true;
   });
-  // 降级策略：数据不足时放宽时间范围，但始终保留点赞数硬门槛
-  let candidateContents: ExtractedContent[];
-  if (qualityFiltered.length >= 3) {
-    candidateContents = qualityFiltered.slice(0, 30);
-  } else {
-    // 降级：只保留点赞数门槛，取消时间范围限制
-    const likesOnlyFiltered = allDedupedContents.filter((c) => (c.likeCount ?? 0) >= MIN_LIKE_THRESHOLD);
-    candidateContents = likesOnlyFiltered.slice(0, 30); // 始终保留点赞数硬门槛，无数据时返回空数组
-    log.info(`数据质量筛选降级: 放宽时间范围，保留点赞数门槛，候选${likesOnlyFiltered.length}条`);
+  const timeWindowRelaxed = timeFilteredContents.length < 3 && allDedupedContents.length > 0;
+  const timeEligibleContents = timeWindowRelaxed ? allDedupedContents : timeFilteredContents;
+  if (timeWindowRelaxed) {
+    degradeFlags.add("sample_time_window_relaxed");
+    log.info(`数据质量筛选降级: 放宽时间范围，候选${allDedupedContents.length}条`);
   }
+  const trackSpecificGate = filterContentsByTrackSpecificRules(timeEligibleContents, {
+    track: baseArtifacts.normalizedBrief.industry ?? extractedPayload?.industry ?? null,
+    prompt: draft.prompt,
+    seedTopic: effectiveSeedTopic,
+  });
+  if (trackSpecificGate.rejected.length > 0) {
+    degradeFlags.add("track_specific_noise_filtered");
+    log.info(
+      {
+        before: timeEligibleContents.length,
+        after: trackSpecificGate.selected.length,
+        rejected: trackSpecificGate.rejected.length,
+        examples: trackSpecificGate.rejected.slice(0, 3).map((item) => ({
+          title: item.content.title,
+          reason: item.reason,
+        })),
+      },
+      "赛道专项样本噪声过滤完成",
+    );
+  }
+  const sampleQualityGate = filterContentsBySampleQuality(trackSpecificGate.selected, {
+    minAccepted: 3,
+    limit: 30,
+    nowMs: now,
+  });
+  if (sampleQualityGate.mode === "relaxed") {
+    degradeFlags.add("sample_quality_relaxed");
+  } else if (sampleQualityGate.mode === "insufficient") {
+    degradeFlags.add("sample_quality_insufficient");
+  }
+  const candidateContents = sampleQualityGate.selected;
+  log.info(
+    {
+      raw: allDedupedContents.length,
+      timeEligible: timeEligibleContents.length,
+      accepted: sampleQualityGate.accepted.length,
+      borderline: sampleQualityGate.borderline.length,
+      rejected: sampleQualityGate.rejected.length,
+      selected: candidateContents.length,
+      mode: sampleQualityGate.mode,
+    },
+    "样本质量门槛筛选完成",
+  );
   let supportingContents: ExtractedContent[];
   if (candidateContents.length > 0 && effectiveSeedTopic && effectiveSeedTopic.length >= 2) {
     try {
@@ -667,10 +1041,10 @@ export async function runLivePrediction(
       const filtered = candidateContents.filter((c) => passedIds.has(c.contentId));
       // 如果过滤后数量太少（<3），降低阈值重试
       if (filtered.length < 3 && candidateContents.length >= 3) {
-        const { passedIds: relaxedIds } = await filterContentsByRelevance(candidates, effectiveSeedTopic, 5);
+        const { passedIds: relaxedIds } = await filterContentsByRelevance(candidates, effectiveSeedTopic, 6);
         const relaxedFiltered = candidateContents.filter((c) => relaxedIds.has(c.contentId));
         supportingContents = relaxedFiltered.slice(0, 10);
-        log.info(`语义过滤（宽松阈值5）: ${candidateContents.length} → ${relaxedFiltered.length} 条`);
+        log.info(`语义过滤（宽松阈值6）: ${candidateContents.length} → ${relaxedFiltered.length} 条`);
       } else {
         supportingContents = filtered.slice(0, 10);
         log.info(`语义过滤: ${candidateContents.length} → ${filtered.length} 条`);
@@ -682,24 +1056,75 @@ export async function runLivePrediction(
   } else {
     supportingContents = candidateContents.slice(0, 10);
   }
+  // 旁路内容注入(默认 noop;详见 docs/decisions/0005-x-augmenter-bootstrap.md)
+  supportingContents = await augmentContents(supportingContents, {
+    industry: baseArtifacts.normalizedBrief.industry ?? extractedPayload?.industry ?? null,
+    seedTopic: effectiveSeedTopic,
+    prompt: draft.prompt,
+    traceId: null,
+  });
+  const finalSampleQualityGate = filterContentsBySampleQuality(supportingContents, {
+    minAccepted: 3,
+    limit: 10,
+    nowMs: now,
+  });
+  if (finalSampleQualityGate.rejected.length > 0) {
+    log.info(
+      {
+        before: supportingContents.length,
+        after: finalSampleQualityGate.selected.length,
+        rejected: finalSampleQualityGate.rejected.length,
+      },
+      "最终 supportingContents 样本质量门槛剔除低质样本",
+    );
+  }
+  supportingContents = finalSampleQualityGate.selected.slice(0, 10);
   // 关联过滤：只保留相关内容的作者账号
-  const relevantAuthorNames = new Set(supportingContents.map((c) => c.authorName));
-  const filteredAccounts = supportingAccounts.filter(
-    (a) => relevantAuthorNames.has(a.displayName ?? "") || relevantAuthorNames.has(a.handle ?? "")
-  );
-  // 如果关联过滤后账号太少，保留原始账号
-  if (filteredAccounts.length >= 2) {
+  if (supportingContents.length === 0) {
+    // 内容全被过滤，账号失去锚点，一并清空避免出现"内容0 账号10"的割裂展示
     supportingAccounts.length = 0;
-    supportingAccounts.push(...filteredAccounts.slice(0, 6));
+  } else {
+    const relevantAuthorNames = new Set(supportingContents.map((c) => c.authorName));
+    const filteredAccounts = supportingAccounts.filter(
+      (a) => relevantAuthorNames.has(a.displayName ?? "") || relevantAuthorNames.has(a.handle ?? "")
+    );
+    if (filteredAccounts.length >= 1) {
+      supportingAccounts.length = 0;
+      supportingAccounts.push(...filteredAccounts.slice(0, 6));
+    }
+  }
+  // TikHub 偶发无封面：抖音用 aweme_id 补全静态缩略图
+  for (const c of supportingContents) {
+    if (!c.coverUrl && c.platform === "抖音" && c.contentId) {
+      const fb = pickDouyinCoverFallback(c.contentId);
+      if (fb) (c as { coverUrl?: string | null }).coverUrl = fb;
+    }
   }
   // 向前端推送已采集数据样本，让用户在等待 LLM 分析期间就能看到真实数据
   if (onProgress) {
-    const contentSamples: ContentSampleItem[] = supportingContents.slice(0, 4).map((c) => ({
-      title: c.title ?? "无标题",
-      platform: c.platform,
-      likeCount: c.likeCount ?? undefined,
-      viewCount: c.viewCount ?? undefined,
-    }));
+    const contentSamples: ContentSampleItem[] = supportingContents.slice(0, 4).map((c) => {
+      const interactionSignals = [
+        c.likeCount != null && c.likeCount > 0 ? "点赞" : undefined,
+        c.commentCount != null && c.commentCount > 0 ? "评论" : undefined,
+        c.collectCount != null && c.collectCount > 0 ? "收藏" : undefined,
+        c.shareCount != null && c.shareCount > 0 ? "分享" : undefined,
+      ].filter(Boolean);
+      return {
+        title: c.title ?? "无标题",
+        platform: c.platform,
+        likeCount: c.likeCount ?? undefined,
+        viewCount: c.viewCount ?? undefined,
+        commentCount: c.commentCount ?? undefined,
+        collectCount: c.collectCount ?? undefined,
+        shareCount: c.shareCount ?? undefined,
+        authorFollowerCount: c.authorFollowerCount ?? undefined,
+        whyIncluded:
+          c.whyIncluded ||
+          (interactionSignals.length > 0
+            ? `${interactionSignals.join("、")}信号进入证据池，等待判断能否迁移成创作切口。`
+            : "标题和场景进入候选样本，互动信号待补。"),
+      };
+    });
     const accountSamples: AccountSampleItem[] = supportingAccounts.slice(0, 3).map((a) => ({
       displayName: a.displayName ?? a.handle ?? "未知账号",
       platform: a.platform,
@@ -930,7 +1355,18 @@ export async function runLivePrediction(
   const rawGrowth7d = hotSeedCount * 8 + supportingContents.length * 6 + supportingAccounts.length * 5;
   // 增长率上限 300%（超过此值显示为“数据积累中”）
   const growth7d = Math.min(clamp(rawGrowth7d), 300);
+  const supportingContentsWithViews = supportingContents.filter((item) => item.viewCount != null && item.viewCount > 0).length;
+  const supportingContentsWithFollowers = supportingContents.filter((item) => item.authorFollowerCount != null && item.authorFollowerCount > 0).length;
+  if (supportingContents.length > 0 && supportingContentsWithViews === 0) {
+    degradeFlags.add("sample_view_count_missing");
+  }
+  if (supportingContents.length >= 3 && supportingContentsWithFollowers < 2) {
+    degradeFlags.add("sample_follower_count_sparse");
+  }
   const evidenceGaps = [
+    supportingContents.length > 0 && supportingContents.length < 3
+      ? `合格真实内容样本只有 ${supportingContents.length} 条，低于强预测最小门槛 3 条。`
+      : null,
     supportingAccounts.length === 0 ? "当前缺少足够的支持账号样本。" : null,
     supportingContents.length === 0 ? "当前缺少足够的支持内容样本。" : null,
     commentCount === 0 ? "评论数据可以进一步采集，补充后分析会更精准。" : null,
@@ -1059,6 +1495,27 @@ export async function runLivePrediction(
     timing: growth7d,
     risk: clamp(evidenceGaps.length * 18 + (executionStatus === "partial_success" ? 18 : 8)),
   };
+  const qualityContentById = new Map(timeEligibleContents.map((item) => [item.contentId, item]));
+  const sampleQualityCandidates = sampleQualityGate.decisions.slice(0, 30).map((decision) => {
+    const content = qualityContentById.get(decision.contentId);
+    return {
+      kind: "content" as const,
+      sourceId: decision.contentId || "unknown_content",
+      platform: content?.platform ?? "",
+      relevanceScore: decision.accepted ? 80 : decision.level === "borderline" ? 55 : 20,
+      qualityScore: decision.qualityScore,
+      contradictionFlags: decision.accepted ? [] : ["insufficient_supporting_content" as const],
+      normalizedFacts: {
+        qualityLevel: decision.level,
+        interactionCount: decision.interactionCount,
+        positiveMetricCount: decision.positiveMetricCount,
+        ageDays: decision.ageDays,
+        hasViewCount: decision.hasViewCount,
+        hasFollowerCount: decision.hasFollowerCount,
+        reasons: [...decision.hardRejectReasons, ...decision.reasons].join("；"),
+      },
+    };
+  });
   const result: Partial<PredictionUiResult> & Record<string, unknown> = {
     type:
       inputKind === "account"
@@ -1187,7 +1644,7 @@ export async function runLivePrediction(
       missingEvidence: evidenceGaps.length > 0 ? ["评论数据可进一步采集"] : [],
       contradictionSummary:
         evidenceGaps.length > 0 ? ["评论数据还可以进一步丰富，补充后分析更精准。"] : ["各项证据方向一致。"],
-      candidates: [],
+      candidates: sampleQualityCandidates,
     },
     primaryCard: cards.primaryCard,
     secondaryCard: cards.secondaryCard,
@@ -1210,34 +1667,202 @@ export async function runLivePrediction(
     scoreBreakdown,
     recommendedLowFollowerSampleIds: lowFollowerEvidence.map((item) => item.id),
     hotSeedCount,
-    trendingTags: searchKeywords.map((kw) => `#${kw}`),
+    trendingTags: (() => {
+      const base = searchKeywords.map((kw) => `#${kw}`);
+      // 把同城热点话题前缀 # 合并进来
+      const cityTopics: string[] = [];
+      for (const r of runs) {
+        const ct = (r.snapshot as Record<string, unknown> | undefined)?.__cityHotTopics;
+        if (Array.isArray(ct)) cityTopics.push(...ct.filter((s): s is string => typeof s === "string"));
+      }
+      const cityTagged = [...new Set(cityTopics)].slice(0, 5).map((t) => `#${t}`);
+      return [...base, ...cityTagged];
+    })(),
   };
 
   // ----------------------------------------------------------------
-  // Step LLM-Trend: 基于真实采集数据，LLM 生成 3-5 个趋势机会卡片
+  // Step LLM (Phase 5B-revised)：趋势机会 + 选题建议两次 callLLM **并行**
+  // 早期 Phase 5B 合并为单次 4500-token 调用，反而比串行还慢（豆包 long-output 降速）；
+  // 改回独立调用 + Promise.all 并行。
+  // 单次预测 LLM 计数：2 → 3，但延时 ~30s → ~max(12s, 10s) ≈ ~12s。
   // ----------------------------------------------------------------
+  onProgress?.({ type: "llm_start" });
   let trendOpportunities: TrendOpportunity[] = [];
   let overviewOneLiner = "";
-  try {
+  let aiTopicSuggestions: AiTopicSuggestion[] = [];
+
+  {
     const seedTopic = baseArtifacts.normalizedBrief.seedTopic;
-    // 构建内容证据摘要（最多 8 条）
+
+    // 共享数据摘要（一次构建，trend 和 topic 共用）
     const contentSummary = supportingContents.slice(0, 8).map((c) => {
       const like = c.likeCount ?? 0;
-      const view = c.viewCount ?? 0;
-      const engRate = view > 0 ? `${((like / view) * 100).toFixed(1)}%` : "—";
-      return `- 「${c.title}」(${c.platform}) 点赞${like > 0 ? (like >= 10000 ? `${(like/10000).toFixed(1)}万` : like) : "—"} 播放${view > 0 ? (view >= 10000 ? `${(view/10000).toFixed(0)}万` : view) : "—"} 互动率${engRate} 发布${c.publishedAt ? c.publishedAt.slice(0, 10) : "未知"}`;
+      const comment = c.commentCount ?? 0;
+      const collect = c.collectCount ?? 0;
+      const share = c.shareCount ?? 0;
+      const interaction = like + comment + collect + share;
+      const fmt = (value: number) => value > 0 ? (value >= 10000 ? `${(value / 10000).toFixed(1)}万` : value) : "—";
+      return `- 「${c.title}」(${c.platform}) 互动${fmt(interaction)} 点赞${fmt(like)} 评论${fmt(comment)} 收藏${fmt(collect)} 分享${fmt(share)} 发布${c.publishedAt ? c.publishedAt.slice(0, 10) : "未知"}`;
     }).join("\n");
-    // 构建账号证据摘要（最多 5 个）
     const accountSummary = supportingAccounts.slice(0, 5).map((a) => {
       const fans = a.followerCount;
       const fansStr = fans ? (fans >= 10000 ? `${(fans/10000).toFixed(0)}万粉` : `${fans}粉`) : "粉丝未知";
       return `- ${a.displayName}(${a.platform}) ${fansStr} ${a.tierLabel === "head_kol" ? "头部KOL" : a.tierLabel === "standard_kol" ? "KOL" : a.tierLabel === "strong_koc" ? "优质KOC" : "KOC"}`;
     }).join("\n");
-    // 构建低粉爆款摘要
     const lowFollowerSummary = lowFollowerEvidence.length > 0
       ? `低粉爆款样本 ${lowFollowerEvidence.length} 条：` + lowFollowerEvidence.slice(0, 3).map((e) => `「${e.title}」(${e.fansLabel})`).join("、")
       : "暂无低粉爆款样本";
-    const prompt = `你是一位专业的短视频内容趋势分析师，擅长从真实数据中发现爆款机会。
+    const topSampleTitles = supportingContents.slice(0, 5).map((c, i) => {
+      const like = c.likeCount ?? 0;
+      const comment = c.commentCount ?? 0;
+      const collect = c.collectCount ?? 0;
+      const share = c.shareCount ?? 0;
+      const interaction = like + comment + collect + share;
+      const fmt = (value: number) => value > 0 ? (value >= 10000 ? `${(value / 10000).toFixed(1)}万` : `${value}`) : "待补";
+      return `${i + 1}. 「${c.title}」(${c.platform}) 互动${fmt(interaction)} 点赞${fmt(like)} 评论${fmt(comment)} 收藏${fmt(collect)} 分享${fmt(share)}`;
+    }).join("\n");
+    const lowFollowerInfo = lowFollowerEvidence.slice(0, 3).map((e, i) => {
+      return `${i + 1}. 「${e.title}」(${e.fansLabel}) 互动粉丝比${e.anomaly}x`;
+    }).join("\n");
+    const commentKeywords = commentInsight?.highFreqKeywords?.slice(0, 5).join("、") ?? "暂无";
+    const demandSignals = commentInsight?.demandSignals?.slice(0, 3).join("、") ?? "暂无";
+    const noSampleWarning = !topSampleTitles || topSampleTitles.startsWith("暂无")
+      ? "\n【特别提示】当前未能采集到相关样本数据，请只基于赛道关键词本身的语义推测可能的内容方向，不要引用任何具体产品版本、人名或品牌进行对比"
+      : "";
+    const normalizeTopicText = (value: string | undefined | null) =>
+      String(value ?? "")
+        .replace(/^#/, "")
+        .replace(/[「」《》【】"'“”‘’\s]/g, "")
+        .toLowerCase();
+    const genericTopicTokens = new Set(["ai", "人工智能", "豆包", "工具", "教程", "热点", "内容", "视频", "抖音", "小红书", "爆款"]);
+    const isDistinctiveTopicToken = (token: string) =>
+      Boolean(token) && !genericTopicTokens.has(token) && !/^[a-z]{1,2}$/.test(token) && token.length >= 2;
+    const topicTokens = (topic: {
+      title?: string;
+      angle?: string;
+      howToShoot?: string;
+      tags?: string[];
+      referenceTitle?: string;
+    }) =>
+      [
+        topic.title,
+        topic.angle,
+        topic.howToShoot,
+        topic.referenceTitle,
+        ...(Array.isArray(topic.tags) ? topic.tags : []),
+      ]
+        .flatMap((value) => normalizeTopicText(value).split(/[，,、/|：:;；\-]+/))
+        .map((token) => token.trim())
+        .filter(isDistinctiveTopicToken);
+    const contentMatchesTopic = (
+      content: ExtractedContent,
+      topic: { title?: string; angle?: string; howToShoot?: string; tags?: string[]; referenceTitle?: string },
+    ) => {
+      const ref = normalizeTopicText(topic.referenceTitle);
+      const title = normalizeTopicText(content.title);
+      if (ref && title && (title.includes(ref) || ref.includes(title))) return true;
+      const haystack = normalizeTopicText([content.title, content.authorName, ...(content.keywordTokens ?? [])].join(" "));
+      return topicTokens(topic).some((token) => haystack.includes(token) || (token.length >= 5 && haystack.includes(token.slice(0, 5))));
+    };
+    const clampTopicDimension = (value: unknown, fallback: number) => {
+      const numeric = typeof value === "number" ? value : Number(value);
+      return Math.max(0, Math.min(100, Math.round(Number.isFinite(numeric) ? numeric : fallback)));
+    };
+    const buildTopicSignalFallback = (
+      topic: {
+        title?: string;
+        angle?: string;
+        referenceTitle?: string;
+        tags?: string[];
+        howToShoot?: string;
+        commentScore?: number;
+        commentReason?: string;
+        supplyGapScore?: number;
+        supplyGapReason?: string;
+        lowFollowerScore?: number;
+        lowFollowerReason?: string;
+      },
+      refContent: ExtractedContent | undefined,
+      topicIndex: number,
+    ) => {
+      const matchedContents = supportingContents.filter((content) => contentMatchesTopic(content, topic));
+      const evidenceContents = Array.from(
+        new Map(
+          [refContent, ...matchedContents, ...supportingContents.slice(topicIndex, topicIndex + 2)]
+            .filter((item): item is ExtractedContent => Boolean(item))
+            .map((item) => [item.contentId, item]),
+        ).values(),
+      ).slice(0, 4);
+      const commentTotal = evidenceContents.reduce((sum, item) => sum + (item.commentCount ?? 0), 0);
+      const lowMatches = lowFollowerEvidence.filter((item) =>
+        evidenceContents.some((content) => content.contentId === item.id || content.title === item.title) ||
+        contentMatchesTopic(
+          {
+            contentId: item.id,
+            title: item.title,
+            authorName: item.account,
+            platform: item.platform,
+            publishedAt: item.publishedAt,
+            likeCount: item.likeCount ?? null,
+            commentCount: item.commentCount ?? null,
+            collectCount: item.collectCount ?? null,
+            shareCount: item.shareCount ?? null,
+            viewCount: null,
+            structureSummary: item.suggestion,
+            keywordTokens: item.trackTags,
+            whyIncluded: item.suggestion,
+            authorFollowerCount: item.fansCount,
+          } as ExtractedContent,
+          topic,
+        ),
+      );
+      const maxAnomaly = lowMatches.length ? Math.max(...lowMatches.map((item) => item.anomaly || 0)) : 0;
+      const commentFallback = commentTotal > 0
+        ? 52 + Math.min(36, Math.round(Math.log10(commentTotal + 1) * 15))
+        : demandSignals !== "暂无" || commentKeywords !== "暂无"
+          ? 58
+          : 42;
+      const supplyFallback = 58
+        + (topic.howToShoot ? 10 : 0)
+        + (topic.angle ? 6 : 0)
+        + (evidenceContents.length > 0 ? 6 : -8)
+        - Math.min(14, Math.max(0, evidenceContents.length - 2) * 4);
+      const lowFollowerFallback = lowMatches.length > 0
+        ? 58 + Math.min(34, Math.round(maxAnomaly))
+        : 38;
+
+      return {
+        commentScore: clampTopicDimension(topic.commentScore, commentFallback),
+        commentReason:
+          typeof topic.commentReason === "string" && topic.commentReason.trim()
+            ? topic.commentReason.trim()
+            : commentTotal > 0
+              ? `匹配样本已有 ${commentTotal} 条评论，能验证讨论意愿。`
+              : "评论样本不足，先用更强提问验证需求。",
+        commentCount: commentTotal,
+        supplyGapScore: clampTopicDimension(topic.supplyGapScore, supplyFallback),
+        supplyGapReason:
+          typeof topic.supplyGapReason === "string" && topic.supplyGapReason.trim()
+            ? topic.supplyGapReason.trim()
+            : topic.howToShoot
+              ? `差异点在「${topic.howToShoot.slice(0, 24)}」。`
+              : "同类内容已出现，仍需靠具体场景拉开差异。",
+        lowFollowerScore: clampTopicDimension(topic.lowFollowerScore, lowFollowerFallback),
+        lowFollowerReason:
+          typeof topic.lowFollowerReason === "string" && topic.lowFollowerReason.trim()
+            ? topic.lowFollowerReason.trim()
+            : lowMatches.length > 0
+              ? `命中 ${lowMatches.length} 条低粉样本，最高异常 ${Math.round(maxAnomaly)}。`
+              : "暂未命中低粉样本，建议先小样测试。",
+        lowFollowerSampleCount: lowMatches.length,
+        evidenceContentIds: evidenceContents.map((item) => item.contentId),
+      };
+    };
+
+    // ── 趋势机会调用（独立 prompt，温度 0.3，maxTokens 2000）──
+    const trendPromise = (async (): Promise<{ overviewOneLiner: string; trendOpportunities: TrendOpportunity[] }> => {
+      try {
+        const trendPrompt = `你是一位专业的短视频内容趋势分析师，擅长从真实数据中发现爆款机会。
 
 当前分析赛道：「${seedTopic}」
 
@@ -1264,177 +1889,150 @@ ${lowFollowerSummary}
       "opportunityScore": 75,
       "timingScore": 82,
       "oneLiner": "一句话结论（25字以内，直接说值不值得做）",
-      "whyNow": [
-        "理由1（基于真实数据，如'已有X条低粉样本跑通'）",
-        "理由2（如'热榜命中X条，需求信号明确'）",
-        "理由3（如'头部KOL尚未大规模进入，窗口期开放'）"
-      ],
+      "whyNow": ["理由1（基于真实数据）", "理由2", "理由3"],
       "doNow": "✅ 现在做：具体行动建议（20字以内）",
       "observe": "⏳ 先观察：等待什么信号再行动（20字以内）",
       "executableTopics": [
-        {
-          "title": "可直接拍的选题标题（20字以内）",
-          "hookType": "钩子类型（如'痛点钩子'/'好奇钩子'/'对比钩子'）",
-          "angle": "切入角度（10字以内）",
-          "estimatedDuration": "预估时长（如'30-60秒'）"
-        }
+        {"title": "可拍选题标题（20字以内）", "hookType": "钩子类型", "angle": "切入角度（10字以内）", "estimatedDuration": "预估时长（如'30-60秒'）"}
       ],
       "evidenceSummary": "证据摘要：引用真实数据支撑（30字以内）"
     }
   ]
 }
 
-注意：
-- stage 说明：pre_burst=爆发前夜（信号出现但未大爆），validated=已验证（有足够样本），high_risk=高风险假热（信号不稳定）
-- 机会分(opportunityScore)：基于需求强度+异常信号+竞争度+赛道适配度综合评估
-- 时机分(timingScore)：基于7日增长趋势+新作者占比+热榜加速度
-- 每个机会必须给出 2-3 条 executableTopics
-- 如果数据不足，可以给出 3 个机会，但要在 evidenceSummary 中说明数据有限`;
+字段说明：
+- stage: pre_burst=爆发前夜（信号出现但未大爆），validated=已验证（有足够样本），high_risk=高风险假热（信号不稳定）
+- opportunityScore: 基于需求强度+异常信号+竞争度+赛道适配度综合评估
+- timingScore: 基于7日增长趋势+新作者占比+热榜加速度
+- 每个机会必须给出 2-3 条 executableTopics`;
 
-    const llmResponse = await callLLM({
-      modelId: "doubao",
-      messages: [
-        { role: "system", content: "你是专业的短视频趋势分析师，严格按 JSON 格式输出，不要输出任何其他内容。" },
-        { role: "user", content: prompt },
-      ],
-      maxTokens: 2000,
-      temperature: 0.3,
-      timeoutMs: 30000,
-    });
-
-    const jsonMatch = llmResponse.content.match(/\{[\s\S]*\}/);
-    if (jsonMatch) {
-      const parsed = JSON.parse(jsonMatch[0]) as {
-        overviewOneLiner?: string;
-        trendOpportunities?: TrendOpportunity[];
-      };
-      if (parsed.overviewOneLiner) overviewOneLiner = parsed.overviewOneLiner;
-      if (Array.isArray(parsed.trendOpportunities) && parsed.trendOpportunities.length > 0) {
-        trendOpportunities = parsed.trendOpportunities.slice(0, 5).map((opp) => ({
-          opportunityName: opp.opportunityName ?? "未命名机会",
-          stage: opp.stage ?? "validated",
-          opportunityScore: Math.max(0, Math.min(100, Number(opp.opportunityScore) || 50)),
-          timingScore: Math.max(0, Math.min(100, Number(opp.timingScore) || 50)),
-          oneLiner: opp.oneLiner ?? "",
-          whyNow: Array.isArray(opp.whyNow) ? opp.whyNow.slice(0, 3) : [],
-          doNow: opp.doNow ?? "",
-          observe: opp.observe ?? "",
-          executableTopics: Array.isArray(opp.executableTopics)
-            ? opp.executableTopics.slice(0, 3).map((t) => ({
-                title: t.title ?? "",
-                hookType: t.hookType ?? "",
-                angle: t.angle ?? "",
-                estimatedDuration: t.estimatedDuration ?? "",
-              }))
-            : [],
-          evidenceSummary: opp.evidenceSummary ?? "",
-        }));
+        const opportunitySystemPrompt = await resolveSystemPrompt(
+          "opportunity-prediction-v1",
+          "doubao",
+          {},
+          "你是专业的短视频趋势分析师，严格按 JSON 格式输出，不要输出任何其他内容。",
+        );
+        const resp = await callLLM({
+          modelId: "doubao",
+          messages: [
+            { role: "system", content: opportunitySystemPrompt },
+            { role: "user", content: trendPrompt },
+          ],
+          maxTokens: 2000,
+          temperature: 0.3,
+          timeoutMs: 30000,
+        });
+        const jsonMatch = resp.content.match(/\{[\s\S]*\}/);
+        if (!jsonMatch) return { overviewOneLiner: "", trendOpportunities: [] };
+        const parsed = JSON.parse(jsonMatch[0]) as {
+          overviewOneLiner?: string;
+          trendOpportunities?: TrendOpportunity[];
+        };
+        const opps: TrendOpportunity[] = Array.isArray(parsed.trendOpportunities) && parsed.trendOpportunities.length > 0
+          ? parsed.trendOpportunities.slice(0, 5).map((opp) => ({
+              opportunityName: opp.opportunityName ?? "未命名机会",
+              stage: opp.stage ?? "validated",
+              opportunityScore: Math.max(0, Math.min(100, Number(opp.opportunityScore) || 50)),
+              timingScore: Math.max(0, Math.min(100, Number(opp.timingScore) || 50)),
+              oneLiner: opp.oneLiner ?? "",
+              whyNow: Array.isArray(opp.whyNow) ? opp.whyNow.slice(0, 3) : [],
+              doNow: opp.doNow ?? "",
+              observe: opp.observe ?? "",
+              executableTopics: Array.isArray(opp.executableTopics)
+                ? opp.executableTopics.slice(0, 3).map((t) => ({
+                    title: t.title ?? "",
+                    hookType: t.hookType ?? "",
+                    angle: t.angle ?? "",
+                    estimatedDuration: t.estimatedDuration ?? "",
+                  }))
+                : [],
+              evidenceSummary: opp.evidenceSummary ?? "",
+            }))
+          : [];
+        return { overviewOneLiner: parsed.overviewOneLiner ?? "", trendOpportunities: opps };
+      } catch (err) {
+        log.warn({ err }, "趋势机会 LLM 调用失败，降级为空列表");
+        return { overviewOneLiner: "", trendOpportunities: [] };
       }
-    }
-    log.info(`LLM 趋势机会分析完成: ${trendOpportunities.length} 个机会`);
-  } catch (err) {
-    log.warn({ err }, "LLM 趋势机会分析失败，降级到空列表");
-  }
+    })();
 
-  // ----------------------------------------------------------------
-  // Step LLM-Topic: 基于真实采集数据，LLM 生成 2-3 个爆款选题建议
-  // ----------------------------------------------------------------
-  let aiTopicSuggestions: AiTopicSuggestion[] = [];
-  try {
-    const seedTopic = baseArtifacts.normalizedBrief.seedTopic;
-    // 构建热门样本标题（前5条）
-    const topSampleTitles = supportingContents.slice(0, 5).map((c, i) => {
-      const like = c.likeCount ?? 0;
-      const likeStr = like >= 10000 ? `${(like / 10000).toFixed(1)}万点赞` : like > 0 ? `${like}点赞` : "数据待验证";
-      return `${i + 1}. 「${c.title}」(${c.platform}) ${likeStr}`;
-    }).join("\n");
-    // 构建低粉爆款特征（前3条）
-    const lowFollowerInfo = lowFollowerEvidence.slice(0, 3).map((e, i) => {
-      return `${i + 1}. 「${e.title}」(${e.fansLabel}) 互动粉丝比${e.anomaly}x`;
-    }).join("\n");
-    // 构建评论高频词
-    const commentKeywords = commentInsight?.highFreqKeywords?.slice(0, 5).join("、") ?? "暂无";
-    // 构建评论需求信号
-    const demandSignals = commentInsight?.demandSignals?.slice(0, 3).join("、") ?? "暂无";
-
-    const topicPrompt = `你是一位短视频爆款内容策划师，擅长从真实数据中提炼可执行的选题。
-
-当前分析赛道：「${seedTopic}」
-
-【真实采集的热门样本】
-${topSampleTitles || "暂无样本"}
-
-【低粉爆款样本】
-${lowFollowerInfo || "暂无低粉爆款"}
-
-【评论区高频词】
-${commentKeywords}
-
-【评论区需求信号】
-${demandSignals}
-
-【任务】
-基于以上真实数据，生成 3 个具体可执行的短视频选题。每个选题必须：
-1. 标题可以直接用作短视频标题，有爆款潜力（15-25字）
-2. 切入角度基于真实样本的成功特征推演，不是凭空编造
-3. 必须引用上方某个真实样本作为对标参考
-4. 为每个选题独立评估爆款机率分数（70-95之间的整数），基于该选题与热门样本的匹配度、评论需求信号强度、低粉爆款验证情况综合评分
-
-输出严格的 JSON 格式：
-{
-  "topics": [
-    {
-      "title": "爆款标题（15-25字，直接可用）",
-      "angle": "切入角度说明（25字以内）",
-      "referenceTitle": "引用的真实样本标题",
-      "score": 88,
-      "tags": ["#标签1", "#标签2", "#标签3"],
-      "conclusion": "一句话结论（如“今天就拍，优先级最高。”）",
-      "conclusionSub": "副文案（如“更容易带来收藏、评论和求链接。”）",
-      "howToShoot": "具体怎么拍（30字以内）",
-      "whyNow": "为什么现在拍（30字以内）"
-    }
-  ]
-}
-
-注意：
-- 标题要有钩子感，能在前3秒抓住用户
-- 切入角度要具体，不要笼统的“拍一个XX视频”
-- conclusion 必须是一句话的强确定性结论，如“今天就拍，优先级最高。”“适合连拍，不止一条。”“适合批量复制扩展。”
-- conclusionSub 说明这个选题能带来什么价值（收藏/评论/转发/关注）
-- howToShoot 要具体到拍摄方法，不要笼统
-- whyNow 要说明当前时机为什么适合拍这个
-- 必须基于真实数据推演，不能脱离数据的编造
-- tags 必须是 2-4 个与该选题直接相关的核心标签，每个以 # 开头`;
-
-    const topicLlmResponse = await callLLM({
-      modelId: "doubao",
-      messages: [
-        { role: "system", content: "你是短视频爆款内容策划师，严格按 JSON 格式输出，不要输出任何其他内容。" },
-        { role: "user", content: topicPrompt },
-      ],
-      maxTokens: 2000,
-      temperature: 0.4,
-      timeoutMs: 20000,
-    });
-
-    const topicJsonMatch = topicLlmResponse.content.match(/\{[\s\S]*\}/);
-    if (topicJsonMatch) {
-      const parsed = JSON.parse(topicJsonMatch[0]) as {
-        topics?: Array<{ title?: string; angle?: string; referenceTitle?: string; score?: number; tags?: string[]; conclusion?: string; conclusionSub?: string; howToShoot?: string; whyNow?: string }>;
-      };
-      if (Array.isArray(parsed.topics) && parsed.topics.length > 0) {
-        aiTopicSuggestions = parsed.topics.slice(0, 3).map((t) => {
-          // 尝试匹配对标样本的 ID
+    // ── 选题建议调用（独立 prompt，温度 0.4，maxTokens 2000）──
+    const topicPromise = (async (): Promise<AiTopicSuggestion[]> => {
+      try {
+        // 选题 prompt 已抽出到 prompts/topic-prompt-builder.ts(给 evals 用同一份 prompt)。
+        // 改 prompt 改那个文件即可——evals 与生产用字符级一致的 prompt。
+        const { system: topicSystemPrompt, user: topicPrompt } = await buildTopicMessages({
+          seedTopic,
+          topSampleTitles,
+          lowFollowerInfo,
+          commentKeywords,
+          demandSignals,
+          noSampleWarning,
+        });
+        // doubao 偶发输出 tags 数组缺引号(如 ["#AI", #新手"]),用 stripJsonFences + retry 1 次兜底
+        type TopicLLMOutput = {
+          topics?: Array<{
+            title?: string;
+            angle?: string;
+            referenceTitle?: string;
+            score?: number;
+            commentScore?: number;
+            commentReason?: string;
+            supplyGapScore?: number;
+            supplyGapReason?: string;
+            lowFollowerScore?: number;
+            lowFollowerReason?: string;
+            tags?: string[];
+            conclusion?: string;
+            conclusionSub?: string;
+            howToShoot?: string;
+            whyNow?: string;
+          }>;
+        };
+        const callOnce = async (extraSystem = "") =>
+          callLLM({
+            modelId: "doubao",
+            messages: [
+              { role: "system", content: topicSystemPrompt + extraSystem },
+              { role: "user", content: topicPrompt },
+            ],
+            maxTokens: 2000,
+            temperature: 0.4,
+            timeoutMs: 20000,
+          });
+        const tryParse = (raw: string): TopicLLMOutput | null => {
+          try {
+            const cleaned = stripJsonFences(raw);
+            return JSON.parse(cleaned) as TopicLLMOutput;
+          } catch {
+            return null;
+          }
+        };
+        let parsed = tryParse((await callOnce()).content);
+        if (!parsed) {
+          // retry 1 次,system 后追加严格示例
+          const extra =
+            "\n\n**严格 JSON 要求**:tags 数组里每个元素必须是双引号字符串,如 [\"#AI工具\", \"#新手教程\"];不要漏引号、不要 markdown 围栏、不要任何解释性文字。";
+          parsed = tryParse((await callOnce(extra)).content);
+        }
+        if (!parsed) return [];
+        if (!Array.isArray(parsed.topics) || parsed.topics.length === 0) return [];
+        return parsed.topics.slice(0, 3).map((t, topicIndex) => {
           const refContent = t.referenceTitle
             ? supportingContents.find((c) => c.title.includes(t.referenceTitle!) || t.referenceTitle!.includes(c.title))
             : undefined;
-          // 爆款机率分数：限制在 70-95 范围内
           const rawScore = typeof t.score === "number" ? t.score : 80;
           const clampedScore = Math.max(70, Math.min(95, rawScore));
-          // 确保 tags 格式正确（每个以 # 开头）
           const rawTags = Array.isArray(t.tags) ? t.tags.filter((tag): tag is string => typeof tag === "string") : [];
           const normalizedTags = rawTags.map((tag) => tag.startsWith("#") ? tag : `#${tag}`).slice(0, 4);
+          const topicSignals = buildTopicSignalFallback(
+            {
+              ...t,
+              tags: normalizedTags,
+            },
+            refContent,
+            topicIndex,
+          );
           return {
             title: t.title ?? "未命名选题",
             angle: t.angle ?? "",
@@ -1447,14 +2045,26 @@ ${demandSignals}
             conclusionSub: typeof t.conclusionSub === "string" ? t.conclusionSub : undefined,
             howToShoot: typeof t.howToShoot === "string" ? t.howToShoot : undefined,
             whyNow: typeof t.whyNow === "string" ? t.whyNow : undefined,
+            ...topicSignals,
           };
         });
+      } catch (err) {
+        log.warn({ err }, "选题建议 LLM 调用失败，降级为空列表");
+        return [];
       }
-    }
-    log.info(`LLM AI选题生成完成: ${aiTopicSuggestions.length} 个选题`);
-  } catch (err) {
-    log.warn({ err }, "LLM AI选题生成失败，降级为空列表");
+    })();
+
+    // 并行等待两个调用，整体延时 = max(trend, topic)
+    const [trendResult, topicResult] = await Promise.all([trendPromise, topicPromise]);
+    trendOpportunities = trendResult.trendOpportunities;
+    overviewOneLiner = trendResult.overviewOneLiner;
+    aiTopicSuggestions = topicResult;
+
+    log.info(`LLM 并行调用完成: ${trendOpportunities.length} 个机会 / ${aiTopicSuggestions.length} 个选题`);
   }
+
+
+  onProgress?.({ type: "llm_done" });
 
   const runtimeMeta = {
     sourceMode: "live" as const,
@@ -1465,25 +2075,21 @@ ${demandSignals}
     endpointHealthVersion: nowIso(),
   };
   // ----------------------------------------------------------------
-  // Step N: 等待 LLM 意图识别结果，并将其注入 draft
+  // Step N: 复用前置阻塞 Step A/B 已经 await 的解析与意图结果，注入 draft
   // ----------------------------------------------------------------
-  const llmIntent = await intentPromise;
-  const extractedParams = await payloadPromise;
-  const parsedInputResult = await inputParsePromise;
-
   const enrichedDraft: PredictionRequestDraft = {
     ...draft,
-    ...(llmIntent ? { llmIntentOverride: llmIntent } : {}),
-    ...(extractedParams ? {
+    llmIntentOverride: llmIntent,
+    ...(extractedPayload ? {
       extractedParams: {
-        keyword: extractedParams.keyword,
-        platform: extractedParams.platform,
-        awemeId: extractedParams.awemeId,
-        noteId: extractedParams.noteId,
-        uniqueId: extractedParams.uniqueId,
-        contentUrl: extractedParams.contentUrl,
-        industry: extractedParams.industry,
-        confidence: extractedParams.confidence,
+        keyword: extractedPayload.keyword,
+        platform: extractedPayload.platform,
+        awemeId: extractedPayload.awemeId,
+        noteId: extractedPayload.noteId,
+        uniqueId: extractedPayload.uniqueId,
+        contentUrl: extractedPayload.contentUrl,
+        industry: extractedPayload.industry,
+        confidence: extractedPayload.confidence,
       }
     } : {}),
     ...(parsedInputResult && parsedInputResult.extractedText ? {

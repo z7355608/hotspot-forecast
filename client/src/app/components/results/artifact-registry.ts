@@ -35,6 +35,12 @@ export interface ArtifactRendererRegistration {
   taskIntent: TaskIntent;
   /** 渲染器组件 */
   component: React.ComponentType<ArtifactRendererProps>;
+  /**
+   * 可选的 payload schema 校验。返回 false 时本次 renderer 命中视为不匹配，
+   * 由 resolveRenderer 跳过继续 fallback。避免 artifactType 命中但 taskPayload schema 不一致时
+   * 渲染出"半残"画面。
+   */
+  validatePayload?: (result: ResultRecord) => boolean;
   /** 该产物类型的 Hero 指标卡配置 */
   getHeroMetrics: (result: ResultRecord) => HeroMetricCard[];
   /** 该产物类型的深挖配置 */
@@ -95,25 +101,34 @@ export function registerArtifactRenderer(registration: ArtifactRendererRegistrat
   registryByTaskIntent.set(registration.taskIntent, registration);
 }
 
+function passesValidation(reg: ArtifactRendererRegistration, result: ResultRecord): boolean {
+  return reg.validatePayload ? reg.validatePayload(result) : true;
+}
+
 /**
  * 根据 ResultRecord 解析出对应的渲染器注册信息。
  * 优先按 artifactType 匹配，fallback 到 taskIntent。
  * 特殊规则：如果 taskPayload 包含 trendOpportunities，强制使用 opportunity_prediction 渲染器
  * （因为意图分类可能将爆款预测误分为 topic_strategy 等其他类型）
+ *
+ * Schema 校验：renderer 注册时若提供 validatePayload，则在命中时校验 taskPayload schema；
+ * 不通过则跳过该次命中继续 fallback，避免出现"半残"渲染。
  */
 export function resolveRenderer(result: ResultRecord): ArtifactRendererRegistration | null {
   // 特殊规则：如果 taskPayload 包含 trendOpportunities，强制使用 opportunity_prediction 渲染器
   const tp = result.taskPayload as unknown as Record<string, unknown> | undefined;
   if (tp && Array.isArray(tp.trendOpportunities) && tp.trendOpportunities.length > 0) {
     const oppRenderer = registryByTaskIntent.get("opportunity_prediction" as TaskIntent);
-    if (oppRenderer) return oppRenderer;
+    if (oppRenderer && passesValidation(oppRenderer, result)) return oppRenderer;
   }
   const artifactType = result.primaryArtifact?.artifactType;
   if (artifactType && registryByArtifactType.has(artifactType)) {
-    return registryByArtifactType.get(artifactType)!;
+    const reg = registryByArtifactType.get(artifactType)!;
+    if (passesValidation(reg, result)) return reg;
   }
   if (registryByTaskIntent.has(result.taskIntent)) {
-    return registryByTaskIntent.get(result.taskIntent)!;
+    const reg = registryByTaskIntent.get(result.taskIntent)!;
+    if (passesValidation(reg, result)) return reg;
   }
   return null;
 }

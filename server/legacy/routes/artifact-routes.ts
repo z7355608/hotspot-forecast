@@ -18,6 +18,7 @@ import {
   listResultArtifactSummaries,
   listWatchTaskSummaries,
   persistWatchRun,
+  softDeleteResultArtifact,
   toWatchTaskSummary,
   upsertResultArtifact,
 } from "../artifacts.js";
@@ -57,6 +58,18 @@ export async function handleCreateResultArtifact(
     watchPreset: payload.watchPreset,
   });
   sendJson(response, 200, result);
+}
+
+export async function handleDeleteResultArtifact(
+  artifactId: string,
+  response: ServerResponse,
+) {
+  const removed = await softDeleteResultArtifact(artifactId);
+  if (!removed) {
+    sendJson(response, 404, { error: `Artifact ${artifactId} was not found.` });
+    return;
+  }
+  sendJson(response, 200, { artifactId, deleted: true });
 }
 
 export async function handleCreateWatchForArtifact(

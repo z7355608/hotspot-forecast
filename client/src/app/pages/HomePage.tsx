@@ -315,6 +315,6 @@ function DemoDialog({
 
 const QUICK_EXAMPLES = [
   { label: "健身减脂 现在拍什么会火", prompt: "健身减脂赛道现在发什么最容易爆？帮我找出具体可执行的选题" },
-  { label: "拆解这条爆款视频", prompt: "请拆解视频：https://v.douyin.com/klbUSvHwuik/ ，告诉我哪些结构值得借鉴" },
+  { label: "拆解这条爆款视频", prompt: "请拆解视频：https://v.douyin.com/1qwBNAJ6dcE/ ，告诉我哪些结构值得借鉴" },
   { label: "母婴辅食 低粉爆款分析", prompt: "母婴辅食赛道最近7天有哪些低粉爆款？帮我分析可复制的方向" },
 ];

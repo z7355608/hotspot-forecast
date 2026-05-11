@@ -12,7 +12,7 @@ export function TermsPage() {
               <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-sm font-bold text-white">
                 AI
               </div>
-              <span className="text-lg font-bold text-gray-900">爆款预测Agent</span>
+              <span className="text-lg font-bold text-gray-900">爆款预测agent</span>
             </Link>
           </div>
           <Link to="/landing" className="flex items-center gap-1.5 text-sm text-gray-500 transition hover:text-gray-900">
@@ -31,7 +31,7 @@ export function TermsPage() {
           <section>
             <h2 className="mb-3 text-lg font-bold text-gray-900">一、总则</h2>
             <p>
-              1.1 欢迎使用"爆款预测Agent"平台（以下简称"本平台"或"我们"）。本平台由峰极科技（以下简称"运营方"）运营和维护。在您注册、登录或以任何方式使用本平台提供的服务之前，请您仔细阅读并充分理解本服务条款（以下简称"本条款"）的全部内容。
+              1.1 欢迎使用"爆款预测agent"平台（以下简称"本平台"或"我们"）。本平台由峰极科技（以下简称"运营方"）运营和维护。在您注册、登录或以任何方式使用本平台提供的服务之前，请您仔细阅读并充分理解本服务条款（以下简称"本条款"）的全部内容。
             </p>
             <p className="mt-2">
               1.2 您一旦注册、登录或以其他方式使用本平台服务，即视为您已阅读、理解并同意接受本条款的约束。如您不同意本条款的任何内容，请立即停止使用本平台。
@@ -134,7 +134,7 @@ export function TermsPage() {
               7.2 用户通过本平台 AI 功能生成的内容（如翻拍脚本、文案分析等），用户享有合理使用权。但用户应自行确保其使用方式不侵犯第三方的合法权益。
             </p>
             <p className="mt-2">
-              7.3 本平台展示的第三方视频数据（包括标题、封面、播放数据等）仅用于数据分析目的，相关内容的知识产权归原创作者所有。
+              7.3 本平台展示的第三方视频数据（包括标题、封面、互动数据等）仅用于数据分析目的，相关内容的知识产权归原创作者所有。
             </p>
           </section>
 

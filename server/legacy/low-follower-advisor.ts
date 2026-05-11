@@ -14,6 +14,7 @@
 import { randomUUID } from "node:crypto";
 import { createModuleLogger } from "./logger.js";
 import { callLLM } from "./llm-gateway.js";
+import { resolveSystemPrompt } from "./prompt-engine.js";
 
 const log = createModuleLogger("LowFollowerAdvisor");
 import type { AIModelId } from "../../client/src/app/store/app-data-core.js";
@@ -21,7 +22,6 @@ import { execute } from "./database.js";
 import {
   type LowFollowerSample,
   formatFollowerLabel,
-  formatViewLabel,
   formatInteractionLabel,
   getViralScoreLabel,
 } from "./low-follower-algorithm.js";
@@ -214,12 +214,12 @@ function buildUserPrompt(
 - ID：${s.contentId}
 - 标题：${s.title}
 - 粉丝量：${formatFollowerLabel(s.followerCount)}（低粉账号）
-- 播放量：${formatViewLabel(s.viewCount)}
-- 互动率：${engLabel}
-- 粉播比：${s.viewToFollowerRatio.toFixed(0)}x（超出粉丝量 ${s.viewToFollowerRatio.toFixed(0)} 倍）
+- 互动量：${formatInteractionLabel(s.interactionCount)}
+- 互动效率：${engLabel}
+- 粉丝效率比：${s.fanEfficiencyRatio.toFixed(1)}x
 - 互动超越P75基准：${s.engagementBenchmarkMultiplier.toFixed(1)} 倍
 - 异常强度：${anomalyLabel}（${s.anomalyScore}分）
-- 是否严格命中：${s.isStrictAnomaly ? "是（粉丝<1万+播放>10万+互动>P75）" : "否（宽松命中）"}
+- 是否严格命中：${s.isStrictAnomaly ? "是（粉丝<1万+互动>P75+粉丝效率高）" : "否（宽松命中）"}
 - 标签：${s.tags.slice(0, 5).join("、") || "无"}`;
   }).join("\n");
 
@@ -230,7 +230,7 @@ function buildUserPrompt(
 
 【低粉爆款算法结果】
 - 样本池总量：${totalContentCount} 条内容
-- 严格命中数：${anomalyHitCount} 条（粉丝<1万+播放>10万+互动>P75）
+- 严格命中数：${anomalyHitCount} 条（粉丝<1万+互动>P75+粉丝效率高）
 - lowFollowerAnomalyRatio：${lowFollowerAnomalyRatio.toFixed(1)}%
 - P75互动量基准：${p75InteractionBenchmark} 次（点赞+评论+分享+收藏）
 
@@ -336,7 +336,7 @@ function buildRuleBasedAdvice(
     successMetrics: [
       `互动数超过 P75 基准（${algorithmResult.p75InteractionBenchmark} 次）`,
       "完播率 > 40%",
-      `播放量 / 粉丝量 > 10x（粉播比超过 10 倍）`,
+      `互动效率高于同粉丝量账号基线`,
     ],
     generationMethod: "rule",
     generatedAt: new Date().toISOString(),
@@ -368,9 +368,15 @@ export async function generatePersonalizedAdvice(params: {
   try {
     const userPrompt = buildUserPrompt(seedTopic, algorithmResult, userContext, topSamples);
 
+    const advisorSystemPrompt = await resolveSystemPrompt(
+      "low-follower-advisor-v1",
+      "doubao",
+      { currentDate: new Date().toISOString().slice(0, 10) },
+      ADVISOR_SYSTEM_PROMPT,
+    );
     const llmResult = await callLLM({
       messages: [
-        { role: "system", content: ADVISOR_SYSTEM_PROMPT },
+        { role: "system", content: advisorSystemPrompt },
         { role: "user", content: userPrompt },
       ],
       modelId: "doubao" as AIModelId,
@@ -462,15 +468,19 @@ export async function analyzeSampleReplicability(
     tags: s.tags,
   }));
 
+  const replicabilityFallback = `你是内容结构分析专家。对每条低粉爆款样本，分析其爆款原因和可复制性。
+输出 JSON 数组，每项包含：sampleId, title, whyItWorked（40字以内）, replicableStructure（40字以内）, replicabilityScore（0-100）, suitableAccountTypes（数组）, caveats（数组）。
+严格基于提供的数据，禁止捏造。`;
+  const replicabilitySystemPrompt = await resolveSystemPrompt(
+    "low-follower-replicability-v1",
+    "doubao",
+    {},
+    replicabilityFallback,
+  );
   try {
     const result = await callLLM({
       messages: [
-        {
-          role: "system",
-          content: `你是内容结构分析专家。对每条低粉爆款样本，分析其爆款原因和可复制性。
-输出 JSON 数组，每项包含：sampleId, title, whyItWorked（40字以内）, replicableStructure（40字以内）, replicabilityScore（0-100）, suitableAccountTypes（数组）, caveats（数组）。
-严格基于提供的数据，禁止捏造。`,
-        },
+        { role: "system", content: replicabilitySystemPrompt },
         {
           role: "user",
           content: `赛道：${seedTopic}\n样本数据：${JSON.stringify(sampleList, null, 2)}\n请分析每条样本的可复制性。`,

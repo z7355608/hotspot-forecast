@@ -16,10 +16,12 @@ import {
   handleGetTimingStats,
   handleClearCache,
 } from "./routes/prediction-routes.js";
+import { handleGetTaskStatus } from "../services/prediction-tasks/status-handler.js";
 import {
   handleListResultArtifacts,
   handleGetResultArtifact,
   handleCreateResultArtifact,
+  handleDeleteResultArtifact,
   handleCreateWatchForArtifact,
   handleListWatchTasks,
   handleRunWatchTask,
@@ -280,11 +282,21 @@ async function _handleApiRequest(request: IncomingMessage, response: ServerRespo
       await handleClearCache(response);
       return;
     }
+    // GET /api/predictions/:taskId/status — 切回页面时拉任务快照(支持「切走再回来」)
+    const taskStatusMatch = url.pathname.match(/^\/api\/predictions\/([^/]+)\/status$/);
+    if (taskStatusMatch && request.method === "GET") {
+      await handleGetTaskStatus(decodeURIComponent(taskStatusMatch[1]), response);
+      return;
+    }
     const artifactMatch = url.pathname.match(/^\/api\/result-artifacts\/([^/]+)$/);
     if (artifactMatch) {
       const artifactId = decodeURIComponent(artifactMatch[1]);
       if (request.method === "GET") {
         await handleGetResultArtifact(artifactId, response);
+        return;
+      }
+      if (request.method === "DELETE") {
+        await handleDeleteResultArtifact(artifactId, response);
         return;
       }
     }
@@ -707,11 +719,49 @@ async function _handleApiRequest(request: IncomingMessage, response: ServerRespo
 
     /** GET /api/image-proxy — 图片代理（解决拖音CDN heic格式和跨域问题）+ S3缓存 */
     if (request.method === "GET" && url.pathname === "/api/image-proxy") {
+      const sendImagePlaceholder = (reason: string) => {
+        const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="640" height="400" viewBox="0 0 640 400"><defs><linearGradient id="g" x1="0" x2="1" y1="0" y2="1"><stop stop-color="#f8fafc"/><stop offset=".55" stop-color="#f4f0ff"/><stop offset="1" stop-color="#ecfdf5"/></linearGradient></defs><rect width="640" height="400" fill="url(#g)"/><circle cx="320" cy="176" r="42" fill="rgba(255,255,255,.82)"/><path d="M303 158h34a10 10 0 0 1 10 10v24a10 10 0 0 1-10 10h-34a10 10 0 0 1-10-10v-24a10 10 0 0 1 10-10zm6 12 12 14 8-9 13 17h-44l11-22z" fill="#8979ff" opacity=".85"/><text x="320" y="252" text-anchor="middle" font-family="Arial, sans-serif" font-size="22" font-weight="600" fill="#6b7280">封面暂不可用</text><text x="320" y="282" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" fill="#9ca3af">${reason}</text></svg>`;
+        response.writeHead(200, {
+          "Content-Type": "image/svg+xml; charset=utf-8",
+          "Cache-Control": "public, max-age=300",
+          "X-Image-Cache": "placeholder",
+          ...getCorsHeadersObj(request),
+        });
+        response.end(svg);
+      };
+
       const targetUrl = url.searchParams.get("url");
       if (!targetUrl) {
         response.writeHead(400, { "Content-Type": "application/json" });
         response.end(JSON.stringify({ error: "Missing url parameter" }));
         return;
+      }
+      try {
+        const parsedTarget = new URL(targetUrl);
+        if (parsedTarget.protocol !== "http:" && parsedTarget.protocol !== "https:") {
+          throw new Error("Unsupported image URL protocol");
+        }
+      } catch {
+        response.writeHead(400, { "Content-Type": "application/json" });
+        response.end(JSON.stringify({ error: "Invalid url parameter" }));
+        return;
+      }
+
+      try {
+        const { readCachedCoverImage } = await import("./image-cache.js");
+        const cachedImage = await readCachedCoverImage(targetUrl);
+        if (cachedImage) {
+          response.writeHead(200, {
+            "Content-Type": cachedImage.contentType,
+            "Cache-Control": "public, max-age=604800",
+            "X-Image-Cache": "local-hit",
+            ...getCorsHeadersObj(request),
+          });
+          response.end(cachedImage.buffer);
+          return;
+        }
+      } catch (cacheErr) {
+        imgLog.warn({ err: cacheErr }, "Local image cache read failed, falling through");
       }
 
       // 先查 DB 中是否已有 S3 CDN URL
@@ -726,6 +776,7 @@ async function _handleApiRequest(request: IncomingMessage, response: ServerRespo
           response.writeHead(302, {
             "Location": cached.cover_cdn_url,
             "Cache-Control": "public, max-age=604800",
+            "X-Image-Cache": "s3-hit",
             ...getCorsHeadersObj(request),
           });
           response.end();
@@ -737,15 +788,23 @@ async function _handleApiRequest(request: IncomingMessage, response: ServerRespo
 
       try {
         // 从源站获取图片
+        const targetHost = new URL(targetUrl).hostname;
+        const referer = targetHost.includes("xiaohongshu") || targetHost.includes("xhscdn")
+          ? "https://www.xiaohongshu.com/"
+          : targetHost.includes("hdslb") || targetHost.includes("bilibili")
+            ? "https://www.bilibili.com/"
+            : targetHost.includes("kuaishou") || targetHost.includes("gifshow")
+              ? "https://www.kuaishou.com/"
+              : "https://www.douyin.com/";
         const imgResp = await fetch(targetUrl, {
           headers: {
             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
-            "Referer": "https://www.douyin.com/",
+            "Referer": referer,
           },
         });
         if (!imgResp.ok) {
-          response.writeHead(imgResp.status, { "Content-Type": "text/plain" });
-          response.end(`Upstream returned ${imgResp.status}`);
+          imgLog.warn({ status: imgResp.status }, "Image upstream returned non-OK status");
+          sendImagePlaceholder(`源站返回 ${imgResp.status}`);
           return;
         }
         const contentType = imgResp.headers.get("content-type") ?? "image/jpeg";
@@ -766,6 +825,13 @@ async function _handleApiRequest(request: IncomingMessage, response: ServerRespo
           } catch (convErr) {
             imgLog.error({ err: convErr }, "HEIC conversion failed, serving raw");
           }
+        }
+
+        try {
+          const { writeCachedCoverImage } = await import("./image-cache.js");
+          await writeCachedCoverImage(targetUrl, buffer, outputType);
+        } catch (cacheErr) {
+          imgLog.warn({ err: cacheErr }, "Local image cache write failed");
         }
 
         // 异步上传到 S3 并将 CDN URL 写入 DB（不阻塞响应）
@@ -792,13 +858,13 @@ async function _handleApiRequest(request: IncomingMessage, response: ServerRespo
         response.writeHead(200, {
           "Content-Type": outputType,
           "Cache-Control": "public, max-age=86400",
+          "X-Image-Cache": "miss",
           ...getCorsHeadersObj(request),
         });
         response.end(buffer);
       } catch (err) {
-        imgLog.error({ err }, "Image proxy error");
-        response.writeHead(502, { "Content-Type": "text/plain" });
-        response.end("Image proxy error");
+        imgLog.debug({ err }, "Image proxy upstream unavailable, serving placeholder");
+        sendImagePlaceholder("源站连接受限");
       }
       return;
     }

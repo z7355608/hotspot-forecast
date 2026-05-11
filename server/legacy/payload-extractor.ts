@@ -176,6 +176,20 @@ async function llmExtract(
   1. 第1个关键词：用户输入中最核心的赛道/话题词（如"美女跳舞"、"萌宠"、"美妆护肤"）
   2. 第2个关键词：赛道内的热门内容形式（如"美女跳舞合集"、"宠物日常vlog"、"健身跟练"）
   注意：不要加"教程"二字，除非用户明确提到了教程。搜索关键词应该是在抖音/小红书搜索框中实际会用的短词，不要太长。
+
+  绝对禁止返回的"流程性"词汇（这些是用户的提问方式，不是要搜的内容）：
+  "低粉爆款"、"可复制方向"、"复制方向"、"赛道分析"、"选题策略"、"选题方向"、"方向分析"、"爆款分析"、"赛道判断"、"机会判断"、"复盘"、"7天"、"最近7天"、"30天"、"近30天"。
+  如果用户问"X赛道最近7天有哪些低粉爆款？帮我分析可复制方向"，正确的 searchKeywords 是 ["X", "X 合集"]，不是 ["低粉爆款", "可复制方向"]。
+
+  示例：
+  • 输入"母婴辅食赛道最近7天有哪些低粉爆款？帮我分析可复制的方向"
+    → searchKeywords: ["母婴辅食", "宝宝辅食"]
+  • 输入"上海一点点奶茶陆家嘴店现在发什么最容易火？"
+    → searchKeywords: ["一点点奶茶", "陆家嘴美食"]
+  • 输入"AI订阅赛道现在发什么最容易爆？"
+    → searchKeywords: ["AI订阅", "ChatGPT订阅"]
+  • 输入"健身减脂账号，目标人群是上班族女性，最近一周适合拍什么爆款短视频选题？"
+    → searchKeywords: ["健身减脂", "上班族健身"]
 - platform: 平台（只能是 douyin/xiaohongshu/bilibili/kuaishou/wechat/weibo 之一）
 - awemeId: 抖音视频ID（纯数字，通常10位以上）
 - noteId: 小红书笔记ID（24位十六进制）
@@ -232,6 +246,254 @@ ${profileContext}
 }
 
 // ----------------------------------------------------------------
+// 合并：一次 LLM 调用同时完成「payload 提取 + intent 分类」
+// 用于 live-predictions.ts 主流程，把原本 2 次 LLM 合成 1 次
+// ----------------------------------------------------------------
+
+interface MergedExtractAndClassifyInput {
+  prompt: string;
+  userProfile?: { platforms?: string[]; industries?: string[]; followerCount?: number; accountName?: string };
+  /** 已知的快速路径意图（来自 tryFastPath 命中），如有则不再让 LLM 判断 intent */
+  knownIntent?: {
+    taskIntent: string;
+    confidence: string;
+    reasons: string[];
+  };
+  /** parseInput / payload-extractor 的辅助信号（仅用于辅助意图判断） */
+  intentSignals?: {
+    parsedInputKind?: string;
+    parsedInputPlatform?: string;
+    parsedInputTitle?: string;
+    mediaCount?: { video: number; image: number; file: number };
+    hasExternalLinks?: boolean;
+    hasMediaItems?: boolean;
+    hasConnectedPlatforms?: boolean;
+  };
+}
+
+export interface MergedExtractAndClassifyResult {
+  payload: Partial<ExtractedTaskParams>;
+  intent: {
+    taskIntent: string;
+    confidence: "high" | "medium" | "low";
+    candidateIntents: string[];
+    reasons: string[];
+  };
+}
+
+const VALID_INTENTS_SET = new Set([
+  "opportunity_prediction",
+  "trend_watch",
+  "viral_breakdown",
+  "topic_strategy",
+  "copy_extraction",
+  "account_diagnosis",
+  "breakdown_sample",
+  "direct_request",
+]);
+
+/**
+ * 合并版：一次 LLM 调用同时返回 payload 提取 + intent 分类。
+ * 主流程入口：见 live-predictions.ts Step A+B。
+ *
+ * 设计要点：
+ * - 当 knownIntent 已由快速路径提供时，仍只做 payload 提取（不变成 0 次调用，因为 searchKeywords 仍需 LLM）
+ * - 输出 JSON 顶层 payload + intent 两个字段，prompt 同时讲清两个任务的规则
+ * - 温度 0（与原 llmExtract 一致），maxTokens 1024（覆盖原 500+256 + 安全余量）
+ */
+export async function llmExtractAndClassify(
+  input: MergedExtractAndClassifyInput,
+): Promise<MergedExtractAndClassifyResult | null> {
+  const profileLines: string[] = [];
+  if (input.userProfile?.platforms?.length) {
+    profileLines.push(`用户已连接平台：${input.userProfile.platforms.join("、")}`);
+  }
+  if (input.userProfile?.industries?.length) {
+    profileLines.push(`用户关注的行业/赛道：${input.userProfile.industries.join("、")}`);
+  }
+  if (input.userProfile?.followerCount != null) {
+    profileLines.push(`用户粉丝数：${input.userProfile.followerCount}`);
+  }
+  if (input.userProfile?.accountName) {
+    profileLines.push(`用户账号名：${input.userProfile.accountName}`);
+  }
+  const profileContext = profileLines.length > 0
+    ? `\n\n用户个人资料：\n${profileLines.join("\n")}`
+    : "";
+
+  const signalLines: string[] = [];
+  if (input.intentSignals?.parsedInputKind) {
+    const platform = input.intentSignals.parsedInputPlatform ? `（平台：${input.intentSignals.parsedInputPlatform}）` : "";
+    const title = input.intentSignals.parsedInputTitle ? `，标题摘要：「${input.intentSignals.parsedInputTitle.slice(0, 80)}」` : "";
+    signalLines.push(`输入形态：${input.intentSignals.parsedInputKind}${platform}${title}`);
+  }
+  if (input.intentSignals?.mediaCount) {
+    const mc = input.intentSignals.mediaCount;
+    if (mc.video > 0 || mc.image > 0 || mc.file > 0) {
+      const parts: string[] = [];
+      if (mc.video > 0) parts.push(`${mc.video} 个视频`);
+      if (mc.image > 0) parts.push(`${mc.image} 张图片`);
+      if (mc.file > 0) parts.push(`${mc.file} 个文档`);
+      signalLines.push(`上传媒体：${parts.join("、")}`);
+    }
+  }
+  if (input.intentSignals?.hasExternalLinks) signalLines.push("含外部链接");
+  if (input.intentSignals?.hasConnectedPlatforms) signalLines.push("用户已绑定创作者账号");
+  const signalContext = signalLines.length > 0
+    ? `\n\n输入形态信号：\n${signalLines.join("\n")}`
+    : "";
+
+  const intentBlock = input.knownIntent
+    ? `任务B 已由快速路径决定为「${input.knownIntent.taskIntent}」，本次只输出 payload，无需重复判断 intent。`
+    : `任务B：判断用户意图（intent）
+
+意图选项（从中选一个）：
+- opportunity_prediction：用户问「值得做吗 / 有没有机会 / 这个赛道怎么样」
+- trend_watch：用户问「最近什么火 / 趋势如何 / 监控热点」
+- viral_breakdown：用户给出某条爆款视频链接，想拆解结构和可抄点
+- breakdown_sample：用户提供「低粉爆款」样本，想分析爆因机制
+- topic_strategy：用户要「选题清单 / 内容规划 / 排期 / 给我 N 个选题」
+- copy_extraction：用户要「提取文案 / 钩子 / CTA / 标题模板」
+- account_diagnosis：用户要诊断账号定位、问题、打法
+- direct_request：以上都不匹配，或输入过于模糊（兜底，不要回避使用）
+
+判断规则：
+- 短关键词（2-8 字）若无任何动作动词/上下文信号 → direct_request + confidence=low
+- 文字诉求与输入形态信号冲突时，文字诉求优先
+- "现在发什么会火"→ opportunity_prediction；"给我 N 个选题"→ topic_strategy
+- confidence: high=形态+文字双重命中；medium=单一信号；low=纯猜测`;
+
+  const systemPrompt = `你是一个内容创作 AI 助手，需要对用户输入完成两个任务并合并输出。
+
+任务A：从用户输入中提取任务参数（payload）
+
+重要：用户输入的是他想分析的「内容赛道/方向」，不是他想学习的技能。
+例：用户输入"美女跳舞" = 分析「美女跳舞」赛道，不是教她跳舞。
+搜索关键词应该是用来搜索这个赛道的热门视频内容，不是搜索教程。
+
+字段说明（用户没提及的字段返回 null）：
+- keyword: 用户输入中的核心关键词/话题
+- searchKeywords: 数组，最多 2 个搜索关键词。规则：
+  1. 第1个是用户输入中最核心的赛道/话题词（如"美女跳舞"、"萌宠"、"美妆护肤"）
+  2. 第2个是赛道内的热门内容形式（如"美女跳舞合集"、"宠物日常vlog"）
+  3. 不要加"教程"二字，除非用户明确提到了教程
+  绝对禁止返回的"流程性"词汇（这些是用户的提问方式，不是要搜的内容）：
+  "低粉爆款"、"可复制方向"、"复制方向"、"赛道分析"、"选题策略"、"选题方向"、"方向分析"、"爆款分析"、"赛道判断"、"机会判断"、"复盘"、"7天"、"最近7天"、"30天"、"近30天"。
+  示例：
+  • "母婴辅食赛道最近7天有哪些低粉爆款？" → ["母婴辅食", "宝宝辅食"]
+  • "AI订阅赛道现在发什么最容易爆？" → ["AI订阅", "ChatGPT订阅"]
+- platform: 平台（只能是 douyin/xiaohongshu/bilibili/kuaishou/wechat/weibo 之一）
+- awemeId: 抖音视频ID（纯数字，10位以上）
+- noteId: 小红书笔记ID（24位十六进制）
+- uniqueId: 账号 handle（@xxx）
+- uid: 账号 UID（纯数字）
+- contentUrl: 视频/内容链接
+- accountUrl: 账号主页链接
+- industry: 行业/赛道（如"美妆"、"职场教育"、"宠物"）
+- taskHint: 用户想做什么（如"拆解视频"、"判断赛道"、"账号诊断"）
+
+${intentBlock}${profileContext}${signalContext}
+
+输出严格的 JSON，不要任何解释：
+{
+  "payload": {
+    "keyword": null,
+    "searchKeywords": [],
+    "platform": null,
+    "awemeId": null,
+    "noteId": null,
+    "uniqueId": null,
+    "uid": null,
+    "contentUrl": null,
+    "accountUrl": null,
+    "industry": null,
+    "taskHint": null
+  }${input.knownIntent ? "" : `,
+  "intent": {
+    "taskIntent": "意图类型",
+    "confidence": "high|medium|low",
+    "candidateIntents": ["第一候选", "第二候选"],
+    "reasons": ["理由1（≤30字）", "理由2（可选）"]
+  }`}
+}`;
+
+  try {
+    const response = await callLLM({
+      modelId: "doubao",
+      messages: [
+        { role: "system", content: systemPrompt },
+        { role: "user", content: input.prompt },
+      ],
+      temperature: 0,
+      maxTokens: 1024,
+    });
+
+    const text = response.content.trim();
+    const jsonMatch = text.match(/\{[\s\S]*\}/);
+    if (!jsonMatch) return null;
+
+    const parsed = JSON.parse(jsonMatch[0]) as Record<string, unknown>;
+    const rawPayload = (parsed.payload ?? {}) as Record<string, unknown>;
+    let searchKeywords: string[] = [];
+    if (Array.isArray(rawPayload.searchKeywords)) {
+      searchKeywords = (rawPayload.searchKeywords as unknown[])
+        .filter((k): k is string => typeof k === "string" && k.trim().length > 0)
+        .map((k) => k.trim())
+        .slice(0, 2);
+    }
+    const payload: Partial<ExtractedTaskParams> = {
+      keyword: typeof rawPayload.keyword === "string" ? rawPayload.keyword : null,
+      searchKeywords,
+      platform: normalizePlatform(typeof rawPayload.platform === "string" ? rawPayload.platform : null),
+      awemeId: typeof rawPayload.awemeId === "string" ? rawPayload.awemeId : null,
+      noteId: typeof rawPayload.noteId === "string" ? rawPayload.noteId : null,
+      uniqueId: typeof rawPayload.uniqueId === "string" ? rawPayload.uniqueId : null,
+      uid: typeof rawPayload.uid === "string" ? rawPayload.uid : null,
+      contentUrl: typeof rawPayload.contentUrl === "string" ? rawPayload.contentUrl : null,
+      accountUrl: typeof rawPayload.accountUrl === "string" ? rawPayload.accountUrl : null,
+      industry: typeof rawPayload.industry === "string" ? rawPayload.industry : null,
+      taskHint: typeof rawPayload.taskHint === "string" ? rawPayload.taskHint : null,
+    };
+
+    let intent: MergedExtractAndClassifyResult["intent"];
+    if (input.knownIntent) {
+      intent = {
+        taskIntent: input.knownIntent.taskIntent,
+        confidence: (input.knownIntent.confidence as "high" | "medium" | "low") ?? "high",
+        candidateIntents: [input.knownIntent.taskIntent],
+        reasons: input.knownIntent.reasons,
+      };
+    } else {
+      const rawIntent = (parsed.intent ?? {}) as Record<string, unknown>;
+      const taskIntent = typeof rawIntent.taskIntent === "string" && VALID_INTENTS_SET.has(rawIntent.taskIntent)
+        ? rawIntent.taskIntent
+        : "direct_request";
+      const confidence: "high" | "medium" | "low" =
+        rawIntent.confidence === "high" || rawIntent.confidence === "medium" || rawIntent.confidence === "low"
+          ? rawIntent.confidence
+          : "medium";
+      const candidateIntents = Array.isArray(rawIntent.candidateIntents)
+        ? (rawIntent.candidateIntents as unknown[])
+            .filter((c): c is string => typeof c === "string" && VALID_INTENTS_SET.has(c))
+            .slice(0, 2)
+        : [taskIntent];
+      if (!candidateIntents.includes(taskIntent)) candidateIntents.unshift(taskIntent);
+      const reasons = Array.isArray(rawIntent.reasons)
+        ? (rawIntent.reasons as unknown[])
+            .filter((r): r is string => typeof r === "string")
+            .slice(0, 2)
+        : [`LLM 分类为 ${taskIntent}，置信度 ${confidence}。`];
+      intent = { taskIntent, confidence, candidateIntents, reasons };
+    }
+
+    return { payload, intent };
+  } catch (err) {
+    log.warn({ err }, "llmExtractAndClassify 失败");
+    return null;
+  }
+}
+
+// ----------------------------------------------------------------
 // 主入口：提取任务参数
 // ----------------------------------------------------------------
 
@@ -239,6 +501,8 @@ export async function extractTaskParams(
   prompt: string,
   useLLM = true,
   userProfile?: { platforms?: string[]; industries?: string[]; followerCount?: number; accountName?: string },
+  /** 调用方已合并完成的 LLM 提取结果（来自 llmExtractAndClassify），传入则跳过内部 LLM 调用 */
+  precomputedLLMResult?: Partial<ExtractedTaskParams>,
 ): Promise<ExtractedTaskParams> {
   const now = new Date().toISOString();
 
@@ -246,8 +510,8 @@ export async function extractTaskParams(
   const quick = quickExtract(prompt);
 
   // 始终调用 LLM 提取搜索关键词（因为需要 LLM 生成多个 searchKeywords）
-  let llmResult: Partial<ExtractedTaskParams> = {};
-  if (useLLM) {
+  let llmResult: Partial<ExtractedTaskParams> = precomputedLLMResult ?? {};
+  if (useLLM && !precomputedLLMResult) {
     llmResult = await llmExtract(prompt, userProfile).catch(() => ({}));
   }
 

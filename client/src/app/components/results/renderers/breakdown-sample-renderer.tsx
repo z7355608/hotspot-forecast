@@ -353,6 +353,7 @@ registerArtifactRenderer({
   artifactType: "breakdown_sample_sheet",
   taskIntent: "breakdown_sample",
   component: BreakdownSampleBody,
+  validatePayload: (r) => r.taskPayload?.kind === "breakdown_sample",
   getHeroMetrics,
   getDeepDiveConfig: getDeepDive,
   getCtaActions,

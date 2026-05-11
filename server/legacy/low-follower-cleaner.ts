@@ -401,17 +401,15 @@ type ExtendedContent = RawContentItem & { _followerCount?: number | null; _secUi
 /**
  * 对粉丝数为 0/null 的记录，通过 TikHub 用户详情 API 补充获取粉丝数和封面图。
  * 策略：
- * 1. 优先通过 sec_uid 调用 handler_user_profile_v4
- * 2. 备选通过 uid 调用 handler_user_profile_v3
- * 3. 最后通过 fetch_one_video 获取视频详情（同时补充封面图）
+ *   - 抖音：sec_uid v4 → uid v3 → fetch_one_video 三段降级
+ *   - 小红书：fetch_user_info_app
+ *   - 快手：fetch_one_user_v2
  * 每批最多补充 20 条，防止 TikHub 限流
  */
 async function enrichMissingFollowerCounts(
   contents: ExtendedContent[],
   platform: string,
 ): Promise<void> {
-  if (platform !== "douyin") return; // 目前只支持抖音
-
   // 找出粉丝数为 0/null 的记录，按 authorId 去重
   const needEnrich = new Map<string, ExtendedContent[]>();
   for (const c of contents) {
@@ -423,7 +421,7 @@ async function enrichMissingFollowerCounts(
   }
 
   if (needEnrich.size === 0) return;
-  log.info(`需要补充粉丝数的作者: ${needEnrich.size} 个`);
+  log.info(`[${platform}] 需要补充粉丝数的作者: ${needEnrich.size} 个`);
 
   // 最多补充 20 个作者
   const entries = Array.from(needEnrich.entries()).slice(0, 20);
@@ -431,81 +429,19 @@ async function enrichMissingFollowerCounts(
   const results = await Promise.allSettled(
     entries.map(async ([authorId, authorContents]) => {
       const sample = authorContents[0];
-      let followerCount: number | null = null;
-      let coverUrl: string | null = null;
-
       try {
-        // 策略 1：通过 sec_uid 调用 handler_user_profile_v4
-        if (sample._secUid) {
-          const resp = await getTikHub<Record<string, unknown>>(
-            "/api/v1/douyin/web/handler_user_profile_v4",
-            { sec_user_id: sample._secUid },
-            8000,
-          );
-          if (resp.payload) {
-            const d = (resp.payload as Record<string, unknown>).data as Record<string, unknown> | undefined;
-            const userInfo = (d?.user as Record<string, unknown>) ?? (d?.user_info as Record<string, unknown>);
-            if (userInfo) {
-              followerCount =
-                typeof userInfo.mplatform_followers_count === "number" ? userInfo.mplatform_followers_count :
-                typeof userInfo.follower_count === "number" ? userInfo.follower_count : null;
-            }
-          }
+        if (platform === "douyin") {
+          return await enrichDouyinAuthor(authorId, sample);
         }
-
-        // 策略 2：通过 uid 调用 handler_user_profile_v3
-        if ((!followerCount || followerCount <= 0) && authorId && /^\d+$/.test(authorId)) {
-          const resp = await getTikHub<Record<string, unknown>>(
-            "/api/v1/douyin/web/handler_user_profile_v3",
-            { uid: authorId },
-            8000,
-          );
-          if (resp.payload) {
-            const d = (resp.payload as Record<string, unknown>).data as Record<string, unknown> | undefined;
-            const userInfo = (d?.user as Record<string, unknown>) ?? (d?.user_info as Record<string, unknown>);
-            if (userInfo) {
-              followerCount =
-                typeof userInfo.mplatform_followers_count === "number" ? userInfo.mplatform_followers_count :
-                typeof userInfo.follower_count === "number" ? userInfo.follower_count : null;
-            }
-          }
+        if (platform === "xiaohongshu") {
+          return await enrichXhsAuthor(authorId);
         }
-
-        // 策略 3：通过 fetch_one_video 获取视频详情（同时补充封面图）
-        if ((!followerCount || followerCount <= 0) && sample.contentId) {
-          const resp = await getTikHub<Record<string, unknown>>(
-            "/api/v1/douyin/web/fetch_one_video",
-            { aweme_id: sample.contentId },
-            8000,
-          );
-          if (resp) {
-            const data = resp as unknown as Record<string, unknown>;
-            const awemeDetail = extractNestedValue(data, "aweme_detail") as Record<string, unknown> | null;
-            if (awemeDetail) {
-              const author = awemeDetail.author as Record<string, unknown> | undefined;
-              if (author) {
-                const fc = typeof author.follower_count === "number" ? author.follower_count :
-                  typeof author.fans_count === "number" ? (author.fans_count as number) : null;
-                if (fc && fc > 0) followerCount = fc;
-              }
-              // 补充封面图
-              const videoCover = awemeDetail.video as Record<string, unknown> | undefined;
-              const coverObj = videoCover?.cover as Record<string, unknown> | undefined;
-              const urlList = coverObj?.url_list as string[] | undefined;
-              if (urlList?.[0]) coverUrl = urlList[0];
-              // 备选封面路径
-              if (!coverUrl) {
-                const dynamicCover = videoCover?.dynamic_cover as Record<string, unknown> | undefined;
-                const dcUrlList = dynamicCover?.url_list as string[] | undefined;
-                if (dcUrlList?.[0]) coverUrl = dcUrlList[0];
-              }
-            }
-          }
+        if (platform === "kuaishou") {
+          return await enrichKuaishouAuthor(authorId);
         }
-
-        return { authorId, followerCount, coverUrl };
+        return { authorId, followerCount: null, coverUrl: null };
       } catch (err) {
-        log.warn({ err: err }, `补充获取失败 (${authorId})`);
+        log.warn({ err: err }, `[${platform}] 补充获取失败 (${authorId})`);
         return { authorId, followerCount: null, coverUrl: null };
       }
     }),
@@ -531,6 +467,135 @@ async function enrichMissingFollowerCounts(
   }
 
   log.info(`粉丝数补充完成: ${enrichedCount}/${needEnrich.size} 个作者成功`);
+}
+
+/** 抖音 author 粉丝/封面补充 */
+async function enrichDouyinAuthor(
+  authorId: string,
+  sample: ExtendedContent,
+): Promise<{ authorId: string; followerCount: number | null; coverUrl: string | null }> {
+  let followerCount: number | null = null;
+  let coverUrl: string | null = null;
+
+  // 策略 1：sec_uid v4
+  if (sample._secUid) {
+    const resp = await getTikHub<Record<string, unknown>>(
+      "/api/v1/douyin/web/handler_user_profile_v4",
+      { sec_user_id: sample._secUid },
+      8000,
+    );
+    if (resp.payload) {
+      const d = (resp.payload as Record<string, unknown>).data as Record<string, unknown> | undefined;
+      const userInfo = (d?.user as Record<string, unknown>) ?? (d?.user_info as Record<string, unknown>);
+      if (userInfo) {
+        followerCount =
+          typeof userInfo.mplatform_followers_count === "number" ? userInfo.mplatform_followers_count :
+          typeof userInfo.follower_count === "number" ? userInfo.follower_count : null;
+      }
+    }
+  }
+
+  // 策略 2：uid v3
+  if ((!followerCount || followerCount <= 0) && authorId && /^\d+$/.test(authorId)) {
+    const resp = await getTikHub<Record<string, unknown>>(
+      "/api/v1/douyin/web/handler_user_profile_v3",
+      { uid: authorId },
+      8000,
+    );
+    if (resp.payload) {
+      const d = (resp.payload as Record<string, unknown>).data as Record<string, unknown> | undefined;
+      const userInfo = (d?.user as Record<string, unknown>) ?? (d?.user_info as Record<string, unknown>);
+      if (userInfo) {
+        followerCount =
+          typeof userInfo.mplatform_followers_count === "number" ? userInfo.mplatform_followers_count :
+          typeof userInfo.follower_count === "number" ? userInfo.follower_count : null;
+      }
+    }
+  }
+
+  // 策略 3：fetch_one_video 顺带补封面
+  if ((!followerCount || followerCount <= 0) && sample.contentId) {
+    const resp = await getTikHub<Record<string, unknown>>(
+      "/api/v1/douyin/web/fetch_one_video",
+      { aweme_id: sample.contentId },
+      8000,
+    );
+    if (resp) {
+      const data = resp as unknown as Record<string, unknown>;
+      const awemeDetail = extractNestedValue(data, "aweme_detail") as Record<string, unknown> | null;
+      if (awemeDetail) {
+        const author = awemeDetail.author as Record<string, unknown> | undefined;
+        if (author) {
+          const fc = typeof author.follower_count === "number" ? author.follower_count :
+            typeof author.fans_count === "number" ? (author.fans_count as number) : null;
+          if (fc && fc > 0) followerCount = fc;
+        }
+        const videoCover = awemeDetail.video as Record<string, unknown> | undefined;
+        const coverObj = videoCover?.cover as Record<string, unknown> | undefined;
+        const urlList = coverObj?.url_list as string[] | undefined;
+        if (urlList?.[0]) coverUrl = urlList[0];
+        if (!coverUrl) {
+          const dynamicCover = videoCover?.dynamic_cover as Record<string, unknown> | undefined;
+          const dcUrlList = dynamicCover?.url_list as string[] | undefined;
+          if (dcUrlList?.[0]) coverUrl = dcUrlList[0];
+        }
+      }
+    }
+  }
+
+  return { authorId, followerCount, coverUrl };
+}
+
+/** 小红书 author 粉丝补充。authorId 可能是 user_id（hex）或不规则值。 */
+async function enrichXhsAuthor(
+  authorId: string,
+): Promise<{ authorId: string; followerCount: number | null; coverUrl: string | null }> {
+  if (!authorId || !/^[a-f0-9]{16,}$/i.test(authorId)) {
+    return { authorId, followerCount: null, coverUrl: null };
+  }
+  const resp = await getTikHub<Record<string, unknown>>(
+    "/api/v1/xiaohongshu/web_v2/fetch_user_info_app",
+    { user_id: authorId },
+    8000,
+  );
+  if (!resp.ok || !resp.payload) {
+    return { authorId, followerCount: null, coverUrl: null };
+  }
+  const data = ((resp.payload as Record<string, unknown>).data ?? resp.payload) as Record<string, unknown>;
+  const interactions = (data.interactions ?? []) as Array<Record<string, unknown>>;
+  let followerCount: number | null = null;
+  for (const item of interactions) {
+    const name = String(item.name ?? "");
+    if (name.includes("粉丝") || item.type === "fans") {
+      const c = Number(item.count ?? 0);
+      if (c > 0) followerCount = c;
+      break;
+    }
+  }
+  return { authorId, followerCount, coverUrl: null };
+}
+
+/** 快手 author 粉丝补充。authorId 通常是数字 user_id。 */
+async function enrichKuaishouAuthor(
+  authorId: string,
+): Promise<{ authorId: string; followerCount: number | null; coverUrl: string | null }> {
+  if (!authorId || !/^\d+$/.test(authorId)) {
+    return { authorId, followerCount: null, coverUrl: null };
+  }
+  const resp = await getTikHub<Record<string, unknown>>(
+    "/api/v1/kuaishou/app/fetch_one_user_v2",
+    { user_id: authorId },
+    8000,
+  );
+  if (!resp.ok || !resp.payload) {
+    return { authorId, followerCount: null, coverUrl: null };
+  }
+  const data = ((resp.payload as Record<string, unknown>).data ?? resp.payload) as Record<string, unknown>;
+  const fansCount = data.fansCount ?? data.fans_count ?? data.fan;
+  const followerCount =
+    typeof fansCount === "number" ? fansCount :
+    typeof fansCount === "string" ? (parseInt(fansCount, 10) || null) : null;
+  return { authorId, followerCount: followerCount && followerCount > 0 ? followerCount : null, coverUrl: null };
 }
 
 /** 递归查找嵌套对象中的指定 key */

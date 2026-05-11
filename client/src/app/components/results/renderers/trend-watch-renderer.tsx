@@ -188,6 +188,7 @@ registerArtifactRenderer({
   artifactType: "trend_watchlist",
   taskIntent: "trend_watch",
   component: TrendWatchBody,
+  validatePayload: (r) => r.taskPayload?.kind === "trend_watch",
   getHeroMetrics,
   getDeepDiveConfig: getDeepDive,
   getCtaActions,

@@ -47,6 +47,42 @@ export async function setupVite(app: Express, server: Server) {
   });
 }
 
+export async function setupAdminVite(app: Express, server: Server) {
+  const serverOptions = {
+    middlewareMode: true,
+    hmr: { server, port: 24679 },
+    allowedHosts: true as const,
+  };
+
+  const vite = await createViteServer({
+    ...viteConfig,
+    configFile: false,
+    server: serverOptions,
+    appType: "custom",
+  });
+
+  app.use(vite.middlewares);
+  app.use("*", async (req, res, next) => {
+    const url = req.originalUrl;
+
+    try {
+      const clientTemplate = path.resolve(
+        import.meta.dirname,
+        "../..",
+        "client",
+        "admin.html"
+      );
+
+      let template = await fs.promises.readFile(clientTemplate, "utf-8");
+      const page = await vite.transformIndexHtml(url, template);
+      res.status(200).set({ "Content-Type": "text/html" }).end(page);
+    } catch (e) {
+      vite.ssrFixStacktrace(e as Error);
+      next(e);
+    }
+  });
+}
+
 export function serveStatic(app: Express) {
   const distPath =
     process.env.NODE_ENV === "development"

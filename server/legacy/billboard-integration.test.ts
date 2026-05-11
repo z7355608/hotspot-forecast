@@ -264,3 +264,80 @@ describe("billboard 路由配置", () => {
     expect(DISABLED_ENDPOINTS.has("/api/v1/douyin/billboard/fetch_hot_item_trends_list")).toBe(true);
   });
 });
+
+// ── 测试 4: 高互动率榜单家族（high_like / high_fan / high_play）路由注册验证 ──
+describe("高互动率榜单家族路由注册（P0-#1）", () => {
+  const fs = require("node:fs") as typeof import("node:fs");
+  const path = require("node:path") as typeof import("node:path");
+  const watchRuntimeSrc = fs.readFileSync(
+    path.resolve(__dirname, "./watch-runtime.ts"),
+    "utf-8",
+  );
+  const livePredictionsSrc = fs.readFileSync(
+    path.resolve(__dirname, "./live-predictions.ts"),
+    "utf-8",
+  );
+
+  it("watch-runtime.ts 应注册 high_like_billboard 路由", () => {
+    expect(watchRuntimeSrc).toContain('capability: "high_like_billboard"');
+    expect(watchRuntimeSrc).toContain("/api/v1/douyin/billboard/fetch_hot_total_high_like_list");
+  });
+
+  it("watch-runtime.ts 应注册 high_fan_billboard 路由", () => {
+    expect(watchRuntimeSrc).toContain('capability: "high_fan_billboard"');
+    expect(watchRuntimeSrc).toContain("/api/v1/douyin/billboard/fetch_hot_total_high_fan_list");
+  });
+
+  it("watch-runtime.ts 应注册 high_play_billboard 路由", () => {
+    expect(watchRuntimeSrc).toContain('capability: "high_play_billboard"');
+    expect(watchRuntimeSrc).toContain("/api/v1/douyin/billboard/fetch_hot_total_high_play_list");
+  });
+
+  it("getTaskPlan 的 topic_watch optional 列表应包含 3 个新 capability", () => {
+    // 找到第二个（topic_watch）的 optional 块——它跟在 validation_watch 后面
+    const topicWatchSection = watchRuntimeSrc.match(/return \{\s*required: \["keyword_content_search"\] as string\[\],\s*optional: \[([\s\S]+?)\] as string\[\],\s*\};\s*\}\s*\/\/ 快手任务计划/);
+    expect(topicWatchSection).not.toBeNull();
+    const optionalBlock = topicWatchSection![1];
+    expect(optionalBlock).toContain('"high_like_billboard"');
+    expect(optionalBlock).toContain('"high_fan_billboard"');
+    expect(optionalBlock).toContain('"high_play_billboard"');
+  });
+
+  it("validatePayload 应支持 3 个新榜单 capability", () => {
+    expect(watchRuntimeSrc).toContain('capability === "high_like_billboard"');
+    expect(watchRuntimeSrc).toContain('capability === "high_fan_billboard"');
+    expect(watchRuntimeSrc).toContain('capability === "high_play_billboard"');
+  });
+
+  it("getFallbackFlag 应支持 3 个新榜单 capability", () => {
+    // getFallbackFlag 段落应同时包含三个新 capability
+    const idx = watchRuntimeSrc.indexOf("function getFallbackFlag");
+    expect(idx).toBeGreaterThan(-1);
+    const tail = watchRuntimeSrc.slice(idx, idx + 1500);
+    expect(tail).toContain("high_like_billboard");
+    expect(tail).toContain("high_fan_billboard");
+    expect(tail).toContain("high_play_billboard");
+  });
+
+  it("live-predictions.ts 应在数据提取循环里覆盖 3 个新 capability", () => {
+    expect(livePredictionsSrc).toContain('capability === "high_like_billboard"');
+    expect(livePredictionsSrc).toContain('capability === "high_fan_billboard"');
+    expect(livePredictionsSrc).toContain('capability === "high_play_billboard"');
+  });
+
+  it("live-predictions.ts 应给每条样本标注来源榜单 whyIncluded", () => {
+    expect(livePredictionsSrc).toContain('"高点赞率榜入选"');
+    expect(livePredictionsSrc).toContain('"高涨粉率榜入选"');
+    expect(livePredictionsSrc).toContain('"高完播率榜入选"');
+  });
+
+  it("buildParams 应使用统一的 page/page_size/date_window 参数", () => {
+    // 检查 3 个新路由都有 buildParams 返回值含 page_size 和 date_window
+    const highLikeIdx = watchRuntimeSrc.indexOf('"/api/v1/douyin/billboard/fetch_hot_total_high_like_list"');
+    expect(highLikeIdx).toBeGreaterThan(-1);
+    // 取后续 200 字符内容
+    const highLikeBlock = watchRuntimeSrc.slice(highLikeIdx, highLikeIdx + 300);
+    expect(highLikeBlock).toMatch(/page_size:\s*\d+/);
+    expect(highLikeBlock).toMatch(/date_window:\s*\d+/);
+  });
+});

@@ -16,9 +16,18 @@
  */
 
 import { createModuleLogger } from "./logger.js";
-import { invokeLLM } from "../_core/llm";
+import { callLLM } from "./llm-gateway.js";
+import { resolveSystemPrompt } from "./prompt-engine.js";
 
 const log = createModuleLogger("SemanticFilter");
+
+function extractJsonObject(raw: string): string | null {
+  const trimmed = (raw ?? "").trim();
+  const start = trimmed.indexOf("{");
+  const end = trimmed.lastIndexOf("}");
+  if (start < 0 || end <= start) return null;
+  return trimmed.slice(start, end + 1);
+}
 
 // ── 类型定义 ──
 
@@ -40,78 +49,6 @@ export interface KeywordRelevanceResult {
   isRelevant: boolean;
   reason: string;
 }
-
-// ── JSON Schema 定义 ──
-
-const CONTENT_RELEVANCE_SCHEMA = {
-  name: "content_relevance_scoring",
-  strict: true,
-  schema: {
-    type: "object",
-    properties: {
-      results: {
-        type: "array",
-        description: "每条内容的相关性评分结果",
-        items: {
-          type: "object",
-          properties: {
-            id: {
-              type: "string",
-              description: "内容的唯一ID",
-            },
-            relevanceScore: {
-              type: "number",
-              description: "与目标赛道的语义相关性得分，0-10分。0=完全无关，5=边缘相关，7=高度相关，10=完全匹配",
-            },
-            reason: {
-              type: "string",
-              description: "判断理由，20字以内",
-            },
-          },
-          required: ["id", "relevanceScore", "reason"],
-          additionalProperties: false,
-        },
-      },
-    },
-    required: ["results"],
-    additionalProperties: false,
-  },
-};
-
-const KEYWORD_RELEVANCE_SCHEMA = {
-  name: "keyword_relevance_filtering",
-  strict: true,
-  schema: {
-    type: "object",
-    properties: {
-      results: {
-        type: "array",
-        description: "每个关键词的相关性判断结果",
-        items: {
-          type: "object",
-          properties: {
-            keyword: {
-              type: "string",
-              description: "待判断的关键词",
-            },
-            isRelevant: {
-              type: "boolean",
-              description: "是否与目标赛道语义相关",
-            },
-            reason: {
-              type: "string",
-              description: "判断理由，15字以内",
-            },
-          },
-          required: ["keyword", "isRelevant", "reason"],
-          additionalProperties: false,
-        },
-      },
-    },
-    required: ["results"],
-    additionalProperties: false,
-  },
-};
 
 // ── 内容语义过滤 ──
 
@@ -140,12 +77,7 @@ export async function filterContentsByRelevance(
     tags: (c.tags ?? []).slice(0, 5).join(", "),
   }));
 
-  try {
-    const result = await invokeLLM({
-      messages: [
-        {
-          role: "system",
-          content: `你是内容相关性评估专家。你的任务是判断每条社交媒体内容是否与目标赛道「${seedTopic}」在语义上高度相关。
+  const fallbackContentSystem = `你是内容相关性评估专家。你的任务是判断每条社交媒体内容是否与目标赛道「${seedTopic}」在语义上高度相关。
 
 评分标准：
 - 10分：内容完全属于「${seedTopic}」赛道，标题/标签直接涉及该领域核心话题
@@ -158,23 +90,37 @@ export async function filterContentsByRelevance(
 1. 只根据标题、作者名、标签来判断，不要猜测
 2. 标题中包含赛道关键词但实际内容明显不相关的（如"安全驾驶"出现在"健身减脂"搜索中），必须给低分
 3. 泛娱乐、泛生活内容如果不直接涉及目标赛道，不能给高分
-4. 宁可漏掉边缘内容，也不要放过噪音`,
-        },
+4. 宁可漏掉边缘内容，也不要放过噪音`;
+
+  const contentSystemPrompt = await resolveSystemPrompt(
+    "semantic-filter-v1",
+    "doubao",
+    { seedTopic },
+    fallbackContentSystem,
+  );
+
+  try {
+    const jsonOnlyHint =
+      "\n\n严格要求：只输出一个 JSON 对象，不要 Markdown 代码块、不要解释文字。结构：{\"results\":[{\"id\":\"<候选 id>\",\"relevanceScore\":<0-10>,\"reason\":\"<20字内>\"}]}";
+    const result = await callLLM({
+      modelId: "doubao",
+      messages: [
+        { role: "system", content: contentSystemPrompt + jsonOnlyHint },
         {
           role: "user",
           content: `目标赛道：「${seedTopic}」\n\n请对以下 ${candidateList.length} 条内容逐一评分：\n${JSON.stringify(candidateList, null, 2)}`,
         },
       ],
-      response_format: {
-        type: "json_schema",
-        json_schema: CONTENT_RELEVANCE_SCHEMA,
-      },
-      max_tokens: 4096,
+      maxTokens: 4096,
+      temperature: 0.1,
     });
 
-    const rawContent = result.choices?.[0]?.message?.content ?? "";
-    const contentStr = typeof rawContent === "string" ? rawContent : JSON.stringify(rawContent);
-    const parsed = JSON.parse(contentStr) as { results: ContentRelevanceResult[] };
+    const jsonBlock = extractJsonObject(result.content);
+    if (!jsonBlock) {
+      log.warn("LLM 语义过滤未返回 JSON，降级到关键词匹配");
+      return fallbackKeywordFilter(candidates, seedTopic, threshold);
+    }
+    const parsed = JSON.parse(jsonBlock) as { results: ContentRelevanceResult[] };
 
     if (!Array.isArray(parsed.results)) {
       log.warn("LLM 语义过滤返回格式异常，降级到关键词匹配");
@@ -225,7 +171,8 @@ export async function filterKeywordsByRelevance(
   if (keywords.length === 0) return [];
 
   try {
-    const result = await invokeLLM({
+    const result = await callLLM({
+      modelId: "doubao",
       messages: [
         {
           role: "system",
@@ -240,23 +187,25 @@ export async function filterKeywordsByRelevance(
 - "蛋白质" → 相关（健身营养）
 - "保安" → 不相关（完全无关）
 - "高考" → 不相关（完全无关）
-- "遥控车" → 不相关（完全无关）`,
+- "遥控车" → 不相关（完全无关）
+
+严格要求：只输出一个 JSON 对象，不要 Markdown 代码块、不要解释文字。结构：{"results":[{"keyword":"<词>","isRelevant":true/false,"reason":"<15字内>"}]}`,
         },
         {
           role: "user",
           content: `目标赛道：「${seedTopic}」\n\n请判断以下关键词的相关性：\n${JSON.stringify(keywords)}`,
         },
       ],
-      response_format: {
-        type: "json_schema",
-        json_schema: KEYWORD_RELEVANCE_SCHEMA,
-      },
-      max_tokens: 2048,
+      maxTokens: 2048,
+      temperature: 0.1,
     });
 
-    const rawContent = result.choices?.[0]?.message?.content ?? "";
-    const contentStr = typeof rawContent === "string" ? rawContent : JSON.stringify(rawContent);
-    const parsed = JSON.parse(contentStr) as { results: KeywordRelevanceResult[] };
+    const jsonBlock = extractJsonObject(result.content);
+    if (!jsonBlock) {
+      log.warn("关键词过滤未返回 JSON，返回原始列表");
+      return keywords;
+    }
+    const parsed = JSON.parse(jsonBlock) as { results: KeywordRelevanceResult[] };
 
     if (!Array.isArray(parsed.results)) {
       log.warn("关键词过滤返回格式异常，返回原始列表");
@@ -306,7 +255,8 @@ function fallbackKeywordFilter(
       reason: matchCount > 0 ? `关键词匹配${matchCount}/${topicTokens.length}` : "无关键词匹配",
     });
 
-    if (score >= 5) {
+    // 降级关键词匹配仍保持较高门槛，避免阈值从 7 落到 5 时噪声灌入
+    if (score >= 6) {
       passedIds.add(c.id);
     }
   }

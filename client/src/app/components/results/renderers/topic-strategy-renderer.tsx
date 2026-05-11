@@ -786,6 +786,7 @@ registerArtifactRenderer({
   artifactType: "topic_plan",
   taskIntent: "topic_strategy",
   component: TopicStrategyBody,
+  validatePayload: (r) => r.taskPayload?.kind === "topic_strategy",
   getHeroMetrics,
   getDeepDiveConfig: getDeepDive,
   getCtaActions,

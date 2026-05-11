@@ -37,6 +37,7 @@ import {
   getCachedCommentCount,
   analyzeComments,
   getCachedAnalysis,
+  type CommentItem,
 } from "./comment-service.js";
 import { readConnectorStore } from "./storage.js";
 import {
@@ -90,6 +91,39 @@ function getUserId(req: IncomingMessage): string {
   // 从请求头或 Cookie 中获取用户 ID（与现有 auth 体系一致）
   const userId = (req.headers["x-user-id"] as string) ?? "demo_user";
   return userId;
+}
+
+type RawFetchedComment = Awaited<ReturnType<typeof fetchRealComments>>["comments"][number];
+
+function isMissingCommentTableError(err: unknown) {
+  const record = err as { code?: unknown; message?: unknown; sqlMessage?: unknown };
+  return (
+    record?.code === "ER_NO_SUCH_TABLE" ||
+    String(record?.message ?? "").includes("creator_work_comments") ||
+    String(record?.sqlMessage ?? "").includes("creator_work_comments")
+  );
+}
+
+function fallbackSentiment(text: string): CommentItem["sentiment"] {
+  const negativeWords = ["不行", "差", "假", "骗", "无语", "后悔", "翻车"];
+  const positiveWords = ["好", "赞", "喜欢", "有用", "收藏", "学到"];
+  if (negativeWords.some((word) => text.includes(word))) return "negative";
+  if (positiveWords.some((word) => text.includes(word))) return "positive";
+  return "neutral";
+}
+
+function mapRawCommentsForResponse(comments: RawFetchedComment[]): CommentItem[] {
+  return comments.map((comment) => ({
+    id: comment.commentId,
+    author: comment.authorName,
+    authorAvatar: comment.authorAvatar,
+    content: comment.text,
+    likes: comment.likeCount,
+    replyCount: comment.replyCount,
+    sentiment: fallbackSentiment(comment.text),
+    isAuthorReply: comment.isAuthorReply,
+    createdAt: comment.createdAt > 0 ? new Date(comment.createdAt * 1000).toISOString() : "",
+  }));
 }
 
 // ─────────────────────────────────────────────
@@ -547,16 +581,31 @@ export async function handleFetchComments(
     // 计算下一个 cursor（用于 TikHub 翻页）
     const nextCursor = hasMore ? cursor + count : null;
 
-    // 从数据库分页读取（按点赞排序）
     const offset = (page - 1) * pageSize;
-    const comments = await getCachedComments(workId, pageSize, "like_count", offset);
-    const totalInDb = await getCachedCommentCount(workId);
+    let comments: CommentItem[] = [];
+    let totalInDb = 0;
+    let cacheUnavailable = false;
+    try {
+      // 从数据库分页读取（按点赞排序）
+      comments = await getCachedComments(workId, pageSize, "like_count", offset);
+      totalInDb = await getCachedCommentCount(workId);
+    } catch (err) {
+      if (!isMissingCommentTableError(err) || rawComments.length === 0) throw err;
+      cacheUnavailable = true;
+      const rawPage = [...rawComments]
+        .sort((a, b) => b.likeCount - a.likeCount)
+        .slice(offset, offset + pageSize);
+      comments = mapRawCommentsForResponse(rawPage);
+      totalInDb = rawComments.length;
+      log.warn({ workId, platformId }, "creator_work_comments 表不存在，直接返回本次拉取的评论");
+    }
     const hasMorePages = offset + comments.length < totalInDb;
 
     sendJson(res, 200, {
       comments,
       total: totalInDb,
-      fromCache: rawComments.length === 0,
+      fromCache: rawComments.length === 0 && !cacheUnavailable,
+      cacheUnavailable,
       hasMore: hasMore || hasMorePages,
       nextCursor,
       page,

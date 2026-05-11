@@ -31,11 +31,26 @@
  */
 
 import { createModuleLogger } from "./logger.js";
+import { resolveSystemPrompt } from "./prompt-engine.js";
+import { stripJsonFences } from "./json-extract.js";
+import { generateApolloImage } from "../services/apollo-image.js";
 
 const log = createModuleLogger("BreakdownAgent");
+
+// actionId → prompt 模板 ID 映射（已纳入后台管理的 5 个 CTA）
+// 其余 actionId 用 inline SYSTEM_PROMPT 兜底
+const ACTION_TEMPLATE_MAP: Record<string, string> = {
+  rewrite_script:  "breakdown-rewrite-script-v1",
+  extract_copy:    "breakdown-extract-copy-v1",
+  topic_strategy:  "breakdown-topic-strategy-v1",
+  remake_script:   "breakdown-remake-script-v1",
+  extract_hooks:   "breakdown-extract-hooks-v1",
+  xiaohongshu_plan: "prediction-xiaohongshu-plan-v1",
+  title_cover: "prediction-title-cover-v1",
+};
 import type { IncomingMessage, ServerResponse } from "node:http";
 import { getCorsHeadersObj } from "./cors.js";
-import { streamLLMToSSE, type LLMMessage } from "./llm-gateway.js";
+import { callLLM, streamLLMToSSE, type LLMMessage } from "./llm-gateway.js";
 
 /* ------------------------------------------------------------------ */
 /*  类型定义                                                             */
@@ -65,6 +80,16 @@ export interface BreakdownActionRequest {
     contentOutline?: string[];
     /** 用户自定义 prompt（来自 CTA 配置的 prompt 字段） */
     userPrompt?: string;
+    /** 结果页选中的创作切口上下文 */
+    selectedDirection?: {
+      title?: string;
+      description?: string;
+      howToShoot?: string;
+      whyNow?: string;
+      directionTitle?: string;
+      directionDescription?: string;
+      tags?: string[];
+    } | null;
     /** 账号相关上下文（account-diagnosis 类型） */
     accountHandle?: string;
     accountPlatform?: string;
@@ -166,8 +191,16 @@ export interface BreakdownActionRequest {
 const SYSTEM_PROMPT = `你是一位专业的短视频爆款内容策略师，擅长抖音、小红书、视频号等平台的内容分析和创作指导。
 你的分析基于真实的爆款数据，输出内容要具体、可落地、有数据支撑。
 请用 Markdown 格式输出，结构清晰，适合创作者直接参考使用。
-不要输出“好的”、“当然”等废话开头，直接输出内容。
-当前日期是 ${new Date().toISOString().slice(0, 10)}，所有内容必须基于当前时间点，不要引用过时的数据或案例。`;
+不要输出"好的"、"当然"等废话开头，直接输出内容。
+
+当前日期：${new Date().toISOString().slice(0, 10)}
+
+## 重要原则（严格遵守）
+
+1. **数据时效性**：以下所有样本都是我们刚刚从各平台实时采集的（最近 30 天内发布的真实内容）。这是最新的数据源。
+2. **禁用训练数据**：你必须严格基于下方提供的数据进行分析，**不要引用你训练数据中的任何案例、产品版本或对标对象**。如果用户提到的产品/话题（如 DeepSeek V4、GPT-5 等）在你训练数据之后出现，**禁止用老版本做对比**——直接基于提供的真实数据展开。
+3. **账号-内容严格绑定**：每个样本内的 id / account / followers / title / likes / publishedAt 等字段是**严格绑定的同一条记录**。禁止把样本 A 的 account 和样本 B 的 title/likes 组合。引用具体数据时，必须完整使用该样本的所有字段，并在引用时标注样本 id（如 [C1]、[L1]）便于溯源。
+4. **宁缺毋滥**：不确定的数据点宁可省略，**不要编造**。数据中没有的维度，就说"数据未覆盖"。`;
 
 /** 构建 AI 选题卡片上下文（如果来自选题卡片的点击） */
 function buildTopicContext(
@@ -204,6 +237,7 @@ function buildPrompt(req: BreakdownActionRequest): LLMMessage[] {
     titleVariants = [],
     hookVariants = [],
     userPrompt = "",
+    selectedDirection = null,
     accountHandle = "",
     accountPlatform = platform,
     accountTrack = trackTags[0] ?? "内容",
@@ -229,6 +263,15 @@ function buildPrompt(req: BreakdownActionRequest): LLMMessage[] {
   } = context;
 
   const track = trackTags[0] ?? "内容";
+  const selectedCutTitle =
+    selectedDirection?.title ||
+    selectedDirection?.directionTitle ||
+    resultQuery ||
+    resultTitle;
+  const selectedCutDescription =
+    selectedDirection?.description ||
+    selectedDirection?.directionDescription ||
+    "";
 
   // 构建选题策略 V2 上下文
   const hasTopicStrategyData = !!topicStrategyV2 && topicStrategyV2.directions.length > 0;
@@ -263,16 +306,29 @@ ${marketEvidence.similarContentCount ? `- **相似内容数**：${marketEvidence
 ${marketEvidence.kolCount ? `- **KOL 入场数**：${marketEvidence.kolCount}` : ""}
 ${marketEvidence.kocCount ? `- **KOC 入场数**：${marketEvidence.kocCount}` : ""}
 
-## 真实内容样本（已跑通的内容）
-${topContents.map((c: Record<string, unknown>, i: number) => `### 样本 ${i + 1}：${c.title}
-- 作者：${c.author} · 平台：${c.platform}
-- 点赞 ${c.likes ?? "?"}  评论 ${c.comments ?? "?"}  收藏 ${c.collects ?? "?"}  分享 ${c.shares ?? "?"}
+## 真实内容样本（每条记录的账号/标题/数据严格绑定，不得跨条组合）
+${topContents.map((c: Record<string, unknown>, i: number) => {
+  const id = c.id ?? `C${i + 1}`;
+  return `### 内容样本 [${id}]
+- 标题：${c.title}
+- 作者：${c.author} · 平台：${c.platform}${c.publishedAt ? ` · 发布时间：${c.publishedAt}` : ""}
+- 互动：点赞 ${c.likes ?? "?"}  评论 ${c.comments ?? "?"}  收藏 ${c.collects ?? "?"}  分享 ${c.shares ?? "?"}
 - 关键词：${(c.keywords as string[] || []).join("、")}
-- 内容结构：${c.structure}`).join("\n")}
+- 内容结构：${c.structure}`;
+}).join("\n")}
 
 ## 真实账号样本（同赛道创作者）
-${topAccounts.map((a: Record<string, unknown>, i: number) => `${i + 1}. **${a.name}** (@${a.handle}) · ${a.platform} · ${a.tier} · 粉丝 ${a.followers ?? "?"} · 内容方向：${(a.topics as string[] || []).join("、")}`).join("\n")}
-${lowFollowerEvidence.length > 0 ? "\n## 低粉爆款样本\n" + lowFollowerEvidence.map((e: Record<string, unknown>, i: number) => (i + 1) + ". 「" + e.title + "」— " + e.account + "(粉丝 " + e.fans + ") · " + e.playCount + " · 互动粉丝比 " + e.anomaly + "倍").join("\n") : ""}
+${topAccounts.map((a: Record<string, unknown>, i: number) => `[A${i + 1}] **${a.name}** (@${a.handle}) · ${a.platform} · ${a.tier} · 粉丝 ${a.followers ?? "?"} · 内容方向：${(a.topics as string[] || []).join("、")}`).join("\n")}
+${lowFollowerEvidence.length > 0 ? `
+## 低粉爆款样本（⚠️ 每条样本的账号与内容数据严格一一对应，禁止跨条组合）
+${lowFollowerEvidence.map((e: Record<string, unknown>, i: number) => {
+  const id = e.id ?? `L${i + 1}`;
+  return `### 低粉样本 [${id}]
+- 账号：${e.account}（粉丝 ${e.fans}）← 该账号发布了下面这条内容
+- 内容标题：${e.title}
+- 互动数据：${e.playCount}
+- 互动粉丝比：${e.anomaly} 倍`;
+}).join("\n")}` : ""}
 `.trim() : "";
 
   // 构建样本上下文描述
@@ -764,6 +820,80 @@ ${userPrompt ? "**用户补充要求**：" + userPrompt : ""}`
 ${userPrompt ? "**用户补充要求**：" + userPrompt : ""}`;
       break;
 
+    case "xiaohongshu_plan":
+      userMessage = hasOpportunityData
+        ? `${opportunityContext}
+
+${buildTopicContext(topicReference, topicTags)}## 任务：生成小红书图文方案
+
+基于以上真实样本数据，把「${selectedCutTitle}」改成一版小红书可以直接发布的图文笔记方案。
+
+**核心要求：**
+1. 只使用上方样本中已有的互动、评论、收藏、分享等信号，不写播放量
+2. 方案要适配小红书：封面点击、标题避坑/亲测感、收藏价值、评论经验分享
+3. 不要写泛泛的 AI 资讯，要围绕「${selectedCutDescription || selectedCutTitle}」给出可执行内容
+4. 每个建议都要能让创作者今天开工，不输出抽象运营话
+
+**请输出：**
+
+### 1. 笔记定位
+- 这篇笔记要让用户因为什么点开
+- 适合的人群
+- 不适合做成什么样
+
+### 2. 小红书标题（8 个）
+按 4 类输出：亲测型 / 避坑型 / 清单型 / 争议型，每个标题说明点击点。
+
+### 3. 封面首屏方案（3 套）
+每套包含：主标题、副标题、画面元素、首屏信息层级。
+
+### 4. 图文页结构（6-8 页）
+逐页写清：页面标题、正文要点、配图建议、用户看到后的心理动作。
+
+### 5. 正文笔记
+给出一版 280-500 字的小红书正文，包含开头、主体、结尾收藏/评论引导。
+
+### 6. 发布与互动
+- 发布时间建议
+- 评论区置顶话术 2 条
+- 收藏引导句 3 条
+
+${userPrompt ? `**用户补充要求**：${userPrompt}` : ""}`
+        : `${sampleContext}
+
+## 任务：生成小红书图文方案
+
+请把「${selectedCutTitle}」改成一版小红书图文笔记方案，输出标题、封面、6-8 页图文结构、正文和收藏/评论引导。
+
+${userPrompt ? `**用户补充要求**：${userPrompt}` : ""}`;
+      break;
+
+    case "title_cover":
+      userMessage = hasOpportunityData
+        ? `${opportunityContext}
+
+${buildTopicContext(topicReference, topicTags)}## 任务：生成标题与封面方案
+
+请基于「${selectedCutTitle}」输出可发布的标题与封面包装。注意：真实封面图会由 Apollo 图片模型另行生成，你这里需要先给出标题、封面文案和图片生成提示词。
+
+**请输出：**
+1. 抖音标题 5 个
+2. 小红书标题 5 个
+3. 封面大字 6 个（每个 6-12 字）
+4. 封面副标题 3 个
+5. 画面方向：主体、背景、构图、色彩、不要出现的元素
+6. 最推荐的一版：说明为什么现在更容易点开
+
+${userPrompt ? `**用户补充要求**：${userPrompt}` : ""}`
+        : `${sampleContext}
+
+## 任务：生成标题与封面方案
+
+请输出标题、封面大字、副标题、画面方向和最推荐的一版。
+
+${userPrompt ? `**用户补充要求**：${userPrompt}` : ""}`;
+      break;
+
     case "breakdown_low":
       userMessage = hasOpportunityData
         ? `${opportunityContext}
@@ -944,6 +1074,224 @@ ${userPrompt ? `**用户补充要求**：${userPrompt}` : ""}`;
   ];
 }
 
+interface TitleCoverPlan {
+  douyinTitles: string[];
+  xiaohongshuTitles: string[];
+  coverTexts: string[];
+  coverSubtitle: string;
+  visualDirection: string;
+  imagePrompt: string;
+  recommendationReason: string;
+}
+
+function asStringList(value: unknown, fallback: string[]) {
+  if (!Array.isArray(value)) return fallback;
+  const list = value
+    .map((item) => String(item ?? "").trim())
+    .filter(Boolean)
+    .slice(0, 8);
+  return list.length ? list : fallback;
+}
+
+function fallbackTitleCoverPlan(body: BreakdownActionRequest): TitleCoverPlan {
+  const topic =
+    body.context.selectedDirection?.title ||
+    body.context.selectedDirection?.directionTitle ||
+    body.context.resultQuery ||
+    body.context.resultTitle ||
+    "这个选题";
+  return {
+    douyinTitles: [
+      `${topic}，我先替你试了`,
+      `别急着信，先看这个测试`,
+      `这件事普通人一定要知道`,
+      `我用 3 个问题测了一遍`,
+      `结果和我想的不一样`,
+    ],
+    xiaohongshuTitles: [
+      `我用 3 个问题测试了${topic}`,
+      `${topic}避坑清单，先收藏`,
+      `普通人怎么判断${topic}靠不靠谱`,
+      `亲测后，我不建议你直接照信`,
+      `${topic}真实测试记录`,
+    ],
+    coverTexts: ["亲测翻车", "别直接信", "3个问题测真相", "普通人避坑", "结果有点离谱", "先看再用"],
+    coverSubtitle: "真实测试记录",
+    visualDirection: "小红书风格竖版封面，清爽但有冲突感，包含手机/聊天界面/测试清单等元素，不使用平台 logo。",
+    imagePrompt: `Create a premium Xiaohongshu cover image for a Chinese creator note about "${topic}". Vertical poster, clean editorial layout, bold Chinese headline area, AI tool testing scene, phone screen, checklist, warm white background with vivid red and indigo accents, high contrast, modern creator economy style, no brand logos, no watermark.`,
+    recommendationReason: "用亲测和避坑制造点击动机，比泛泛介绍更容易让用户停下来。",
+  };
+}
+
+function parseTitleCoverPlan(raw: string, body: BreakdownActionRequest): TitleCoverPlan {
+  const fallback = fallbackTitleCoverPlan(body);
+  try {
+    const parsed = JSON.parse(stripJsonFences(raw)) as Record<string, unknown>;
+    return {
+      douyinTitles: asStringList(parsed.douyinTitles, fallback.douyinTitles),
+      xiaohongshuTitles: asStringList(parsed.xiaohongshuTitles, fallback.xiaohongshuTitles),
+      coverTexts: asStringList(parsed.coverTexts, fallback.coverTexts),
+      coverSubtitle: String(parsed.coverSubtitle || fallback.coverSubtitle),
+      visualDirection: String(parsed.visualDirection || fallback.visualDirection),
+      imagePrompt: String(parsed.imagePrompt || fallback.imagePrompt),
+      recommendationReason: String(parsed.recommendationReason || fallback.recommendationReason),
+    };
+  } catch {
+    return fallback;
+  }
+}
+
+function writeBreakdownSSE(res: ServerResponse, event: string, data: unknown) {
+  res.write(`event: ${event}\ndata: ${JSON.stringify(data)}\n\n`);
+}
+
+function buildTitleCoverBriefMessages(body: BreakdownActionRequest): LLMMessage[] {
+  const context = body.context ?? {};
+  const topic =
+    context.selectedDirection?.title ||
+    context.selectedDirection?.directionTitle ||
+    context.resultQuery ||
+    context.resultTitle ||
+    "当前预测选题";
+  const samples = (context.topContents ?? []).slice(0, 5);
+  const sampleLines = samples
+    .map((item, index) => {
+      return `[C${index + 1}] ${item.platform} @${item.author}《${item.title}》 点赞:${item.likes ?? "待补"} 评论:${item.comments ?? "待补"} 收藏:${item.collects ?? "待补"} 分享:${item.shares ?? "待补"} 结构:${item.structure || "待补"}`;
+    })
+    .join("\n");
+
+  return [
+    {
+      role: "system",
+      content: `你是面向抖音/小红书创作者的标题与封面包装专家。你只基于用户提供的真实样本与预测结论做包装，不编造数据，不展示播放量。
+
+输出必须是严格 JSON，不要 markdown，不要解释。字段：
+{
+  "douyinTitles": ["5个抖音标题"],
+  "xiaohongshuTitles": ["5个小红书标题"],
+  "coverTexts": ["6个封面大字，每个6-12字"],
+  "coverSubtitle": "封面副标题",
+  "visualDirection": "中文描述封面画面方向",
+  "imagePrompt": "英文图片生成提示词，适合 gpt-image-2-all，要求竖版小红书封面、无logo、无水印、可留中文标题区域",
+  "recommendationReason": "为什么推荐这版"
+}`,
+    },
+    {
+      role: "user",
+      content: `## 预测选题
+${topic}
+
+## 切入角度
+${context.selectedDirection?.description || context.selectedDirection?.directionDescription || context.userPrompt || "围绕本次预测切口做亲测/避坑/清单型包装"}
+
+## 机会信息
+- 机会分：${context.opportunityScore ?? "待补"}
+- 判断：${context.verdictLabel ?? "待补"}
+- 适合账号：${(context.bestFor ?? []).join("、") || "待补"}
+- 不适合账号：${(context.notFor ?? []).join("、") || "待补"}
+- 为什么现在：${(context.whyNow ?? []).join("；") || "待补"}
+
+## 真实样本
+${sampleLines || "样本未覆盖，按选题本身输出可执行包装。"}
+
+## 用户补充
+${context.userPrompt || "无"}`,
+    },
+  ];
+}
+
+function renderTitleCoverMarkdown(plan: TitleCoverPlan, image: { url?: string | null; b64Json?: string | null } | null, imageError?: string) {
+  const imageSrc = image?.url || (image?.b64Json ? `data:image/png;base64,${image.b64Json}` : "");
+  return `# 标题与封面生成结果
+
+## 最推荐包装
+
+**封面大字**：${plan.coverTexts[0] ?? "先看再拍"}
+
+**封面副标题**：${plan.coverSubtitle}
+
+**推荐理由**：${plan.recommendationReason}
+
+${imageSrc ? `![生成封面图](${imageSrc})` : `> 封面图暂未生成：${imageError ?? "Apollo 图片接口未返回图片地址"}。`}
+
+## 抖音标题
+
+${plan.douyinTitles.map((title, index) => `${index + 1}. ${title}`).join("\n")}
+
+## 小红书标题
+
+${plan.xiaohongshuTitles.map((title, index) => `${index + 1}. ${title}`).join("\n")}
+
+## 封面大字备选
+
+${plan.coverTexts.map((text, index) => `${index + 1}. ${text}`).join("\n")}
+
+## 封面画面方向
+
+${plan.visualDirection}
+
+## 图片生成提示词
+
+\`${plan.imagePrompt}\`
+`;
+}
+
+async function handleTitleCoverAction(
+  req: IncomingMessage,
+  res: ServerResponse,
+  body: BreakdownActionRequest,
+): Promise<void> {
+  res.writeHead(200, {
+    "Content-Type": "text/event-stream; charset=utf-8",
+    "Cache-Control": "no-cache",
+    Connection: "keep-alive",
+    ...getCorsHeadersObj(req),
+  });
+
+  writeBreakdownSSE(res, "progress", { step: "brief", message: "正在生成标题与封面包装 brief..." });
+
+  let plan = fallbackTitleCoverPlan(body);
+  try {
+    const result = await callLLM({
+      modelId: body.modelId || "gpt54",
+      messages: buildTitleCoverBriefMessages(body),
+      maxTokens: 1800,
+      temperature: 0.7,
+      timeoutMs: 60_000,
+    });
+    plan = parseTitleCoverPlan(result.content, body);
+  } catch (err) {
+    log.warn({ err: err instanceof Error ? err.message : String(err) }, "title_cover brief failed, using fallback");
+    writeBreakdownSSE(res, "progress", { step: "brief_fallback", message: "标题 brief 生成不稳定，已使用本地兜底继续生成封面图。" });
+  }
+
+  writeBreakdownSSE(res, "progress", { step: "image", message: "正在调用 Apollo gpt-image-2-all 生成封面图..." });
+
+  let image: ApolloImageLike | null = null;
+  let imageError = "";
+  try {
+    image = await generateApolloImage({
+      prompt: plan.imagePrompt,
+      size: "1024x1536",
+      timeoutMs: 120_000,
+    });
+  } catch (err) {
+    imageError = err instanceof Error ? err.message : String(err);
+    log.warn({ err: imageError }, "Apollo title_cover image generation failed");
+  }
+
+  writeBreakdownSSE(res, "delta", { text: renderTitleCoverMarkdown(plan, image, imageError) });
+  writeBreakdownSSE(res, "done", {
+    model: image?.model ? `${body.modelId || "gpt54"} + ${image.model}` : body.modelId || "gpt54",
+    completionChars: 0,
+    chargedCost: 0,
+    transactionId: "free",
+  });
+  res.end();
+}
+
+type ApolloImageLike = Awaited<ReturnType<typeof generateApolloImage>>;
+
 /* ------------------------------------------------------------------ */
 /*  HTTP 处理函数                                                        */
 /* ------------------------------------------------------------------ */
@@ -961,8 +1309,13 @@ export async function handleBreakdownAction(
   res: ServerResponse,
   body: BreakdownActionRequest,
 ): Promise<void> {
-  const { modelId = "doubao" } = body;
+  const { modelId = "gpt54" } = body;
   let enrichedBody = body;
+
+  if (body.actionId === "title_cover") {
+    await handleTitleCoverAction(_req, res, body);
+    return;
+  }
 
   // 如果是文案提取且用户提供了视频链接，先做 ASR 转录
   if (body.actionId === "extract_copy" && body.context?.videoUrl) {
@@ -1011,11 +1364,25 @@ export async function handleBreakdownAction(
 
     // 构建 Prompt 并流式输出(响应头已发送，直接写 body)
     const messages = buildPrompt(enrichedBody);
+    await applySystemPromptFromTemplate(messages, enrichedBody.actionId);
     await streamLLMToSSE({ modelId, messages, maxTokens: 4096, timeoutMs: 120_000 }, res, true /* headersAlreadySent */);
     return;
   }
 
   // 普通模式：直接构建 Prompt 并流式输出
   const messages = buildPrompt(enrichedBody);
+  await applySystemPromptFromTemplate(messages, enrichedBody.actionId);
   await streamLLMToSSE({ modelId, messages, maxTokens: 4096, timeoutMs: 120_000 }, res);
+}
+
+/**
+ * 把 messages[0]（system）从 prompt_templates 表加载，按 actionId 选模板。
+ * 如果没匹配模板或加载失败，messages 保持不变（仍用代码内置 SYSTEM_PROMPT）。
+ */
+async function applySystemPromptFromTemplate(messages: LLMMessage[], actionId: string): Promise<void> {
+  const templateId = ACTION_TEMPLATE_MAP[actionId];
+  if (!templateId || !messages[0] || messages[0].role !== "system") return;
+  const fallback = typeof messages[0].content === "string" ? messages[0].content : "";
+  const dbPrompt = await resolveSystemPrompt(templateId, "doubao", { currentDate: new Date().toISOString().slice(0, 10) }, fallback);
+  messages[0] = { role: "system", content: dbPrompt };
 }

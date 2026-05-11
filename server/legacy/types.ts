@@ -37,6 +37,7 @@ export type DegradeFlag =
   | "fallback_comment_route"
   | "fallback_billboard_route"
   | "fallback_hotlist_route"
+  | "fallback_account_diagnosis_route"
   | "topic_inferred_from_search"
   | "optional_endpoint_failed"
   | "sparse_comments"
@@ -211,6 +212,8 @@ export interface StoredResultArtifact {
   lastWatchRunAt?: string;
   lastExecutionStatus?: ExecutionStatus;
   snapshot: Record<string, unknown>;
+  /** 软删除时间戳。一旦被设置，listResultArtifactSummaries / getResultArtifactById 会跳过它。 */
+  deletedAt?: string;
 }
 
 export interface StoredWatchTask {

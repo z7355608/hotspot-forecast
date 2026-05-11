@@ -302,6 +302,24 @@ export interface AiTopicSuggestion {
   howToShoot?: string;
   /** 为什么现在（时机判断理由） */
   whyNow?: string;
+  /** 当前切口的评论/需求信号分（0-100） */
+  commentScore?: number;
+  /** 当前切口的评论/需求信号理由 */
+  commentReason?: string;
+  /** 当前切口匹配样本中的评论量 */
+  commentCount?: number;
+  /** 当前切口的供给缺口分（0-100，越高代表越有空档） */
+  supplyGapScore?: number;
+  /** 当前切口的供给缺口理由 */
+  supplyGapReason?: string;
+  /** 当前切口的低粉可复制性分（0-100） */
+  lowFollowerScore?: number;
+  /** 当前切口的低粉可复制性理由 */
+  lowFollowerReason?: string;
+  /** 当前切口命中的低粉样本数 */
+  lowFollowerSampleCount?: number;
+  /** 当前切口主要引用的内容样本 ID */
+  evidenceContentIds?: string[];
 }
 
 export interface PredictionCommentInsight {
@@ -312,6 +330,8 @@ export interface PredictionCommentInsight {
   highlights: PredictionCommentHighlight[];
   /** 评论不可用时的原因说明（如快手评论接口不可用） */
   unavailableReason?: string;
+  /** LLM深度分析评论后的一句话结论（基于高频词+需求信号+热评综合推导） */
+  aiSummary?: string;
 }
 
 export interface PredictionMarketEvidence {
@@ -378,7 +398,7 @@ export interface PredictionLowFollowerEvidenceItem {
   fansCount: number;
   /** 互动粉丝比异常倍数（基于实际可用数据计算） */
   anomaly: number;
-  /** 互动指标展示标签（优先播放量，降级用点赞/评论量） */
+  /** 互动指标展示标签（点赞/评论/收藏/分享等 TikHub 可用指标） */
   playCount: string;
   /** 用于计算异常值的核心互动数值 */
   engagementCount: number;

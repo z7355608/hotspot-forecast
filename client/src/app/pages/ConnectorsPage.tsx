@@ -70,13 +70,6 @@ function PlatformIcon({ id, size = 20 }: { id: string; size?: number }) {
         <path d="M17.813 4.653h.854c1.51.054 2.769.578 3.773 1.574 1.004.995 1.524 2.249 1.56 3.76v7.36c-.036 1.51-.556 2.769-1.56 3.773s-2.262 1.524-3.773 1.56H5.333c-1.51-.036-2.769-.556-3.773-1.56S.036 18.858 0 17.347v-7.36c.036-1.511.556-2.765 1.56-3.76 1.004-.996 2.262-1.52 3.773-1.574h.774l-1.174-1.12a1.234 1.234 0 0 1-.373-.906c0-.356.124-.658.373-.907l.027-.027c.267-.249.573-.373.92-.373.347 0 .653.124.92.373L9.653 4.44c.071.071.134.142.187.213h4.267a.836.836 0 0 1 .16-.213l2.853-2.747c.267-.249.573-.373.92-.373.347 0 .662.151.929.4.267.249.391.551.391.907 0 .355-.124.657-.373.906zM8 11.107c.373 0 .684.124.933.373.25.249.383.569.4.96v1.173c-.017.391-.15.711-.4.96-.249.25-.56.374-.933.374s-.684-.125-.933-.374c-.25-.249-.383-.569-.4-.96V12.44c.017-.391.15-.711.4-.96.249-.249.56-.373.933-.373zm8 0c.373 0 .684.124.933.373.25.249.383.569.4.96v1.173c-.017.391-.15.711-.4.96-.249.25-.56.374-.933.374s-.684-.125-.933-.374c-.25-.249-.383-.569-.4-.96V12.44c.017-.391.15-.711.4-.96.249-.249.56-.373.933-.373z" />
       </svg>
     ),
-    kuaishou: (
-      <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor">
-        <path d="M12.48 3C7.76 3 3.93 6.82 3.93 11.54c0 2.34.94 4.46 2.46 6.01L4.5 21l4.13-2.07c1.15.47 2.42.73 3.75.73h.1c4.72 0 8.55-3.82 8.55-8.54S17.2 3 12.48 3zm0 15.54c-1.18 0-2.3-.28-3.3-.79l-.24-.14-2.45 1.23.64-2.33-.15-.24a7 7 0 0 1-1.08-3.73c0-3.88 3.16-7.04 7.04-7.04 3.88 0 7.04 3.16 7.04 7.04 0 3.88-3.16 7-7.04 7z" />
-        <circle cx="9" cy="11.5" r="1.5" />
-        <circle cx="15" cy="11.5" r="1.5" />
-      </svg>
-    ),
   };
 
   return <>{paths[id] ?? <Zap width={size} height={size} />}</>;
@@ -369,7 +362,7 @@ export function ConnectorsPage() {
       });
       inferProfileFromConnector(editingConnector.id);
       // 绑定成功后自动触发一次数据同步（后台执行，不阻塞弹窗关闭）
-      const SYNC_SUPPORTED = new Set(["douyin", "xiaohongshu", "kuaishou"]);
+      const SYNC_SUPPORTED = new Set(["douyin", "xiaohongshu"]);
       if (SYNC_SUPPORTED.has(editingConnector.id)) {
         syncCreatorData(editingConnector.id, 30).catch(() => {/* ignore sync errors on auto-sync */});
       }
@@ -496,7 +489,6 @@ export function ConnectorsPage() {
             {[
               { id: "douyin", color: "#000", label: "抖" },
               { id: "xhs", color: "#FF2442", label: "红" },
-              { id: "bilibili", color: "#00AEEC", label: "B" },
             ].map((p, i) => (
               <div key={p.id} className="flex items-center gap-3">
                 <div
@@ -505,7 +497,7 @@ export function ConnectorsPage() {
                 >
                   {p.label}
                 </div>
-                {i < 2 && (
+                {i < 1 && (
                   <div className="h-px w-6 border-t border-dashed border-gray-300" />
                 )}
               </div>
@@ -862,9 +854,7 @@ export function ConnectorsPage() {
                   {(!showCookieLogin || editorTab === "manual") && (
                     <div className="space-y-3">
                       <div className="mb-1 text-xs text-gray-400">
-                        {editingConnector.id === 'kuaishou'
-                          ? "输入快手昵称或主页链接来连接账号（推荐填昵称，最简单）"
-                          : showCookieLogin
+                        {showCookieLogin
                             ? "如果扫码不方便，也可以手动输入账号信息"
                             : "输入你的账号信息来完成连接"}
                       </div>
@@ -874,42 +864,30 @@ export function ConnectorsPage() {
                           type="url"
                           value={draftProfileUrl}
                           onChange={(event) => setDraftProfileUrl(event.target.value)}
-                          placeholder={`粘贴${editingConnector.name}主页链接，如 ${editingConnector.id === 'douyin' ? 'https://www.douyin.com/user/...' : editingConnector.id === 'xiaohongshu' ? 'https://www.xiaohongshu.com/user/profile/...' : editingConnector.id === 'kuaishou' ? 'https://www.kuaishou.com/profile/373636300' : 'https://...'}`}
+                          placeholder={`粘贴${editingConnector.name}主页链接，如 ${editingConnector.id === 'douyin' ? 'https://www.douyin.com/user/...' : editingConnector.id === 'xiaohongshu' ? 'https://www.xiaohongshu.com/user/profile/...' : 'https://...'}`}
                           className="w-full rounded-2xl border border-gray-200 px-4 py-3 text-sm text-gray-700 outline-none transition-colors focus:border-gray-400"
                         />
                       </label>
                       <label className="block">
-                        <div className="mb-2 text-xs text-gray-500">{editingConnector.id === 'kuaishou' ? '快手昵称（推荐）' : '昵称'}</div>
+                        <div className="mb-2 text-xs text-gray-500">昵称</div>
                         <input
                           type="text"
                           value={draftHandle}
                           onChange={(event) => setDraftHandle(event.target.value)}
-                          placeholder={editingConnector.id === 'kuaishou' ? '输入快手昵称，如 美食作家王刚' : `输入${editingConnector.name}账号昵称`}
+                          placeholder={`输入${editingConnector.name}账号昵称`}
                           className="w-full rounded-2xl border border-gray-200 px-4 py-3 text-sm text-gray-700 outline-none transition-colors focus:border-gray-400"
                         />
                       </label>
                       <label className="block">
-                        <div className="mb-2 text-xs text-gray-500">{editingConnector.id === 'kuaishou' ? '快手用户 ID（数字）' : '平台用户 ID'}</div>
+                        <div className="mb-2 text-xs text-gray-500">平台用户 ID</div>
                         <input
                           type="text"
                           value={draftPlatformUserId}
                           onChange={(event) => setDraftPlatformUserId(event.target.value)}
-                          placeholder={editingConnector.id === 'kuaishou' ? '输入快手数字 ID，如 373636300（可选）' : `输入${editingConnector.name}用户 ID`}
+                          placeholder={`输入${editingConnector.name}用户 ID`}
                           className="w-full rounded-2xl border border-gray-200 px-4 py-3 text-sm text-gray-700 outline-none transition-colors focus:border-gray-400"
                         />
                       </label>
-                      {editingConnector.id === 'kuaishou' && (
-                        <div className="rounded-2xl border border-amber-100 bg-amber-50 px-4 py-3 text-xs leading-relaxed text-amber-700">
-                          <div className="mb-1.5 font-medium">快手账号连接说明</div>
-                          <ul className="space-y-1 list-disc pl-3.5">
-                            <li><strong>推荐方式</strong>：填写快手昵称。系统会通过搜索自动匹配你的账号</li>
-                            <li><strong>备选方式 1</strong>：粘贴主页链接，如 <code className="rounded bg-amber-100 px-1">https://www.kuaishou.com/profile/373636300</code></li>
-                            <li><strong>备选方式 2</strong>：填写快手数字 ID（纯数字，在快手 APP → 设置 → 账号与安全 中查看）</li>
-                            <li>三种方式<strong>任填一种</strong>即可，系统会自动验证并拉取公开数据</li>
-                            <li>快手暂不支持评论数据采集，不影响作品列表和粉丝画像功能</li>
-                          </ul>
-                        </div>
-                      )}
                     </div>
                   )}
 
@@ -978,7 +956,7 @@ export function ConnectorsPage() {
         </>
       )}
 
-      {/* ─── 通知渠道部分（保持不变） ─── */}
+      {/* ─── 通知渠道 ─── */}
       <div className="mt-10">
         <p className="mb-3 text-xs text-gray-400">通知渠道</p>
         <p className="mb-4 text-sm text-gray-400">
@@ -1145,7 +1123,7 @@ export function ConnectorsPage() {
                     <div className="rounded-2xl border border-blue-100 bg-blue-50/50 px-4 py-3">
                       <div className="mb-2 text-xs font-medium text-blue-700">配置步骤</div>
                       <ol className="space-y-1.5 text-xs text-blue-600">
-                        <li>1. 在飞书中搜索机器人“爆款预测Agent”，添加到目标群聊</li>
+                        <li>1. 在飞书中搜索机器人“爆款预测agent”，添加到目标群聊</li>
                         <li>2. 回到此页面，点击下方“刷新群列表”</li>
                         <li>3. 从列表中选择目标群即可</li>
                       </ol>
@@ -1223,7 +1201,7 @@ export function ConnectorsPage() {
                           </button>
                         </div>
                         <p className="text-[11px] text-gray-400">
-                          请先在飞书中将“爆款预测Agent”机器人添加到目标群，然后点击“刷新群列表”。
+                          请先在飞书中将“爆款预测agent”机器人添加到目标群，然后点击“刷新群列表”。
                         </p>
                       </div>
                     )}
@@ -1235,6 +1213,32 @@ export function ConnectorsPage() {
                         已选择：{draftFeishuTargetName || draftFeishuTargetId}
                       </div>
                     )}
+
+                    <div className="grid gap-3 rounded-2xl border border-gray-100 bg-gray-50 px-4 py-3 sm:grid-cols-2">
+                      <label className="block">
+                        <div className="mb-2 text-xs text-gray-500">手动填写 Chat ID</div>
+                        <input
+                          type="text"
+                          value={draftFeishuTargetId}
+                          onChange={(event) => {
+                            setDraftFeishuTargetId(event.target.value);
+                            if (!event.target.value) setDraftFeishuTargetName("");
+                          }}
+                          placeholder="oc_xxx"
+                          className="w-full rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm text-gray-700 outline-none transition-colors focus:border-gray-400"
+                        />
+                      </label>
+                      <label className="block">
+                        <div className="mb-2 text-xs text-gray-500">群名称备注</div>
+                        <input
+                          type="text"
+                          value={draftFeishuTargetName}
+                          onChange={(event) => setDraftFeishuTargetName(event.target.value)}
+                          placeholder="爆款预测通知群"
+                          className="w-full rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm text-gray-700 outline-none transition-colors focus:border-gray-400"
+                        />
+                      </label>
+                    </div>
                   </div>
                 ) : (
                   <>

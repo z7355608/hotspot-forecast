@@ -1,23 +1,24 @@
 /**
- * WelcomeFlow — Module A
- * ======================
- * 三步欢迎分流，不打断 URL，覆盖在首页上方。
- * A1: 你是谁  A2: 你在哪个平台  A3: 你现在最想做什么
+ * WelcomeFlow — 4-step onboarding survey
+ * =======================================
+ * Step 1: Role (with value-hook hero on the side)
+ * Step 2: Platforms (multi)
+ * Step 3: Niches (multi) + Account stage (single)
+ * Step 4: Activation intent → reward → route
  */
 
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Check, X } from "lucide-react";
+import { ArrowRight, Check, Sparkles, X } from "lucide-react";
 import {
   useOnboarding,
   useTrack,
   type UserGoal,
   type UserRole,
+  type UserStage,
 } from "../../lib/onboarding-context";
 
-/* ------------------------------------------------------------------ */
-/*  Platform icons (inline SVGs matching ConnectorsPage style)         */
-/* ------------------------------------------------------------------ */
+/* ─── Platform icons (sub-set) ─── */
 
 function DouyinIcon({ size = 20 }: { size?: number }) {
   return (
@@ -26,7 +27,6 @@ function DouyinIcon({ size = 20 }: { size?: number }) {
     </svg>
   );
 }
-
 function XhsIcon({ size = 20 }: { size?: number }) {
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor">
@@ -35,7 +35,6 @@ function XhsIcon({ size = 20 }: { size?: number }) {
     </svg>
   );
 }
-
 function WechatIcon({ size = 20 }: { size?: number }) {
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor">
@@ -43,7 +42,6 @@ function WechatIcon({ size = 20 }: { size?: number }) {
     </svg>
   );
 }
-
 function YoutubeIcon({ size = 20 }: { size?: number }) {
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor">
@@ -51,7 +49,6 @@ function YoutubeIcon({ size = 20 }: { size?: number }) {
     </svg>
   );
 }
-
 function BilibiliIcon({ size = 20 }: { size?: number }) {
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor">
@@ -60,72 +57,106 @@ function BilibiliIcon({ size = 20 }: { size?: number }) {
   );
 }
 
-/* ------------------------------------------------------------------ */
-/*  Data                                                                */
-/* ------------------------------------------------------------------ */
+/* ─── Data ─── */
 
-const ROLES = [
-  { id: "creator" as UserRole, emoji: "🎬", label: "个人创作者", desc: "自己运营账号" },
-  { id: "mcn" as UserRole,     emoji: "📊", label: "MCN 运营",   desc: "管理多个账号" },
-  { id: "brand" as UserRole,   emoji: "🏢", label: "品牌方",     desc: "品牌内容营销" },
-  { id: "visitor" as UserRole, emoji: "👀", label: "只是看看",   desc: "了解产品功能" },
+const ROLES: { id: NonNullable<UserRole>; emoji: string; label: string; desc: string }[] = [
+  { id: "creator", emoji: "🎬", label: "个人创作者", desc: "单人能跑通的爆款公式" },
+  { id: "mcn", emoji: "📊", label: "MCN 运营", desc: "批量孵化模板与监控" },
+  { id: "brand", emoji: "🏢", label: "品牌方", desc: "ROI 视角的内容策略" },
+  { id: "visitor", emoji: "👀", label: "只是看看", desc: "让我先随便逛逛" },
 ];
 
 const PLATFORMS = [
-  { id: "douyin",    label: "抖音",     Icon: DouyinIcon,   color: "#000" },
-  { id: "xhs",       label: "小红书",   Icon: XhsIcon,      color: "#FF2442" },
-  { id: "wechat",    label: "微信公众号", Icon: WechatIcon,   color: "#07C160" },
-  { id: "youtube",   label: "YouTube",  Icon: YoutubeIcon,  color: "#FF0000" },
-  { id: "bilibili",  label: "B站",      Icon: BilibiliIcon, color: "#00AEEC" },
-  { id: "multi",     label: "多个平台",  Icon: null,         color: "#8979FF" },
+  { id: "douyin", label: "抖音", Icon: DouyinIcon, color: "#000" },
+  { id: "xhs", label: "小红书", Icon: XhsIcon, color: "#FF2442" },
+  { id: "wechat", label: "微信公众号", Icon: WechatIcon, color: "#07C160" },
+  { id: "youtube", label: "YouTube", Icon: YoutubeIcon, color: "#FF0000" },
+  { id: "bilibili", label: "B站", Icon: BilibiliIcon, color: "#00AEEC" },
+  { id: "multi", label: "多个平台", Icon: null, color: "#7c3aed" },
 ];
 
-const GOALS = [
-  { id: "topics"  as UserGoal, emoji: "🎯", label: "找到下一个选题方向", desc: "发什么会火？" },
-  { id: "viral"   as UserGoal, emoji: "📚", label: "学习爆款套路",      desc: "拆解成功内容" },
-  { id: "predict" as UserGoal, emoji: "📈", label: "预测内容表现",      desc: "先测后发" },
-  { id: "explore" as UserGoal, emoji: "🔍", label: "我还不确定，先看看", desc: "随便逛逛" },
+const NICHES = [
+  "美妆", "母婴", "职场", "宠物", "知识", "旅行",
+  "美食", "健身", "时尚", "数码", "财经", "影视",
+  "三农", "情感", "家居", "其他",
 ];
 
-/* ------------------------------------------------------------------ */
-/*  ProgressBar                                                         */
-/* ------------------------------------------------------------------ */
+const STAGES: { id: NonNullable<UserStage>; label: string; desc: string }[] = [
+  { id: "none", label: "暂无账号", desc: "刚开始" },
+  { id: "starter", label: "< 1k", desc: "起号期" },
+  { id: "growing", label: "1k-1w", desc: "成长期" },
+  { id: "breakout", label: "1w-10w", desc: "突破期" },
+  { id: "monetizing", label: "10w+", desc: "变现期" },
+];
 
-function ProgressBar({ step }: { step: number }) {
+const GOALS: { id: NonNullable<UserGoal>; emoji: string; label: string; desc: string }[] = [
+  { id: "topics", emoji: "🎯", label: "现在就要 3 个能跑的爆款选题", desc: "直接给我可以拍的方向" },
+  { id: "viral", emoji: "🔬", label: "拆解一条爆款看它为什么爆", desc: "学习 Aha 公式" },
+  { id: "predict", emoji: "🌱", label: "粉丝少，给我同段位的爆款样本", desc: "低粉同款、可复制" },
+  { id: "explore", emoji: "🔭", label: "先随便逛逛", desc: "我自己探索" },
+];
+
+/* ─── ProgressBar ─── */
+
+function ProgressBar({ step, total }: { step: number; total: number }) {
   return (
-    <div className="flex items-center gap-2 mb-8">
-      {[1, 2, 3].map((n) => (
-        <div
-          key={n}
-          className="h-1 flex-1 rounded-full transition-all duration-300"
-          style={{ backgroundColor: n <= step ? "#1E2939" : "#E5E7EB" }}
-        />
-      ))}
-      <span className="ml-1 text-[12px] text-[#99A1AF] shrink-0">{step} / 3</span>
+    <div className="mb-7 flex items-center gap-2">
+      {Array.from({ length: total }).map((_, i) => {
+        const n = i + 1;
+        const active = n <= step;
+        return (
+          <div
+            key={n}
+            className={`h-1 flex-1 rounded-full transition-all duration-300 ${
+              active
+                ? "bg-gradient-to-r from-violet-500 to-indigo-500"
+                : "bg-gray-100"
+            }`}
+          />
+        );
+      })}
+      <span className="ml-1 shrink-0 text-[12px] font-medium text-gray-400">
+        {step} / {total}
+      </span>
     </div>
   );
 }
 
-/* ------------------------------------------------------------------ */
-/*  Step 1 — 你是谁                                                     */
-/* ------------------------------------------------------------------ */
+/* ─── Step 1: Role + Hero ─── */
 
-function Step1({ onSelect }: { onSelect: (role: UserRole) => void }) {
+function Step1({ onSelect }: { onSelect: (role: NonNullable<UserRole>) => void }) {
   return (
     <div>
-      <h2 className="text-[22px] text-[#1E2939] mb-1">你好，欢迎使用</h2>
-      <p className="text-[14px] text-[#99A1AF] mb-7">先告诉我你是谁，我来为你定制体验</p>
-      <div className="grid grid-cols-2 gap-3">
+      {/* Hero */}
+      <div className="mb-6">
+        <div className="mb-2 inline-flex items-center gap-1.5 rounded-full bg-violet-50 px-2.5 py-1 text-[11px] font-medium text-violet-700">
+          <Sparkles className="h-3 w-3" />
+          仅需 4 步 · 不到 30 秒
+        </div>
+        <h2 className="text-[22px] font-bold leading-tight text-gray-900">
+          3 步打造你的{" "}
+          <span className="bg-gradient-to-r from-violet-600 to-indigo-600 bg-clip-text text-transparent">
+            爆款工作台
+          </span>
+        </h2>
+        <p className="mt-1.5 text-[13px] text-gray-500">
+          已为 <span className="font-semibold text-gray-700">12,000+</span> 创作者完成定制 · 平均命中率提升{" "}
+          <span className="font-semibold text-violet-600">7.2×</span>
+        </p>
+      </div>
+
+      <p className="mb-3 text-[13px] font-medium text-gray-700">先告诉我你是谁</p>
+      <div className="grid grid-cols-2 gap-2.5">
         {ROLES.map((role) => (
           <button
             key={role.id}
             onClick={() => onSelect(role.id)}
-            className="flex items-center gap-3 p-4 rounded-[16px] border border-[#F3F4F6] bg-white hover:border-[#1E2939] hover:shadow-[0_2px_12px_rgba(0,0,0,0.08)] transition-all duration-150 text-left group"
+            className="group flex items-center gap-3 rounded-2xl border border-gray-100 bg-white p-3.5 text-left transition-all duration-150 hover:-translate-y-0.5 hover:border-violet-300 hover:shadow-[0_4px_16px_rgba(124,58,237,0.12)]"
           >
-            <span className="text-[24px] leading-none">{role.emoji}</span>
-            <div>
-              <div className="text-[14px] text-[#1E2939] group-hover:text-[#1E2939]">{role.label}</div>
-              <div className="text-[12px] text-[#99A1AF]">{role.desc}</div>
+            <span className="text-[22px] leading-none">{role.emoji}</span>
+            <div className="min-w-0">
+              <div className="text-[13px] font-medium text-gray-900">{role.label}</div>
+              <div className="truncate text-[11px] text-gray-400">{role.desc}</div>
             </div>
           </button>
         ))}
@@ -134,9 +165,7 @@ function Step1({ onSelect }: { onSelect: (role: UserRole) => void }) {
   );
 }
 
-/* ------------------------------------------------------------------ */
-/*  Step 2 — 你在哪个平台                                               */
-/* ------------------------------------------------------------------ */
+/* ─── Step 2: Platforms ─── */
 
 function Step2({
   selected,
@@ -148,12 +177,11 @@ function Step2({
   onNext: () => void;
 }) {
   const canNext = selected.length > 0;
-
   return (
     <div>
-      <h2 className="text-[22px] text-[#1E2939] mb-1">你主要在哪个平台？</h2>
-      <p className="text-[14px] text-[#99A1AF] mb-7">可以多选，这将影响首页推荐内容</p>
-      <div className="grid grid-cols-3 gap-3 mb-7">
+      <h2 className="mb-1 text-[22px] font-bold text-gray-900">你主要在哪些平台？</h2>
+      <p className="mb-6 text-[13px] text-gray-500">可多选 · 决定你的爆款数据池</p>
+      <div className="mb-7 grid grid-cols-3 gap-2.5">
         {PLATFORMS.map((p) => {
           const isSelected = selected.includes(p.id);
           const Icon = p.Icon;
@@ -161,64 +189,123 @@ function Step2({
             <button
               key={p.id}
               onClick={() => onToggle(p.id)}
-              className={`relative flex flex-col items-center gap-2 p-4 rounded-[16px] border transition-all duration-150 ${
+              className={`relative flex flex-col items-center gap-2 rounded-2xl border p-3.5 transition-all duration-150 ${
                 isSelected
-                  ? "border-[#1E2939] bg-[#F9FAFB] shadow-[0_2px_8px_rgba(0,0,0,0.06)]"
-                  : "border-[#F3F4F6] bg-white hover:border-[#D1D5DC]"
+                  ? "border-violet-500 bg-violet-50 shadow-[0_2px_8px_rgba(124,58,237,0.12)]"
+                  : "border-gray-100 bg-white hover:border-violet-200"
               }`}
             >
               {isSelected && (
-                <div className="absolute top-2 right-2 w-4 h-4 rounded-full bg-[#1E2939] flex items-center justify-center">
-                  <Check className="w-2.5 h-2.5 text-white" />
+                <div className="absolute right-2 top-2 flex h-4 w-4 items-center justify-center rounded-full bg-gradient-to-br from-violet-500 to-indigo-500">
+                  <Check className="h-2.5 w-2.5 text-white" />
                 </div>
               )}
               <div style={{ color: p.color }}>
-                {Icon ? <Icon size={24} /> : <span className="text-[20px]">🌐</span>}
+                {Icon ? <Icon size={22} /> : <span className="text-[20px]">🌐</span>}
               </div>
-              <span className="text-[12px] text-[#364153]">{p.label}</span>
+              <span className="text-[12px] text-gray-700">{p.label}</span>
             </button>
           );
         })}
       </div>
-      <button
-        onClick={onNext}
-        disabled={!canNext}
-        className={`w-full py-3 rounded-[14px] text-[14px] transition-all duration-150 ${
-          canNext
-            ? "bg-[#1E2939] text-white hover:bg-[#2D3A4B]"
-            : "bg-[#F3F4F6] text-[#C4C9D4] cursor-not-allowed"
-        }`}
-      >
+      <PrimaryButton onClick={onNext} disabled={!canNext}>
         继续
-      </button>
+      </PrimaryButton>
     </div>
   );
 }
 
-/* ------------------------------------------------------------------ */
-/*  Step 3 — 你现在最想做什么                                           */
-/* ------------------------------------------------------------------ */
+/* ─── Step 3: Niches + Stage ─── */
 
-function Step3({ onSelect }: { onSelect: (goal: UserGoal) => void }) {
+function Step3({
+  niches,
+  stage,
+  onToggleNiche,
+  onSelectStage,
+  onNext,
+}: {
+  niches: string[];
+  stage: UserStage;
+  onToggleNiche: (n: string) => void;
+  onSelectStage: (s: NonNullable<UserStage>) => void;
+  onNext: () => void;
+}) {
+  const canNext = niches.length > 0 && stage !== null;
   return (
     <div>
-      <h2 className="text-[22px] text-[#1E2939] mb-1">你现在最想做什么？</h2>
-      <p className="text-[14px] text-[#99A1AF] mb-7">我会把你带到最合适的地方</p>
-      <div className="space-y-2.5">
-        {GOALS.map((goal) => (
+      <h2 className="mb-1 text-[22px] font-bold text-gray-900">你的赛道与账号阶段？</h2>
+      <p className="mb-5 text-[13px] text-gray-500">用来精准匹配同赛道、同段位的爆款样本</p>
+
+      <div className="mb-2 text-[12px] font-medium text-gray-700">赛道（可多选）</div>
+      <div className="mb-5 flex flex-wrap gap-1.5">
+        {NICHES.map((n) => {
+          const active = niches.includes(n);
+          return (
+            <button
+              key={n}
+              onClick={() => onToggleNiche(n)}
+              className={`rounded-full border px-3 py-1.5 text-[12px] transition ${
+                active
+                  ? "border-violet-500 bg-violet-50 text-violet-700"
+                  : "border-gray-200 bg-white text-gray-600 hover:border-violet-200"
+              }`}
+            >
+              {n}
+            </button>
+          );
+        })}
+      </div>
+
+      <div className="mb-2 text-[12px] font-medium text-gray-700">账号体量</div>
+      <div className="mb-7 grid grid-cols-5 gap-1.5">
+        {STAGES.map((s) => {
+          const active = stage === s.id;
+          return (
+            <button
+              key={s.id}
+              onClick={() => onSelectStage(s.id)}
+              className={`flex flex-col items-center rounded-xl border px-1 py-2 transition ${
+                active
+                  ? "border-violet-500 bg-violet-50"
+                  : "border-gray-100 bg-white hover:border-violet-200"
+              }`}
+            >
+              <span className={`text-[12px] font-semibold ${active ? "text-violet-700" : "text-gray-900"}`}>
+                {s.label}
+              </span>
+              <span className="text-[10px] text-gray-400">{s.desc}</span>
+            </button>
+          );
+        })}
+      </div>
+
+      <PrimaryButton onClick={onNext} disabled={!canNext}>
+        继续
+      </PrimaryButton>
+    </div>
+  );
+}
+
+/* ─── Step 4: Goal (activation intent) ─── */
+
+function Step4({ onSelect }: { onSelect: (goal: NonNullable<UserGoal>) => void }) {
+  return (
+    <div>
+      <h2 className="mb-1 text-[22px] font-bold text-gray-900">最后，最想立刻得到什么？</h2>
+      <p className="mb-6 text-[13px] text-gray-500">点完即解锁奖励 · 我直接带你过去</p>
+      <div className="space-y-2">
+        {GOALS.map((g) => (
           <button
-            key={goal.id}
-            onClick={() => onSelect(goal.id)}
-            className="w-full flex items-center gap-4 p-4 rounded-[16px] border border-[#F3F4F6] bg-white hover:border-[#1E2939] hover:shadow-[0_2px_12px_rgba(0,0,0,0.08)] transition-all duration-150 text-left group"
+            key={g.id}
+            onClick={() => onSelect(g.id)}
+            className="group flex w-full items-center gap-3.5 rounded-2xl border border-gray-100 bg-white p-3.5 text-left transition-all duration-150 hover:-translate-y-0.5 hover:border-violet-300 hover:shadow-[0_4px_16px_rgba(124,58,237,0.12)]"
           >
-            <span className="text-[24px] leading-none shrink-0">{goal.emoji}</span>
-            <div className="flex-1">
-              <div className="text-[14px] text-[#1E2939]">{goal.label}</div>
-              <div className="text-[12px] text-[#99A1AF]">{goal.desc}</div>
+            <span className="shrink-0 text-[22px] leading-none">{g.emoji}</span>
+            <div className="min-w-0 flex-1">
+              <div className="text-[13px] font-medium text-gray-900">{g.label}</div>
+              <div className="text-[11px] text-gray-400">{g.desc}</div>
             </div>
-            <svg className="w-4 h-4 text-[#D1D5DC] group-hover:text-[#1E2939] transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-            </svg>
+            <ArrowRight className="h-4 w-4 shrink-0 text-gray-300 transition-colors group-hover:text-violet-600" />
           </button>
         ))}
       </div>
@@ -226,82 +313,161 @@ function Step3({ onSelect }: { onSelect: (goal: UserGoal) => void }) {
   );
 }
 
-/* ------------------------------------------------------------------ */
-/*  Main WelcomeFlow                                                    */
-/* ------------------------------------------------------------------ */
+/* ─── Reward overlay (Step 4 → completion) ─── */
+
+function RewardOverlay() {
+  return (
+    <div className="absolute inset-0 z-10 flex items-center justify-center rounded-[24px] bg-white/95 backdrop-blur-sm">
+      <div className="flex flex-col items-center px-8 text-center">
+        <div className="relative mb-4">
+          <div className="absolute inset-0 animate-ping rounded-full bg-violet-400/30" />
+          <div className="relative flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-violet-500 to-indigo-600 shadow-lg shadow-violet-500/40">
+            <Sparkles className="h-7 w-7 text-white" />
+          </div>
+        </div>
+        <h3 className="text-[18px] font-bold text-gray-900">定制完成 🎉</h3>
+        <p className="mt-1.5 text-[13px] text-gray-600">
+          已为你解锁{" "}
+          <span className="font-semibold text-violet-600">100 积分</span>
+          {" + "}
+          <span className="font-semibold text-violet-600">3 次免费分析</span>
+        </p>
+        <p className="mt-1 text-[11px] text-gray-400">正在为你跳转到合适的工作台…</p>
+      </div>
+    </div>
+  );
+}
+
+/* ─── Primary button ─── */
+
+function PrimaryButton({
+  onClick,
+  disabled,
+  children,
+}: {
+  onClick: () => void;
+  disabled?: boolean;
+  children: React.ReactNode;
+}) {
+  return (
+    <button
+      onClick={onClick}
+      disabled={disabled}
+      className={`flex w-full items-center justify-center gap-1.5 rounded-2xl py-3 text-[14px] font-semibold transition-all duration-150 ${
+        disabled
+          ? "cursor-not-allowed bg-gray-100 text-gray-300"
+          : "bg-gradient-to-r from-violet-600 to-indigo-600 text-white shadow-md shadow-violet-500/30 hover:from-violet-700 hover:to-indigo-700"
+      }`}
+    >
+      {children}
+      {!disabled && <ArrowRight className="h-4 w-4" />}
+    </button>
+  );
+}
+
+/* ─── Main WelcomeFlow ─── */
+
+const TOTAL_STEPS = 4;
 
 export function WelcomeFlow() {
   const { completeWelcome } = useOnboarding();
   const navigate = useNavigate();
   const track = useTrack();
 
-  const [step, setStep] = useState<1 | 2 | 3>(1);
+  const [step, setStep] = useState<1 | 2 | 3 | 4>(1);
   const [role, setRole] = useState<UserRole>(null);
   const [platforms, setPlatforms] = useState<string[]>([]);
+  const [niches, setNiches] = useState<string[]>([]);
+  const [stage, setStage] = useState<UserStage>(null);
+  const [showReward, setShowReward] = useState(false);
   const [visible, setVisible] = useState(true);
 
   useEffect(() => {
     track("onboarding_started");
   }, [track]);
 
-  const handleRoleSelect = (selected: UserRole) => {
+  const handleRoleSelect = (selected: NonNullable<UserRole>) => {
     setRole(selected);
     track("onboarding_role_selected", { role: selected });
     setStep(2);
   };
 
-  const handlePlatformToggle = (id: string) => {
-    setPlatforms((prev) =>
-      prev.includes(id) ? prev.filter((p) => p !== id) : [...prev, id],
-    );
+  const togglePlatform = (id: string) => {
+    setPlatforms((prev) => (prev.includes(id) ? prev.filter((p) => p !== id) : [...prev, id]));
   };
 
-  const handleGoalSelect = (goal: UserGoal) => {
+  const toggleNiche = (n: string) => {
+    setNiches((prev) => (prev.includes(n) ? prev.filter((x) => x !== n) : [...prev, n]));
+  };
+
+  const handleGoalSelect = (goal: NonNullable<UserGoal>) => {
     track("onboarding_goal_selected", { goal });
-    // 先淡出，动画结束后再 completeWelcome，避免 Root 立即 unmount 打断动画
-    setVisible(false);
+    setShowReward(true);
+    // After reward animation, persist + route + dismiss
     setTimeout(() => {
-      completeWelcome(role, platforms, goal);
-      if (goal === "viral") navigate("/low-follower-opportunities");
-      // "predict", "topics" and "explore" stay on "/" — handled by HomePage
-    }, 320);
+      completeWelcome({ role, platforms, niches, stage, goal });
+      if (goal === "predict") {
+        navigate("/low-follower-opportunities");
+      }
+      // topics / viral / explore stay on "/"
+      setVisible(false);
+    }, 1100);
   };
 
   const handleDismiss = () => {
-    track("onboarding_dismissed");
+    track("onboarding_dismissed", { step });
     setVisible(false);
     setTimeout(() => {
-      completeWelcome(role ?? "visitor", platforms, "explore");
+      completeWelcome({
+        role: role ?? "visitor",
+        platforms,
+        niches,
+        stage,
+        goal: "explore",
+      });
     }, 320);
   };
 
   return (
     <div
-      className="fixed inset-0 z-[100] flex items-center justify-center bg-black/20 backdrop-blur-[2px] transition-opacity duration-300"
+      className="fixed inset-0 z-[100] flex items-center justify-center bg-black/30 backdrop-blur-[3px] transition-opacity duration-300"
       style={{ opacity: visible ? 1 : 0, pointerEvents: visible ? "auto" : "none" }}
     >
-      <div className="relative w-full max-w-[420px] mx-4 bg-white rounded-[24px] shadow-[0_24px_64px_rgba(0,0,0,0.12)] p-8">
-        {/* Dismiss */}
-        <button
-          onClick={handleDismiss}
-          className="absolute top-4 right-4 w-8 h-8 flex items-center justify-center rounded-full text-[#99A1AF] hover:bg-[#F3F4F6] hover:text-[#364153] transition-colors"
-        >
-          <X className="w-4 h-4" />
-        </button>
+      <div className="relative mx-4 w-full max-w-[440px] rounded-[24px] bg-white p-7 shadow-[0_24px_64px_rgba(0,0,0,0.16)]">
+        {/* Skip / dismiss */}
+        {!showReward && (
+          <button
+            onClick={handleDismiss}
+            className="absolute right-4 top-4 flex h-7 items-center gap-1 rounded-full px-2.5 text-[11px] text-gray-400 transition-colors hover:bg-gray-50 hover:text-gray-600"
+            title="跳过定制（可在设置里重做）"
+          >
+            稍后填写
+            <X className="h-3 w-3" />
+          </button>
+        )}
 
-        <ProgressBar step={step} />
+        {!showReward && <ProgressBar step={step} total={TOTAL_STEPS} />}
 
         {step === 1 && <Step1 onSelect={handleRoleSelect} />}
-
         {step === 2 && (
           <Step2
             selected={platforms}
-            onToggle={handlePlatformToggle}
+            onToggle={togglePlatform}
             onNext={() => setStep(3)}
           />
         )}
+        {step === 3 && (
+          <Step3
+            niches={niches}
+            stage={stage}
+            onToggleNiche={toggleNiche}
+            onSelectStage={setStage}
+            onNext={() => setStep(4)}
+          />
+        )}
+        {step === 4 && <Step4 onSelect={handleGoalSelect} />}
 
-        {step === 3 && <Step3 onSelect={handleGoalSelect} />}
+        {showReward && <RewardOverlay />}
       </div>
     </div>
   );

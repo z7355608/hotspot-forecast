@@ -1,18 +1,12 @@
 import { useState, useCallback, useEffect, type ElementType } from "react";
-import { apiFetch } from "../lib/api-utils";
 import {
   BarChart2,
   ChevronDown,
   Settings,
-  Shield,
   Sliders,
   User,
   Phone,
-  Lock,
-  ShieldCheck,
   X,
-  Eye,
-  EyeOff,
   Pencil,
   LogOut,
   Sparkles,
@@ -22,11 +16,6 @@ import {
   RefreshCw,
   Monitor,
   Smartphone,
-  Clock,
-  Download,
-  FileText,
-  Sun,
-  Moon,
 } from "lucide-react";
 import { useAppStore } from "../store/app-store";
 import { Link } from "react-router-dom";
@@ -42,8 +31,50 @@ const TABS: { id: Tab; icon: ElementType; label: string }[] = [
   { id: "外观", icon: Settings, label: "外观" },
   { id: "通知", icon: BarChart2, label: "通知" },
   { id: "个性化", icon: Sliders, label: "个性化" },
-  // 数据控制 tab 已移除（固定使用真实数据模式）
 ];
+
+const PLAN_LABEL: Record<string, string> = {
+  free: "免费版",
+  plus: "Plus",
+  pro: "Pro",
+  plus_yearly: "Plus 年付",
+  pro_yearly: "Pro 年付",
+};
+
+const TX_TYPE_LABEL: Record<string, string> = {
+  purchase: "购买积分",
+  subscription: "订阅赠送",
+  checkin: "每日签到",
+  consume: "分析消耗",
+  refund: "退款",
+  admin: "系统调整",
+};
+
+function formatDateTime(input: Date | string | null | undefined): string {
+  if (!input) return "—";
+  const d = typeof input === "string" ? new Date(input) : input;
+  if (Number.isNaN(d.getTime())) return "—";
+  return d.toLocaleString("zh-CN", { hour12: false });
+}
+
+/** 把 user-agent 解析成简短设备摘要 */
+function describeUserAgent(ua: string | null | undefined): { os: string; browser: string } {
+  const u = ua ?? "";
+  let os = "未知设备";
+  if (/iPhone|iPad|iPod/.test(u)) os = "iOS";
+  else if (/Android/.test(u)) os = "Android";
+  else if (/Mac OS X/.test(u)) os = "macOS";
+  else if (/Windows/.test(u)) os = "Windows";
+  else if (/Linux/.test(u)) os = "Linux";
+
+  let browser = "浏览器";
+  if (/Edg\//.test(u)) browser = "Edge";
+  else if (/Chrome\//.test(u)) browser = "Chrome";
+  else if (/Firefox\//.test(u)) browser = "Firefox";
+  else if (/Safari\//.test(u) && !/Chrome\//.test(u)) browser = "Safari";
+
+  return { os, browser };
+}
 
 const FOLLOWER_SCALE_OPTIONS: { value: FollowerScale; label: string }[] = [
   { value: "0-1w", label: "0 – 1万（起号阶段）" },
@@ -235,30 +266,92 @@ function SmartFillSection({ onApply }: { onApply: (data: SmartFillResult) => voi
   );
 }
 
+/* ─── NotificationPreferencesSection ─── */
+function NotificationPreferencesSection({ enabled }: { enabled: boolean }) {
+  const trpcUtils = trpc.useUtils();
+  const prefsQuery = trpc.auth.getPreferences.useQuery(undefined, { enabled });
+  const setPrefs = trpc.auth.setPreferences.useMutation({
+    onMutate: async (vars) => {
+      // 乐观更新
+      await trpcUtils.auth.getPreferences.cancel();
+      const prev = trpcUtils.auth.getPreferences.getData();
+      if (prev) {
+        trpcUtils.auth.getPreferences.setData(undefined, { ...prev, ...vars });
+      }
+      return { prev };
+    },
+    onError: (_err, _vars, ctx) => {
+      if (ctx?.prev) trpcUtils.auth.getPreferences.setData(undefined, ctx.prev);
+    },
+    onSettled: () => trpcUtils.auth.getPreferences.invalidate(),
+  });
+
+  if (!enabled) {
+    return (
+      <p className="text-xs text-gray-400">登录后可配置通知偏好</p>
+    );
+  }
+
+  if (prefsQuery.isLoading || !prefsQuery.data) {
+    return (
+      <div className="flex items-center gap-2 text-xs text-gray-400">
+        <Loader2 className="h-3.5 w-3.5 animate-spin" />
+        加载中…
+      </div>
+    );
+  }
+
+  const prefs = prefsQuery.data;
+  const items: { key: "productUpdates" | "taskCompleteEmail"; label: string; desc: string }[] = [
+    { key: "productUpdates", label: "接收产品更新", desc: "新功能发布和优化推送" },
+    { key: "taskCompleteEmail", label: "任务完成通知", desc: "分析任务完成后通过邮件提醒" },
+  ];
+
+  return (
+    <div className="space-y-5">
+      {items.map(({ key, label, desc }) => {
+        const val = prefs[key];
+        return (
+          <div key={key} className="flex items-start justify-between gap-4">
+            <div>
+              <p className="text-sm text-gray-800">{label}</p>
+              <p className="mt-0.5 text-xs text-gray-400">{desc}</p>
+            </div>
+            <button
+              type="button"
+              disabled={setPrefs.isPending}
+              onClick={() => setPrefs.mutate({ [key]: !val } as { productUpdates?: boolean; taskCompleteEmail?: boolean })}
+              className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2 disabled:opacity-50 ${val ? "bg-gray-900" : "bg-gray-300"}`}
+              role="switch"
+              aria-checked={val}
+            >
+              <span className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${val ? "translate-x-5" : "translate-x-0"}`} />
+            </button>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
 export function SettingsPage() {
-  const { state, dataMode, updateUserProfile } = useAppStore();
+  const { state, updateUserProfile } = useAppStore();
   const { theme, toggleTheme } = useTheme();
+  const { user, logout } = useAuth();
+  const trpcUtils = trpc.useUtils();
   const [showDevices, setShowDevices] = useState(false);
   const [showActivityLog, setShowActivityLog] = useState(false);
-  const [isExporting, setIsExporting] = useState(false);
   const [tab, setTab] = useState<Tab>("账户");
-  const [language, setLanguage] = useState("简体中文");
-  const [appearance, setAppearance] = useState<"浅色" | "深色" | "跟随系统">(
-    theme === "dark" ? "深色" : "浅色"
-  );
-
-  const handleAppearanceChange = (key: "浅色" | "深色" | "跟随系统") => {
-    setAppearance(key);
-    if (key === "浅色" && theme === "dark" && toggleTheme) toggleTheme();
-    if (key === "深色" && theme === "light" && toggleTheme) toggleTheme();
-    if (key === "跟随系统") {
-      const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-      if (prefersDark && theme === "light" && toggleTheme) toggleTheme();
-      if (!prefersDark && theme === "dark" && toggleTheme) toggleTheme();
+  // 深色模式当前未上线，强制锁在浅色（包含为旧用户清掉残留的 dark localStorage）
+  const [appearance] = useState<"浅色">("浅色");
+  useEffect(() => {
+    try {
+      if (localStorage.getItem("theme") === "dark") localStorage.setItem("theme", "light");
+    } catch {
+      /* ignore storage access failures (private mode) */
     }
-  };
-  const [updates, setUpdates] = useState(true);
-  const [emailNotify, setEmailNotify] = useState(true);
+    if (theme === "dark" && toggleTheme) toggleTheme();
+  }, [theme, toggleTheme]);
 
   // 个性化 tab 使用 store 中的 userProfile
   const profile = state.userProfile;
@@ -270,68 +363,78 @@ export function SettingsPage() {
     updateUserProfile({ platforms: next });
   };
 
+  /* ─── 账户实时数据 ─── */
+  const balanceQuery = trpc.credits.getBalance.useQuery(undefined, { enabled: !!user });
+  const subscriptionQuery = trpc.credits.getSubscription.useQuery(undefined, { enabled: !!user });
+  const transactionsQuery = trpc.credits.getTransactions.useQuery(
+    { limit: 20, offset: 0 },
+    { enabled: !!user && showActivityLog }
+  );
+  const sessionsQuery = trpc.auth.listSessions.useQuery(undefined, {
+    enabled: !!user && showDevices,
+  });
+
+  const updateProfileMutation = trpc.auth.updateProfile.useMutation({
+    onSuccess: () => trpcUtils.auth.me.invalidate(),
+  });
+  const revokeSessionMutation = trpc.auth.revokeSession.useMutation({
+    onSuccess: () => trpcUtils.auth.listSessions.invalidate(),
+  });
+
   /* ─── Account state ─── */
   const [editingNickname, setEditingNickname] = useState(false);
-  const [nicknameInput, setNicknameInput] = useState("张书萍");
-  const [accountPhone] = useState("138****8000");
-  const [accountEmail, setAccountEmail] = useState("");
+  const [nicknameInput, setNicknameInput] = useState("");
+  // 后端进来的真实昵称，editingNickname 切到 true 时同步进 input
+  useEffect(() => {
+    if (!editingNickname) setNicknameInput(user?.name ?? "");
+  }, [user?.name, editingNickname]);
 
-  /* ─── Change phone modal ─── */
-  const [showChangePhone, setShowChangePhone] = useState(false);
-  const [newPhone, setNewPhone] = useState("");
-  const [phoneCode, setPhoneCode] = useState("");
-  const [phoneCountdown, setPhoneCountdown] = useState(0);
-  const [phoneStep, setPhoneStep] = useState<"input" | "verify">("input");
+  const accountPhoneMasked = user?.phoneMasked ?? "未绑定";
+  const accountEmail = user?.email ?? "";
 
-  /* ─── Change password modal ─── */
-  const [showChangePassword, setShowChangePassword] = useState(false);
-  const [currentPassword, setCurrentPassword] = useState("");
-  const [newPassword, setNewPassword] = useState("");
-  const [confirmNewPassword, setConfirmNewPassword] = useState("");
-  const [showCurrentPw, setShowCurrentPw] = useState(false);
-  const [showNewPw, setShowNewPw] = useState(false);
+  /* ─── Email modal ─── */
+  const [showEmailModal, setShowEmailModal] = useState(false);
+  const [emailInput, setEmailInput] = useState("");
+  useEffect(() => {
+    if (showEmailModal) setEmailInput(accountEmail);
+  }, [showEmailModal, accountEmail]);
+  const isEmailValid = !emailInput || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailInput);
 
   /* ─── Delete account modal ─── */
   const [showDeleteAccount, setShowDeleteAccount] = useState(false);
   const [deleteConfirmText, setDeleteConfirmText] = useState("");
 
-  /* ─── Countdown timer ─── */
-  useEffect(() => {
-    if (phoneCountdown <= 0) return;
-    const timer = setTimeout(() => setPhoneCountdown((c) => c - 1), 1000);
-    return () => clearTimeout(timer);
-  }, [phoneCountdown]);
+  const handleSaveNickname = useCallback(async () => {
+    const trimmed = nicknameInput.trim();
+    if (!trimmed) {
+      setEditingNickname(false);
+      return;
+    }
+    try {
+      await updateProfileMutation.mutateAsync({ name: trimmed });
+      setEditingNickname(false);
+    } catch (err) {
+      console.error("[Settings] save nickname failed", err);
+    }
+  }, [nicknameInput, updateProfileMutation]);
 
-  const isNewPhoneValid = /^1[3-9]\d{9}$/.test(newPhone);
-  const isPhoneCodeValid = /^\d{4,6}$/.test(phoneCode);
+  const handleSaveEmail = useCallback(async () => {
+    if (!isEmailValid) return;
+    try {
+      await updateProfileMutation.mutateAsync({ email: emailInput || null });
+      setShowEmailModal(false);
+    } catch (err) {
+      console.error("[Settings] save email failed", err);
+    }
+  }, [isEmailValid, emailInput, updateProfileMutation]);
 
-  const handleSendPhoneCode = useCallback(async () => {
-    if (!isNewPhoneValid || phoneCountdown > 0) return;
-    // TODO: integrate with Alibaba Cloud SMS API
-    await new Promise((r) => setTimeout(r, 500));
-    setPhoneStep("verify");
-    setPhoneCountdown(60);
-  }, [isNewPhoneValid, phoneCountdown]);
-
-  const handleChangePhone = useCallback(async () => {
-    if (!isPhoneCodeValid) return;
-    // TODO: integrate with backend
-    await new Promise((r) => setTimeout(r, 500));
-    setShowChangePhone(false);
-    setPhoneStep("input");
-    setNewPhone("");
-    setPhoneCode("");
-  }, [isPhoneCodeValid]);
-
-  const handleChangePassword = useCallback(async () => {
-    if (!currentPassword || newPassword.length < 8 || newPassword !== confirmNewPassword) return;
-    // TODO: integrate with backend
-    await new Promise((r) => setTimeout(r, 500));
-    setShowChangePassword(false);
-    setCurrentPassword("");
-    setNewPassword("");
-    setConfirmNewPassword("");
-  }, [currentPassword, newPassword, confirmNewPassword]);
+  const handleLogout = useCallback(async () => {
+    try {
+      await logout();
+    } catch (err) {
+      console.error("[Settings] logout failed", err);
+    }
+  }, [logout]);
 
   return (
     <div className="mx-auto max-w-4xl px-4 py-8 sm:px-6 sm:py-10">
@@ -359,17 +462,23 @@ export function SettingsPage() {
           {/* ═══════════════════════════════════════════
               账户 Tab - Enhanced
               ═══════════════════════════════════════════ */}
-          {tab === "账户" && (
+          {tab === "账户" && (() => {
+            const credits = balanceQuery.data?.credits ?? 0;
+            const planKey = balanceQuery.data?.membershipPlan ?? "free";
+            const planLabel = PLAN_LABEL[planKey] ?? planKey;
+            const sub = subscriptionQuery.data?.subscription ?? null;
+            const monthlyQuota = sub?.monthlyCredits ?? 0;
+            const sessionCount = sessionsQuery.data?.sessions.length ?? 0;
+            const displayName = (user?.name && user.name.trim()) || (user?.phoneMasked ?? "U");
+
+            return (
             <>
               {/* Profile section */}
               <div className="flex flex-col gap-4 border-b border-gray-100 pb-6 sm:flex-row sm:items-center">
                 <div className="relative">
                   <div className="flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-violet-400 to-indigo-500 text-lg font-bold text-white">
-                    {nicknameInput[0] || "U"}
+                    {displayName[0] || "U"}
                   </div>
-                  <button className="absolute -bottom-1 -right-1 flex h-6 w-6 items-center justify-center rounded-full border-2 border-white bg-gray-100 text-gray-500 transition hover:bg-gray-200">
-                    <Pencil className="h-3 w-3" />
-                  </button>
                 </div>
                 <div className="flex-1">
                   {editingNickname ? (
@@ -382,10 +491,11 @@ export function SettingsPage() {
                         autoFocus
                       />
                       <button
-                        onClick={() => { setEditingNickname(false); /* TODO: save to backend */ }}
-                        className="rounded-lg bg-primary px-3 py-1.5 text-xs text-white transition hover:bg-primary/90"
+                        disabled={updateProfileMutation.isPending}
+                        onClick={handleSaveNickname}
+                        className="rounded-lg bg-primary px-3 py-1.5 text-xs text-white transition hover:bg-primary/90 disabled:opacity-50"
                       >
-                        保存
+                        {updateProfileMutation.isPending ? "保存中…" : "保存"}
                       </button>
                       <button
                         onClick={() => setEditingNickname(false)}
@@ -396,10 +506,11 @@ export function SettingsPage() {
                     </div>
                   ) : (
                     <div className="flex items-center gap-2">
-                      <p className="text-sm font-medium text-gray-800">{nicknameInput}</p>
+                      <p className="text-sm font-medium text-gray-800">{displayName}</p>
                       <button
                         onClick={() => setEditingNickname(true)}
                         className="text-gray-400 transition hover:text-gray-600"
+                        aria-label="编辑昵称"
                       >
                         <Pencil className="h-3.5 w-3.5" />
                       </button>
@@ -421,14 +532,15 @@ export function SettingsPage() {
                       </div>
                       <div>
                         <p className="text-sm text-gray-800">手机号码</p>
-                        <p className="text-xs text-gray-400">{accountPhone}</p>
+                        <p className="text-xs text-gray-400">{accountPhoneMasked}</p>
                       </div>
                     </div>
                     <button
-                      onClick={() => setShowChangePhone(true)}
-                      className="rounded-lg border border-gray-200 px-3 py-1.5 text-xs text-gray-600 transition hover:bg-gray-50"
+                      disabled
+                      title="短信网关接入中，敬请期待"
+                      className="rounded-lg border border-gray-200 px-3 py-1.5 text-xs text-gray-300 cursor-not-allowed"
                     >
-                      更换
+                      敬请期待
                     </button>
                   </div>
 
@@ -450,34 +562,10 @@ export function SettingsPage() {
                       </div>
                     </div>
                     <button
-                      onClick={() => {
-                        const email = prompt("请输入邮箱地址：");
-                        if (email) setAccountEmail(email);
-                      }}
+                      onClick={() => setShowEmailModal(true)}
                       className="rounded-lg border border-gray-200 px-3 py-1.5 text-xs text-gray-600 transition hover:bg-gray-50"
                     >
                       {accountEmail ? "修改" : "绑定"}
-                    </button>
-                  </div>
-
-                  <div className="h-px bg-gray-100" />
-
-                  {/* Password */}
-                  <div className="flex items-center justify-between rounded-xl px-1 py-3">
-                    <div className="flex items-center gap-3">
-                      <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-gray-100">
-                        <Lock className="h-4 w-4 text-gray-500" />
-                      </div>
-                      <div>
-                        <p className="text-sm text-gray-800">登录密码</p>
-                        <p className="text-xs text-gray-400">已设置 · 上次修改 30 天前</p>
-                      </div>
-                    </div>
-                    <button
-                      onClick={() => setShowChangePassword(true)}
-                      className="rounded-lg border border-gray-200 px-3 py-1.5 text-xs text-gray-600 transition hover:bg-gray-50"
-                    >
-                      修改
                     </button>
                   </div>
                 </div>
@@ -494,27 +582,36 @@ export function SettingsPage() {
                       <div className="flex items-center gap-2">
                         <p className="text-sm font-medium text-gray-800">当前套餐</p>
                         <span className="rounded-full bg-gray-200 px-2 py-0.5 text-[10px] font-medium text-gray-600">
-                          免费版
+                          {balanceQuery.isLoading ? "加载中…" : planLabel}
                         </span>
                       </div>
-                      <p className="mt-1 text-xs text-gray-400">每月 200 积分 · 基础功能</p>
+                      <p className="mt-1 text-xs text-gray-400">
+                        {sub
+                          ? `每月 ${monthlyQuota} 积分 · 到期 ${formatDateTime(sub.endAt)}`
+                          : "免费用户 · 升级享更多积分"}
+                      </p>
                     </div>
-                    <button className="rounded-lg bg-primary px-4 py-2 text-xs font-medium text-white transition hover:bg-primary/90">
-                      升级 Pro
-                    </button>
+                    <Link
+                      to="/credits"
+                      className="rounded-lg bg-primary px-4 py-2 text-xs font-medium text-white transition hover:bg-primary/90"
+                    >
+                      {sub ? "管理订阅" : "升级 Pro"}
+                    </Link>
                   </div>
-                  <div className="mt-3 grid grid-cols-3 gap-2">
+                  <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-3">
                     <div className="rounded-lg bg-white p-2.5 text-center">
-                      <p className="text-lg font-bold text-gray-800">62</p>
+                      <p className="text-lg font-bold text-gray-800">{credits}</p>
                       <p className="text-[10px] text-gray-400">剩余积分</p>
                     </div>
+                    {sub && (
+                      <div className="rounded-lg bg-white p-2.5 text-center">
+                        <p className="text-lg font-bold text-gray-800">{monthlyQuota}</p>
+                        <p className="text-[10px] text-gray-400">月度额度</p>
+                      </div>
+                    )}
                     <div className="rounded-lg bg-white p-2.5 text-center">
-                      <p className="text-lg font-bold text-gray-800">138</p>
-                      <p className="text-[10px] text-gray-400">已使用</p>
-                    </div>
-                    <div className="rounded-lg bg-white p-2.5 text-center">
-                      <p className="text-lg font-bold text-gray-800">200</p>
-                      <p className="text-[10px] text-gray-400">月度额度</p>
+                      <p className="text-lg font-bold text-gray-800">{sub?.autoRenew ? "是" : "否"}</p>
+                      <p className="text-[10px] text-gray-400">自动续费</p>
                     </div>
                   </div>
                 </div>
@@ -529,7 +626,11 @@ export function SettingsPage() {
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="text-sm text-gray-800">登录设备管理</p>
-                      <p className="text-xs text-gray-400">当前 1 台设备在线</p>
+                      <p className="text-xs text-gray-400">
+                        {sessionsQuery.data
+                          ? `当前 ${sessionCount} 个活跃会话`
+                          : "查看当前登录的设备"}
+                      </p>
                     </div>
                     <button onClick={() => setShowDevices(true)} className="rounded-lg border border-gray-200 px-3 py-1.5 text-xs text-gray-600 transition hover:bg-gray-50">
                       查看
@@ -538,8 +639,8 @@ export function SettingsPage() {
                   <div className="h-px bg-gray-100" />
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-sm text-gray-800">操作日志</p>
-                      <p className="text-xs text-gray-400">查看最近的账户操作记录</p>
+                      <p className="text-sm text-gray-800">积分明细</p>
+                      <p className="text-xs text-gray-400">查看最近的积分变动记录</p>
                     </div>
                     <button onClick={() => setShowActivityLog(true)} className="rounded-lg border border-gray-200 px-3 py-1.5 text-xs text-gray-600 transition hover:bg-gray-50">
                       查看
@@ -568,7 +669,10 @@ export function SettingsPage() {
                     <p className="text-sm text-gray-800">退出登录</p>
                     <p className="text-xs text-gray-400">退出当前账户</p>
                   </div>
-                  <button className="flex items-center gap-1.5 rounded-lg border border-gray-200 px-3 py-1.5 text-xs text-gray-600 transition hover:bg-gray-50">
+                  <button
+                    onClick={handleLogout}
+                    className="flex items-center gap-1.5 rounded-lg border border-gray-200 px-3 py-1.5 text-xs text-gray-600 transition hover:bg-gray-50"
+                  >
                     <LogOut className="h-3.5 w-3.5" />
                     退出
                   </button>
@@ -580,53 +684,29 @@ export function SettingsPage() {
                   </div>
                   <button
                     onClick={() => setShowDeleteAccount(true)}
-                    className="rounded-lg border border-red-200 px-3 py-1.5 text-xs text-red-500 transition hover:bg-red-50"
+                    disabled
+                    title="注销流程接入中，请联系客服"
+                    className="rounded-lg border border-red-200 px-3 py-1.5 text-xs text-red-500 opacity-50 cursor-not-allowed"
                   >
                     注销
                   </button>
                 </div>
               </div>
             </>
-          )}
+            );
+          })()}
 
           {/* ═══ 外观 Tab ═══ */}
           {tab === "外观" && (
             <>
               <div>
-                <p className="mb-4 text-xs uppercase tracking-wider text-gray-400">通用</p>
-                <div>
-                  <p className="mb-2 text-sm text-gray-700">语言</p>
-                  <div className="relative inline-block w-full sm:w-auto">
-                    <select
-                      value={language}
-                      onChange={(event) => setLanguage(event.target.value)}
-                      className="w-full appearance-none rounded-lg border border-gray-200 bg-gray-50 py-2 pl-3 pr-8 text-sm text-gray-700 outline-none focus:border-gray-400 sm:w-auto"
-                    >
-                      <option>简体中文</option>
-                      <option>繁體中文</option>
-                      <option>English</option>
-                      <option>日本語</option>
-                    </select>
-                    <ChevronDown className="pointer-events-none absolute right-2 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-gray-400" />
-                  </div>
-                </div>
-              </div>
-              <div className="h-px bg-gray-100" />
-              <div>
                 <p className="mb-4 text-sm text-gray-700">外观</p>
                 <div className="grid grid-cols-1 gap-5 sm:grid-cols-3">
-                  {(["浅色", "深色", "跟随系统"] as const).map((key) => (
-                    <button
-                      key={key}
-                      onClick={() => handleAppearanceChange(key)}
-                      className="flex flex-col items-center gap-2"
-                    >
-                      <div
-                        className={`w-full overflow-hidden rounded-xl border-2 transition-colors ${
-                          appearance === key ? "border-gray-900" : "border-gray-200"
-                        }`}
-                        style={{ height: 72 }}
-                      >
+                  {(["浅色", "深色", "跟随系统"] as const).map((key) => {
+                    const isActive = appearance === key;
+                    const isDisabled = key !== "浅色";
+                    const previewBody = (
+                      <>
                         {key === "浅色" && (
                           <div className="flex h-full w-full flex-col gap-1.5 bg-[#f5f4f2] p-2">
                             <div className="h-2 w-full rounded bg-[#e0ddd8]" />
@@ -653,41 +733,48 @@ export function SettingsPage() {
                             </div>
                           </div>
                         )}
-                      </div>
-                      <span className={`text-xs ${appearance === key ? "text-gray-900" : "text-gray-400"}`}>
-                        {key}
-                      </span>
-                    </button>
-                  ))}
+                      </>
+                    );
+                    return (
+                      <button
+                        key={key}
+                        type="button"
+                        disabled={isDisabled}
+                        title={isDisabled ? "深色模式适配中，敬请期待" : ""}
+                        className={`flex flex-col items-center gap-2 ${isDisabled ? "cursor-not-allowed" : ""}`}
+                      >
+                        <div
+                          className={`relative w-full overflow-hidden rounded-xl border-2 transition-colors ${
+                            isActive ? "border-gray-900" : "border-gray-200"
+                          } ${isDisabled ? "opacity-50" : ""}`}
+                          style={{ height: 72 }}
+                        >
+                          {previewBody}
+                          {isDisabled && (
+                            <div className="absolute inset-0 flex items-center justify-center bg-white/40">
+                              <span className="rounded-full bg-white/90 px-2 py-0.5 text-[10px] font-medium text-gray-500 shadow-sm">
+                                适配中
+                              </span>
+                            </div>
+                          )}
+                        </div>
+                        <span className={`text-xs ${isActive ? "text-gray-900" : "text-gray-400"}`}>
+                          {key}
+                        </span>
+                      </button>
+                    );
+                  })}
                 </div>
+                <p className="mt-3 text-[11px] text-gray-400">
+                  深色模式还在做整体视觉适配，预计后续版本上线。当前固定使用浅色主题。
+                </p>
               </div>
             </>
           )}
 
           {/* ═══ 通知 Tab ═══ */}
           {tab === "通知" && (
-            <div className="space-y-5">
-              {[
-                { label: "接收产品更新", desc: "新功能发布和优化推送", val: updates, set: setUpdates },
-                { label: "任务完成通知", desc: "分析任务完成后发送邮件", val: emailNotify, set: setEmailNotify },
-              ].map(({ label, desc, val, set }) => (
-                <div key={label} className="flex items-start justify-between gap-4">
-                  <div>
-                    <p className="text-sm text-gray-800">{label}</p>
-                    <p className="mt-0.5 text-xs text-gray-400">{desc}</p>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => set(!val)}
-                    className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2 ${val ? "bg-gray-900" : "bg-gray-300"}`}
-                    role="switch"
-                    aria-checked={val}
-                  >
-                    <span className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${val ? "translate-x-5" : "translate-x-0"}`} />
-                  </button>
-                </div>
-              ))}
-            </div>
+            <NotificationPreferencesSection enabled={!!user} />
           )}
 
           {/* ═══ 个性化 Tab ═══ */}
@@ -780,148 +867,38 @@ export function SettingsPage() {
           Modals
           ═══════════════════════════════════════════ */}
 
-      {/* Change Phone Modal */}
-      <Modal open={showChangePhone} onClose={() => { setShowChangePhone(false); setPhoneStep("input"); setNewPhone(""); setPhoneCode(""); }} title="更换手机号码">
-        {phoneStep === "input" ? (
-          <>
-            <p className="mb-4 text-sm text-gray-500">当前手机号：{accountPhone}。更换后将使用新手机号登录。</p>
-            <div>
-              <label className="mb-2 block text-sm font-medium text-gray-700">新手机号码</label>
-              <div className="relative">
-                <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5">
-                  <Phone className="h-4 w-4 text-gray-400" />
-                </div>
-                <input
-                  type="tel"
-                  value={newPhone}
-                  onChange={(e) => setNewPhone(e.target.value.replace(/\D/g, "").slice(0, 11))}
-                  placeholder="请输入新手机号码"
-                  className="w-full rounded-xl border border-gray-200 bg-gray-50 py-3 pl-10 pr-4 text-sm outline-none transition focus:border-violet-400 focus:bg-white focus:ring-2 focus:ring-violet-100"
-                  maxLength={11}
-                />
-              </div>
-            </div>
-            <button
-              onClick={handleSendPhoneCode}
-              disabled={!isNewPhoneValid}
-              className="mt-5 flex w-full items-center justify-center gap-2 rounded-xl bg-primary py-3 text-sm font-semibold text-white transition hover:bg-primary/90 disabled:opacity-50"
-            >
-              发送验证码
-            </button>
-          </>
-        ) : (
-          <>
-            <p className="mb-4 text-sm text-gray-500">验证码已发送至 {newPhone.replace(/(\d{3})\d{4}(\d{4})/, "$1****$2")}</p>
-            <div>
-              <label className="mb-2 block text-sm font-medium text-gray-700">验证码</label>
-              <div className="relative">
-                <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5">
-                  <ShieldCheck className="h-4 w-4 text-gray-400" />
-                </div>
-                <input
-                  type="text"
-                  value={phoneCode}
-                  onChange={(e) => setPhoneCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
-                  placeholder="请输入验证码"
-                  className="w-full rounded-xl border border-gray-200 bg-gray-50 py-3 pl-10 pr-28 text-sm outline-none transition focus:border-violet-400 focus:bg-white focus:ring-2 focus:ring-violet-100"
-                  maxLength={6}
-                  autoFocus
-                />
-                <button
-                  onClick={handleSendPhoneCode}
-                  disabled={!isNewPhoneValid || phoneCountdown > 0}
-                  className="absolute inset-y-1 right-1 rounded-lg px-3 text-xs font-medium text-violet-600 transition hover:bg-violet-50 disabled:text-gray-400"
-                >
-                  {phoneCountdown > 0 ? `${phoneCountdown}s` : "重发"}
-                </button>
-              </div>
-            </div>
-            <button
-              onClick={handleChangePhone}
-              disabled={!isPhoneCodeValid}
-              className="mt-5 flex w-full items-center justify-center gap-2 rounded-xl bg-primary py-3 text-sm font-semibold text-white transition hover:bg-primary/90 disabled:opacity-50"
-            >
-              确认更换
-            </button>
-          </>
-        )}
-      </Modal>
-
-      {/* Change Password Modal */}
-      <Modal open={showChangePassword} onClose={() => { setShowChangePassword(false); setCurrentPassword(""); setNewPassword(""); setConfirmNewPassword(""); }} title="修改密码">
-        <div className="space-y-4">
-          <div>
-            <label className="mb-2 block text-sm font-medium text-gray-700">当前密码</label>
-            <div className="relative">
-              <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5">
-                <Lock className="h-4 w-4 text-gray-400" />
-              </div>
-              <input
-                type={showCurrentPw ? "text" : "password"}
-                value={currentPassword}
-                onChange={(e) => setCurrentPassword(e.target.value)}
-                placeholder="请输入当前密码"
-                className="w-full rounded-xl border border-gray-200 bg-gray-50 py-3 pl-10 pr-12 text-sm outline-none transition focus:border-violet-400 focus:bg-white focus:ring-2 focus:ring-violet-100"
-              />
-              <button
-                type="button"
-                onClick={() => setShowCurrentPw(!showCurrentPw)}
-                className="absolute inset-y-0 right-0 flex items-center pr-3.5 text-gray-400 hover:text-gray-600"
-              >
-                {showCurrentPw ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-              </button>
-            </div>
-          </div>
-          <div>
-            <label className="mb-2 block text-sm font-medium text-gray-700">新密码</label>
-            <div className="relative">
-              <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5">
-                <Lock className="h-4 w-4 text-gray-400" />
-              </div>
-              <input
-                type={showNewPw ? "text" : "password"}
-                value={newPassword}
-                onChange={(e) => setNewPassword(e.target.value)}
-                placeholder="至少 8 位，包含字母和数字"
-                className="w-full rounded-xl border border-gray-200 bg-gray-50 py-3 pl-10 pr-12 text-sm outline-none transition focus:border-violet-400 focus:bg-white focus:ring-2 focus:ring-violet-100"
-              />
-              <button
-                type="button"
-                onClick={() => setShowNewPw(!showNewPw)}
-                className="absolute inset-y-0 right-0 flex items-center pr-3.5 text-gray-400 hover:text-gray-600"
-              >
-                {showNewPw ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-              </button>
-            </div>
-            {newPassword && newPassword.length < 8 && (
-              <p className="mt-1 text-xs text-amber-600">密码长度至少 8 位</p>
-            )}
-          </div>
-          <div>
-            <label className="mb-2 block text-sm font-medium text-gray-700">确认新密码</label>
-            <div className="relative">
-              <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5">
-                <Lock className="h-4 w-4 text-gray-400" />
-              </div>
-              <input
-                type={showNewPw ? "text" : "password"}
-                value={confirmNewPassword}
-                onChange={(e) => setConfirmNewPassword(e.target.value)}
-                placeholder="再次输入新密码"
-                className="w-full rounded-xl border border-gray-200 bg-gray-50 py-3 pl-10 pr-4 text-sm outline-none transition focus:border-violet-400 focus:bg-white focus:ring-2 focus:ring-violet-100"
-              />
-            </div>
-            {confirmNewPassword && newPassword !== confirmNewPassword && (
-              <p className="mt-1 text-xs text-red-500">两次输入的密码不一致</p>
-            )}
-          </div>
+      {/* Email Modal */}
+      <Modal
+        open={showEmailModal}
+        onClose={() => setShowEmailModal(false)}
+        title={accountEmail ? "修改邮箱" : "绑定邮箱"}
+      >
+        <p className="mb-4 text-sm text-gray-500">绑定邮箱后可接收任务完成等通知。</p>
+        <div>
+          <label className="mb-2 block text-sm font-medium text-gray-700">邮箱地址</label>
+          <input
+            type="email"
+            value={emailInput}
+            onChange={(e) => setEmailInput(e.target.value.trim())}
+            placeholder="name@example.com"
+            className="w-full rounded-xl border border-gray-200 bg-gray-50 py-3 px-4 text-sm outline-none transition focus:border-violet-400 focus:bg-white focus:ring-2 focus:ring-violet-100"
+          />
+          {!isEmailValid && emailInput && (
+            <p className="mt-1 text-xs text-red-500">邮箱格式不正确</p>
+          )}
         </div>
+        {updateProfileMutation.error && (
+          <div className="mt-3 flex items-center gap-1.5 text-xs text-red-500">
+            <AlertCircle className="h-3.5 w-3.5" />
+            {updateProfileMutation.error.message}
+          </div>
+        )}
         <button
-          onClick={handleChangePassword}
-          disabled={!currentPassword || newPassword.length < 8 || newPassword !== confirmNewPassword}
-          className="mt-6 flex w-full items-center justify-center gap-2 rounded-xl bg-primary py-3 text-sm font-semibold text-white transition hover:bg-primary/90 disabled:opacity-50"
+          onClick={handleSaveEmail}
+          disabled={!isEmailValid || updateProfileMutation.isPending}
+          className="mt-5 flex w-full items-center justify-center gap-2 rounded-xl bg-primary py-3 text-sm font-semibold text-white transition hover:bg-primary/90 disabled:opacity-50"
         >
-          确认修改
+          {updateProfileMutation.isPending ? "保存中…" : "保存"}
         </button>
       </Modal>
 
@@ -947,58 +924,102 @@ export function SettingsPage() {
             className="w-full rounded-xl border border-gray-200 bg-gray-50 py-3 px-4 text-sm outline-none transition focus:border-red-400 focus:bg-white focus:ring-2 focus:ring-red-100"
           />
         </div>
-        <button
-          disabled={deleteConfirmText !== "确认注销"}
-          className="mt-5 flex w-full items-center justify-center gap-2 rounded-xl bg-red-600 py-3 text-sm font-semibold text-white transition hover:bg-red-700 disabled:opacity-50"
-        >
-          永久注销账户
-        </button>
+        <p className="mt-3 text-xs text-amber-600">
+          注销流程接入中。如需立即注销，请联系客服。
+        </p>
       </Modal>
 
-      {/* Devices Modal */}
+      {/* Devices Modal — 真实会话列表 */}
       <Modal open={showDevices} onClose={() => setShowDevices(false)} title="登录设备管理">
-        <div className="space-y-3">
-          <div className="rounded-xl border border-emerald-100 bg-emerald-50 p-4">
-            <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-emerald-100">
-                <Monitor className="h-5 w-5 text-emerald-600" />
-              </div>
-              <div className="flex-1">
-                <div className="flex items-center gap-2">
-                  <p className="text-sm font-medium text-gray-800">当前设备</p>
-                  <span className="rounded-full bg-emerald-200 px-2 py-0.5 text-[10px] font-medium text-emerald-700">在线</span>
-                </div>
-                <p className="mt-0.5 text-xs text-gray-500">{navigator.userAgent.includes('Mac') ? 'macOS' : navigator.userAgent.includes('Win') ? 'Windows' : 'Linux'} · {navigator.userAgent.includes('Chrome') ? 'Chrome' : navigator.userAgent.includes('Firefox') ? 'Firefox' : 'Safari'}</p>
-                <p className="text-xs text-gray-400">本次登录时间：{new Date().toLocaleDateString('zh-CN')}</p>
-              </div>
-            </div>
+        {sessionsQuery.isLoading || !sessionsQuery.data ? (
+          <div className="flex items-center justify-center gap-2 py-6 text-xs text-gray-400">
+            <Loader2 className="h-3.5 w-3.5 animate-spin" />
+            加载中…
           </div>
-          <p className="text-center text-xs text-gray-400">如发现可疑设备，请立即修改密码</p>
-        </div>
+        ) : sessionsQuery.data.sessions.length === 0 ? (
+          <p className="py-8 text-center text-xs text-gray-400">暂无登录会话记录</p>
+        ) : (
+          <div className="space-y-2 max-h-[60vh] overflow-y-auto">
+            {sessionsQuery.data.sessions.map((s) => {
+              const { os, browser } = describeUserAgent(s.userAgent);
+              const isMobile = /iOS|Android/.test(os);
+              const Icon = isMobile ? Smartphone : Monitor;
+              return (
+                <div
+                  key={s.id}
+                  className={`rounded-xl border p-3 ${s.isCurrent ? "border-emerald-100 bg-emerald-50" : "border-gray-100 bg-gray-50"}`}
+                >
+                  <div className="flex items-center gap-3">
+                    <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg ${s.isCurrent ? "bg-emerald-100" : "bg-white"}`}>
+                      <Icon className={`h-5 w-5 ${s.isCurrent ? "text-emerald-600" : "text-gray-500"}`} />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center gap-2">
+                        <p className="truncate text-sm font-medium text-gray-800">{os} · {browser}</p>
+                        {s.isCurrent && (
+                          <span className="shrink-0 rounded-full bg-emerald-200 px-2 py-0.5 text-[10px] font-medium text-emerald-700">当前会话</span>
+                        )}
+                      </div>
+                      <p className="mt-0.5 text-xs text-gray-500">
+                        登录于 {formatDateTime(s.createdAt)}
+                        {s.ip ? ` · ${s.ip}` : ""}
+                      </p>
+                      <p className="text-xs text-gray-400">最近活跃 {formatDateTime(s.lastActiveAt)}</p>
+                    </div>
+                    {!s.isCurrent && (
+                      <button
+                        type="button"
+                        disabled={revokeSessionMutation.isPending}
+                        onClick={() => revokeSessionMutation.mutate({ sessionId: s.id })}
+                        className="shrink-0 rounded-lg border border-gray-200 px-2.5 py-1 text-[11px] text-gray-600 transition hover:bg-white disabled:opacity-50"
+                      >
+                        {revokeSessionMutation.isPending ? "处理中…" : "下线"}
+                      </button>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+        <p className="mt-3 text-center text-xs text-gray-400">如发现可疑设备，请立即下线并联系客服</p>
       </Modal>
 
-      {/* Activity Log Modal */}
-      <Modal open={showActivityLog} onClose={() => setShowActivityLog(false)} title="操作日志">
-        <div className="space-y-2">
-          {[
-            { action: "登录账户", time: new Date().toLocaleString('zh-CN'), icon: LogOut },
-            { action: "连接抖音账号", time: new Date(Date.now() - 86400000).toLocaleString('zh-CN'), icon: Check },
-            { action: "修改个性化设置", time: new Date(Date.now() - 172800000).toLocaleString('zh-CN'), icon: Settings },
-            { action: "执行爆款预测分析", time: new Date(Date.now() - 259200000).toLocaleString('zh-CN'), icon: Sparkles },
-            { action: "创建监控任务", time: new Date(Date.now() - 345600000).toLocaleString('zh-CN'), icon: Clock },
-          ].map(({ action, time, icon: Icon }) => (
-            <div key={action + time} className="flex items-center gap-3 rounded-xl bg-gray-50 px-3 py-2.5">
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-white">
-                <Icon className="h-3.5 w-3.5 text-gray-500" />
-              </div>
-              <div className="flex-1">
-                <p className="text-sm text-gray-700">{action}</p>
-                <p className="text-xs text-gray-400">{time}</p>
-              </div>
-            </div>
-          ))}
-          <p className="pt-2 text-center text-xs text-gray-400">仅显示最近 30 天的操作记录</p>
-        </div>
+      {/* Activity Log Modal — 真实积分明细 */}
+      <Modal open={showActivityLog} onClose={() => setShowActivityLog(false)} title="积分明细">
+        {transactionsQuery.isLoading || !transactionsQuery.data ? (
+          <div className="flex items-center justify-center gap-2 py-6 text-xs text-gray-400">
+            <Loader2 className="h-3.5 w-3.5 animate-spin" />
+            加载中…
+          </div>
+        ) : transactionsQuery.data.transactions.length === 0 ? (
+          <p className="py-8 text-center text-xs text-gray-400">暂无积分变动记录</p>
+        ) : (
+          <div className="space-y-2 max-h-[60vh] overflow-y-auto">
+            {transactionsQuery.data.transactions.map((tx) => {
+              const isPositive = tx.amount > 0;
+              return (
+                <div key={tx.id} className="flex items-center gap-3 rounded-xl bg-gray-50 px-3 py-2.5">
+                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-white">
+                    <Sparkles className={`h-3.5 w-3.5 ${isPositive ? "text-emerald-500" : "text-gray-400"}`} />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-sm text-gray-700">{tx.description}</p>
+                    <p className="text-xs text-gray-400">
+                      {TX_TYPE_LABEL[tx.type] ?? tx.type} · {formatDateTime(tx.createdAt)}
+                    </p>
+                  </div>
+                  <p className={`shrink-0 text-sm font-medium ${isPositive ? "text-emerald-600" : "text-gray-700"}`}>
+                    {isPositive ? "+" : ""}{tx.amount}
+                  </p>
+                </div>
+              );
+            })}
+          </div>
+        )}
+        <p className="pt-2 text-center text-xs text-gray-400">
+          仅显示最近 {transactionsQuery.data?.transactions.length ?? 0} 条记录，完整流水请前往「积分中心」
+        </p>
       </Modal>
     </div>
   );

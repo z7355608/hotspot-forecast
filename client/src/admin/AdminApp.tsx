@@ -7,6 +7,7 @@ import { UsersPage } from "./pages/UsersPage";
 import { ConfigPage } from "./pages/ConfigPage";
 import { SkillsPage } from "./pages/SkillsPage";
 import { LogsPage } from "./pages/LogsPage";
+import { TracesPage } from "./pages/TracesPage";
 import { PerformanceMonitorPage } from "./pages/PerformanceMonitorPage";
 import { ApiUsagePage } from "./pages/ApiUsagePage";
 
@@ -66,7 +67,15 @@ export function AdminApp() {
     dashboard: <DashboardPage />,
     users: <UsersPage />,
     config: <ConfigPage />,
-    skills: <SkillsPage />,
+    "skills:overview": <SkillsPage view="overview" />,
+    "skills:stage1":   <SkillsPage view="stage1_input" />,
+    "skills:stage2":   <SkillsPage view="stage2_collect" />,
+    "skills:stage3":   <SkillsPage view="stage3_analyze" />,
+    "skills:stage4":   <SkillsPage view="stage4_predict" />,
+    "skills:stage5":   <SkillsPage view="stage5_recommend" />,
+    "skills:stage6":   <SkillsPage view="stage6_tools" />,
+    "skills:entry":    <SkillsPage view="entry" />,
+    traces: <TracesPage />,
     logs: <LogsPage />,
     performance: <PerformanceMonitorPage />,
     "api-usage": <ApiUsagePage />,

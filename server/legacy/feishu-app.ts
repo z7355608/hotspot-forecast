@@ -174,7 +174,7 @@ export async function sendFeishuNotificationCard(
     elements: [
       {
         tag: "plain_text",
-        content: `爆款预测Agent · ${new Date().toLocaleString("zh-CN", { timeZone: "Asia/Shanghai" })}`,
+        content: `爆款预测agent · ${new Date().toLocaleString("zh-CN", { timeZone: "Asia/Shanghai" })}`,
       },
     ],
   });

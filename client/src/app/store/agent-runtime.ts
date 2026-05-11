@@ -246,15 +246,22 @@ export function classifyTaskIntent(draft: PredictionRequestDraft): TaskIntentCla
     addScore("viral_breakdown", 82, "输入里包含外部链接，优先考虑结构拆解或迁移任务。");
   }
 
+  // prompt trim 后≈纯 URL（仅 URL，几乎无其他文字）→ 强信号走拆解
+  const trimmedPrompt = draft.prompt.trim();
+  const urlOnlyMatch = trimmedPrompt.match(/https?:\/\/\S+/);
+  if (urlOnlyMatch && trimmedPrompt.length <= urlOnlyMatch[0].length + 5) {
+    addScore("viral_breakdown", 90, "输入近似纯链接，优先识别为爆款拆解。");
+  }
+
   if (
     draft.evidenceItems.some(
       (item) => item.kind === "video" || item.kind === "image" || item.kind === "file",
     )
   ) {
-    addScore("copy_extraction", 60, "输入里包含素材资源，可优先提取表达结构和可复用片段。");
+    addScore("copy_extraction", 80, "输入里包含素材资源，可优先提取表达结构和可复用片段。");
   }
 
-  if (draft.connectedPlatforms.length > 0 && /(账号|定位|这个号|主页)/.test(draft.prompt)) {
+  if (draft.connectedPlatforms.length > 0 && /(账号|定位|这个号|主页|我是.*博主|我粉丝|涨不动)/.test(draft.prompt)) {
     addScore("account_diagnosis", 76, "已连接平台且 prompt 提到账号问题，优先走账号诊断。");
   }
 
@@ -270,7 +277,8 @@ export function classifyTaskIntent(draft: PredictionRequestDraft): TaskIntentCla
   }
 
   const ranked = [...scored.entries()].sort((left, right) => right[1] - left[1]);
-  const [topIntent, topScore] = ranked[0] ?? ["opportunity_prediction", 52];
+  // 兜底改为 direct_request，不再默认归到赛道分析
+  const [topIntent, topScore] = ranked[0] ?? ["direct_request", 52];
   const candidateIntents = uniqueIntents(
     ranked.slice(0, 3).map(([intent]) => intent as TaskIntent),
   );

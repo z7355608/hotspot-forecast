@@ -20,6 +20,7 @@ import { createModuleLogger } from "./logger.js";
 
 const log = createModuleLogger("AIScoringEngine");
 import { callLLM, type LLMMessage } from "./llm-gateway.js";
+import { resolveSystemPrompt } from "./prompt-engine.js";
 import {
   SCORE_WEIGHTS,
   TREND_THRESHOLDS,
@@ -295,8 +296,14 @@ function buildScoringUserPrompt(ctx: ScoringContext): string {
 // ─────────────────────────────────────────────
 
 async function callLLMForScoring(ctx: ScoringContext): Promise<LLMScoreResponse | null> {
+  const scoringSystemPrompt = await resolveSystemPrompt(
+    "ai-scoring-v1",
+    "doubao",
+    {},
+    buildScoringSystemPrompt(),
+  );
   const messages: LLMMessage[] = [
-    { role: "system", content: buildScoringSystemPrompt() },
+    { role: "system", content: scoringSystemPrompt },
     { role: "user", content: buildScoringUserPrompt(ctx) },
   ];
 

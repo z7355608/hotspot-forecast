@@ -196,6 +196,7 @@ registerArtifactRenderer({
   artifactType: "account_diagnosis_sheet",
   taskIntent: "account_diagnosis",
   component: AccountDiagnosisBody,
+  validatePayload: (r) => r.taskPayload?.kind === "account_diagnosis",
   getHeroMetrics,
   getDeepDiveConfig: getDeepDive,
   getCtaActions,

@@ -3,7 +3,8 @@
  * 使用阿波罗平台 Gemini 3.1 Pro（支持视频理解）
  * 将视频拆解为结构化的分镜脚本 + 爆点公式 + 记忆锚点 + 复刻建议
  */
-import { invokeThirdPartyLLM } from "../_core/llm";
+import { callLLM } from "../legacy/llm-gateway";
+import { resolveVideoByShareUrl } from "./tikhub-video-resolver";
 
 // ============ 类型定义 ============
 
@@ -127,17 +128,18 @@ export async function analyzeViralBreakdown(
   transcript?: string
 ): Promise<BreakdownResult> {
   // 构建用户消息内容（多模态：视频 + 文本）
+  // Apollo/Gemini 3.1 Pro 的特性：视频 URL 必须放在 image_url 字段（即便是 mp4），
+  // 用 file_url 不会触发视频理解。
   const userContent: Array<
     | { type: "text"; text: string }
-    | { type: "file_url"; file_url: { url: string; mime_type: string } }
+    | { type: "image_url"; image_url: { url: string; detail?: "auto" | "low" | "high" } }
   > = [];
 
-  // 添加视频文件
   userContent.push({
-    type: "file_url",
-    file_url: {
+    type: "image_url",
+    image_url: {
       url: videoUrl,
-      mime_type: "video/mp4",
+      detail: "high",
     },
   });
 
@@ -194,25 +196,22 @@ export async function analyzeViralBreakdown(
     text: textPrompt,
   });
 
-  const result = await invokeThirdPartyLLM({
+  const result = await callLLM({
+    modelId: "apollo",
     messages: [
       { role: "system", content: BREAKDOWN_SYSTEM_PROMPT },
-      { role: "user", content: userContent as any },
+      { role: "user", content: userContent },
     ],
     maxTokens: 65536,
-    response_format: { type: "json_object" },
+    responseFormat: { type: "json_object" },
   });
 
-  // 解析 LLM 返回的 JSON
-  const content = result.choices?.[0]?.message?.content;
-  if (!content) {
+  if (!result.content) {
     throw new Error("爆款拆解失败：模型未返回内容");
   }
 
-  const rawText = typeof content === "string" ? content : JSON.stringify(content);
-
   // 清理可能的 markdown 包裹
-  const cleaned = rawText
+  const cleaned = result.content
     .replace(/^```json\s*/i, "")
     .replace(/```\s*$/, "")
     .trim();
@@ -233,10 +232,42 @@ export async function analyzeViralBreakdown(
 }
 
 /**
- * 获取视频的可播放 URL（通过去水印 API）
- * 用于将用户输入的分享链接转换为可被 LLM 访问的直接视频 URL
+ * 获取视频的可播放 URL。
+ *
+ * 主路径：通过 TikHub 按 platform + videoId 拿一手 CDN 直链（覆盖抖音 / 小红书 / 快手）。
+ * 兜底：当 URL 无法识别平台、TikHub 端点全挂或返回里没有视频字段时，
+ *      降级到第三方 watermark API（已知有时返回「程序处理异常」，但仍然是无 TikHub 时的最后稻草）。
  */
 export async function resolveVideoUrl(shareUrl: string): Promise<{
+  videoUrl: string;
+  title?: string;
+  coverUrl?: string;
+  author?: string;
+}> {
+  // 主路径：TikHub 按平台 ID 解析（已展开的分享 URL 才能识别平台）
+  try {
+    const resolved = await resolveVideoByShareUrl(shareUrl);
+    if (resolved.videoUrl) {
+      return {
+        videoUrl: resolved.videoUrl,
+        title: resolved.title,
+        coverUrl: resolved.coverUrl,
+        author: resolved.author,
+      };
+    }
+  } catch (err) {
+    console.warn(
+      `[viral-breakdown] TikHub 解析失败，降级到 watermark API: ${
+        err instanceof Error ? err.message : String(err)
+      }`,
+    );
+  }
+
+  // 兜底：第三方 watermark API（接 v.douyin.com 短链 / 抖音口令文本 等场景）
+  return resolveViaWatermarkApi(shareUrl);
+}
+
+async function resolveViaWatermarkApi(shareUrl: string): Promise<{
   videoUrl: string;
   title?: string;
   coverUrl?: string;
@@ -247,14 +278,14 @@ export async function resolveVideoUrl(shareUrl: string): Promise<{
 
   const response = await fetch(
     `${WATERMARK_API}?key=${API_KEY}&url=${encodeURIComponent(shareUrl)}`,
-    { signal: AbortSignal.timeout(30000) }
+    { signal: AbortSignal.timeout(30000) },
   );
 
   if (!response.ok) {
     throw new Error(`去水印 API 调用失败: ${response.status}`);
   }
 
-  const data = await response.json() as any;
+  const data = (await response.json()) as any;
 
   if (data.code !== 200 || !data.data) {
     throw new Error(`去水印 API 返回错误: ${data.msg || "未知错误"}`);

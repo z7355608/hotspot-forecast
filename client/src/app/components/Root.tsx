@@ -11,6 +11,9 @@ import { MobileNavDrawer, Sidebar } from "./Sidebar";
 import { OnboardingProvider, useOnboarding } from "../lib/onboarding-context";
 import { WelcomeFlow } from "./onboarding/WelcomeFlow";
 import { ChecklistCard } from "./onboarding/ChecklistCard";
+import { AuthModalProvider } from "./auth/auth-modal-context";
+import { LoginModal } from "./auth/LoginModal";
+import { WelcomeTrialModal } from "./auth/WelcomeTrialModal";
 
 function AuthLoadingSkeleton() {
   return (
@@ -32,16 +35,16 @@ function AppShell() {
   const [creditsOpen, setCreditsOpen] = useState(false);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
 
-  const { user, loading } = useAuth({ redirectOnUnauthenticated: true });
+  const { user, loading } = useAuth({ mode: "modal" });
   const { welcomeCompleted } = useOnboarding();
 
   if (loading) return <AuthLoadingSkeleton />;
-  if (!user) return <AuthLoadingSkeleton />;
+  // When unauthenticated, still render the shell underneath so AuthModalProvider can overlay.
 
   return (
     <div className="min-h-screen bg-gray-50 lg:flex">
-      {/* Welcome Flow gate — overlay, stays on "/" */}
-      {!welcomeCompleted && <WelcomeFlow />}
+      {/* Welcome Flow gate — only after login */}
+      {user && !welcomeCompleted && <WelcomeFlow />}
 
       <Sidebar onOpenInvite={() => setInviteOpen(true)} />
       <MobileNavDrawer
@@ -56,10 +59,40 @@ function AppShell() {
           onOpenNotifications={() => setNotificationsOpen(true)}
         />
         <main
-          className="min-w-0 flex-1 overflow-x-hidden transition-opacity duration-[280ms]"
+          className={`relative min-w-0 flex-1 overflow-x-hidden transition-opacity duration-[280ms] ${
+            !user ? "pointer-events-none select-none" : ""
+          }`}
           style={{ opacity: isNavigating ? 0.45 : 1 }}
         >
-          <Outlet />
+          <div
+            aria-hidden={!user}
+            style={
+              !user
+                ? {
+                    filter: "blur(7px) saturate(0.6)",
+                    opacity: 0.55,
+                    transform: "scale(1.01)",
+                  }
+                : undefined
+            }
+            className="transition-[filter,opacity] duration-300"
+          >
+            <Outlet />
+          </div>
+
+          {/* Unauth content gradient mask + locked badge */}
+          {!user && (
+            <>
+              <div
+                aria-hidden="true"
+                className="pointer-events-none absolute inset-x-0 bottom-0 h-48 bg-gradient-to-t from-gray-50 via-gray-50/80 to-transparent"
+              />
+              <div className="pointer-events-none absolute right-6 top-6 z-10 flex items-center gap-2 rounded-full border border-violet-200 bg-white/90 px-3.5 py-1.5 text-xs font-medium text-violet-700 shadow-sm backdrop-blur-sm">
+                <span className="flex h-1.5 w-1.5 rounded-full bg-violet-500" />
+                登录后解锁完整爆款数据
+              </div>
+            </>
+          )}
         </main>
       </div>
 
@@ -76,7 +109,11 @@ function AppShell() {
 export function Root() {
   return (
     <OnboardingProvider>
-      <AppShell />
+      <AuthModalProvider>
+        <AppShell />
+        <WelcomeTrialModal />
+        <LoginModal />
+      </AuthModalProvider>
     </OnboardingProvider>
   );
 }

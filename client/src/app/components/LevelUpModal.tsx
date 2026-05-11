@@ -132,7 +132,7 @@ const INTEL_FLASH_POOL = [
   {
     track: "AI 效率工具",
     newHits: 5,
-    topStat: "200 粉拿了 12 万播放",
+    topStat: "200 粉拿了 1.2 万互动",
     trend: "up",
   },
   {
@@ -144,7 +144,7 @@ const INTEL_FLASH_POOL = [
   {
     track: "宠物日常",
     newHits: 7,
-    topStat: "300 粉拿了 15 万播放",
+    topStat: "300 粉拿了 1.5 万互动",
     trend: "up",
   },
   {

@@ -10,5 +10,6 @@ import "./trend-watch-renderer";
 import "./viral-breakdown-renderer";
 import "./topic-strategy-renderer";
 import "./copy-extraction-renderer";
+import "./direct-request-renderer";
 import "./account-diagnosis-renderer";
 import "./breakdown-sample-renderer";  // 方案B：低粉爆款样本拆解渲染器

@@ -24,11 +24,26 @@ import { ImageWithFallback } from "../components/figma/ImageWithFallback";
 import { trpc } from "@/lib/trpc";
 import { useAppStore } from "../store/app-store";
 import { normalizePlan } from "../store/app-data";
+import { getProxiedImageUrl } from "../lib/media-proxy";
 import {
   BreakdownAhaResult,
   type BreakdownData,
   type BreakdownVideoInfo,
 } from "../components/BreakdownAhaResult";
+import { useOnboarding } from "../lib/onboarding-context";
+
+/* ─── Stage labels (for banner display) ─── */
+const STAGE_LABELS: Record<string, string> = {
+  starter: "起号期 (<1k)",
+  growing: "成长期 (1k-1w)",
+  breakout: "突破期 (1w-10w)",
+  monetizing: "变现期 (10w+)",
+};
+
+/** Filter user-supplied niches down to ones the backend can match against. */
+function selectMeaningfulNiches(niches: string[]): string[] {
+  return niches.filter((n) => n && n !== "其他");
+}
 
 /* ------------------------------------------------------------------ */
 /*  类型定义                                                            */
@@ -157,6 +172,26 @@ function formatUpdateTime(iso: string | null) {
   return `${month}月${day}日 ${hour}:${min}`;
 }
 
+/** 平台显示名 + 徽章配色（与封面左上角的精选徽章错开，放在右上） */
+const PLATFORM_BADGE: Record<string, { label: string; className: string }> = {
+  douyin: { label: "抖音", className: "bg-black/80 text-white" },
+  xiaohongshu: { label: "小红书", className: "bg-rose-500/90 text-white" },
+  kuaishou: { label: "快手", className: "bg-orange-500/90 text-white" },
+  bilibili: { label: "B站", className: "bg-sky-500/90 text-white" },
+};
+
+function PlatformBadge({ platform }: { platform: string }) {
+  const conf = PLATFORM_BADGE[platform];
+  if (!conf) return null;
+  return (
+    <span
+      className={`absolute right-2 top-2 rounded px-1.5 py-0.5 text-[10px] font-bold ${conf.className}`}
+    >
+      {conf.label}
+    </span>
+  );
+}
+
 function FormatIcon({ form }: { form: string }) {
   const cls = "h-2.5 w-2.5 shrink-0";
   const icons: Record<string, ReactNode> = {
@@ -220,13 +255,14 @@ function VideoCard({
   onBreakdown: () => void;
 }) {
   const totalInteraction = item.likeCount + item.commentCount + item.shareCount + item.saveCount;
+  const coverUrl = getProxiedImageUrl(item.coverUrl);
   return (
     <div className="group cursor-pointer" onClick={onClick}>
       {/* 封面 */}
       <div className="relative aspect-video overflow-hidden rounded-xl bg-gray-100">
-        {item.coverUrl ? (
+        {coverUrl ? (
           <ImageWithFallback
-            src={item.coverUrl}
+            src={coverUrl}
             alt={item.title}
             className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
           />
@@ -254,6 +290,8 @@ function VideoCard({
             精选
           </span>
         )}
+        {/* 平台徽章 */}
+        <PlatformBadge platform={item.platform} />
       </div>
 
       {/* 信息区 */}
@@ -405,6 +443,7 @@ function Pagination({
 export function LowFollowerPage() {
   const navigate = useNavigate();
   const { state } = useAppStore();
+  const { userNiches, userStage } = useOnboarding();
 
   /* ---- 爆款拆解弹窗状态 ---- */
   const [breakdownOpen, setBreakdownOpen] = useState(false);
@@ -429,6 +468,12 @@ export function LowFollowerPage() {
 
   const isMember = normalizePlan(state.membershipPlan) !== "free";
 
+  /* ---- 个性化（来自 onboarding 问卷的 niches/stage）---- */
+  const meaningfulNiches = useMemo(() => selectMeaningfulNiches(userNiches ?? []), [userNiches]);
+  const stageForApi = userStage && userStage !== "none" ? userStage : undefined;
+  const hasPersonalizationSignal = meaningfulNiches.length > 0 || Boolean(stageForApi);
+  const [personalizedOn, setPersonalizedOn] = useState(true);
+
   /* ---- tRPC 查询 ---- */
   const statsQuery = trpc.lowFollower.stats.useQuery();
   const listQuery = trpc.lowFollower.list.useQuery({
@@ -441,6 +486,8 @@ export function LowFollowerPage() {
     seedTopic,
     strictOnly: strictOnly || undefined,
     search: search || undefined,
+    userNiches: personalizedOn && meaningfulNiches.length > 0 ? meaningfulNiches : undefined,
+    userStage: personalizedOn ? stageForApi : undefined,
   });
 
   const items = (listQuery.data?.items ?? []) as LowFollowerItem[];
@@ -515,6 +562,55 @@ export function LowFollowerPage() {
       {/*  统计栏                                                          */}
       {/* ================================================================ */}
       {stats && stats.total > 0 && <StatsBar stats={stats} />}
+
+      {/* ================================================================ */}
+      {/*  个性化筛选 Banner（来自 onboarding 问卷的 niches/stage）          */}
+      {/* ================================================================ */}
+      {hasPersonalizationSignal && (
+        <div className="flex flex-wrap items-center gap-2 rounded-2xl border border-violet-100 bg-gradient-to-r from-violet-50 to-indigo-50/60 px-4 py-2.5 text-xs">
+          <Star className="h-3.5 w-3.5 shrink-0 text-violet-500" />
+          {personalizedOn ? (
+            <>
+              <span className="text-gray-700">已根据你的画像筛选：</span>
+              {meaningfulNiches.length > 0 && (
+                <span className="flex flex-wrap items-center gap-1">
+                  {meaningfulNiches.map((n) => (
+                    <span
+                      key={n}
+                      className="rounded-full bg-white px-2 py-0.5 text-violet-700 shadow-sm"
+                    >
+                      {n}
+                    </span>
+                  ))}
+                </span>
+              )}
+              {stageForApi && (
+                <span className="rounded-full bg-white px-2 py-0.5 text-violet-700 shadow-sm">
+                  {STAGE_LABELS[stageForApi]}
+                </span>
+              )}
+              <button
+                type="button"
+                onClick={() => setPersonalizedOn(false)}
+                className="ml-auto text-gray-500 transition hover:text-violet-700"
+              >
+                显示全部 →
+              </button>
+            </>
+          ) : (
+            <>
+              <span className="text-gray-500">已显示全部样本</span>
+              <button
+                type="button"
+                onClick={() => setPersonalizedOn(true)}
+                className="ml-auto font-medium text-violet-700 transition hover:text-violet-800"
+              >
+                ← 仅看我的赛道与段位
+              </button>
+            </>
+          )}
+        </div>
+      )}
 
       {/* ================================================================ */}
       {/*  搜索栏                                                          */}
@@ -794,7 +890,7 @@ export function LowFollowerPage() {
               </p>
               <button
                 type="button"
-                onClick={() => navigate("/")}
+                onClick={() => navigate("/predict")}
                 className="mt-8 rounded-full bg-gray-900 px-8 py-3 text-sm font-medium text-white transition-colors hover:bg-gray-700"
               >
                 去首页分析话题

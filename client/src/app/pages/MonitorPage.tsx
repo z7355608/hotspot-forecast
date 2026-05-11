@@ -272,7 +272,7 @@ export function MonitorPage() {
           </li>
           <li className="flex items-start gap-1.5">
             <span className="mt-1 h-1 w-1 shrink-0 rounded-full bg-gray-300" />
-            <strong>作品监控</strong>：追踪单条内容的播放量/阅读量趋势、互动数据和评论区舆情
+            <strong>作品监控</strong>：追踪单条内容的互动数据变化、阅读趋势和评论区舆情
           </li>
           <li className="flex items-start gap-1.5">
             <span className="mt-1 h-1 w-1 shrink-0 rounded-full bg-gray-300" />

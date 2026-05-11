@@ -130,6 +130,7 @@ export async function listResultArtifactSummaries() {
     readWatchTaskStore(),
   ]);
   return Object.values(artifactStore)
+    .filter((artifact) => !artifact.deletedAt)
     .map((artifact) =>
       toArtifactSummary(artifact, artifact.watchTaskId ? watchTaskStore[artifact.watchTaskId] : undefined),
     )
@@ -145,12 +146,28 @@ export async function getResultArtifactById(artifactId: string) {
   const artifact: StoredResultArtifact | undefined =
     artifactStore[artifactId] ??
     Object.values(artifactStore).find((a) => a.clientResultId === artifactId);
-  if (!artifact) return null;
+  if (!artifact || artifact.deletedAt) return null;
   const watchTask = artifact.watchTaskId ? watchTaskStore[artifact.watchTaskId] : undefined;
   return {
     ...toArtifactSummary(artifact, watchTask),
     snapshot: artifact.snapshot,
   };
+}
+
+/**
+ * 软删除一条 artifact。watchTask 不级联清理 —— 用户明确要求保留。
+ * 已删除的 artifact 不会再出现在 list / get 结果里，但底层 JSON 仍保留以备恢复。
+ */
+export async function softDeleteResultArtifact(artifactId: string): Promise<boolean> {
+  const artifactStore = await readResultArtifactStore();
+  const artifact =
+    artifactStore[artifactId] ??
+    Object.values(artifactStore).find((a) => a.clientResultId === artifactId);
+  if (!artifact || artifact.deletedAt) return false;
+  artifact.deletedAt = nowIso();
+  artifactStore[artifact.artifactId] = artifact;
+  await writeResultArtifactStore(artifactStore);
+  return true;
 }
 
 export async function upsertResultArtifact(params: {

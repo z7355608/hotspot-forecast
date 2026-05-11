@@ -20,6 +20,13 @@ import {
 
 export type UserRole = "creator" | "mcn" | "brand" | "visitor" | null;
 export type UserGoal = "topics" | "viral" | "predict" | "explore" | null;
+export type UserStage =
+  | "none"
+  | "starter"
+  | "growing"
+  | "breakout"
+  | "monetizing"
+  | null;
 
 export interface ChecklistItem {
   id: string;
@@ -31,19 +38,32 @@ export interface OnboardingState {
   welcomeCompleted: boolean;
   userRole: UserRole;
   userPlatforms: string[];
+  userNiches: string[];
+  userStage: UserStage;
   userGoal: UserGoal;
   checklistItems: ChecklistItem[];
   tooltipsSeen: Record<string, boolean>;
   newFeaturesSeen: Record<string, boolean>;
   creditsBannerDismissed: boolean;
+  /** 结果页「接入账号」引导已永久关闭（localStorage） */
+  connectorsGuideDismissed: boolean;
+}
+
+export interface CompleteWelcomeInput {
+  role: UserRole;
+  platforms: string[];
+  niches: string[];
+  stage: UserStage;
+  goal: UserGoal;
 }
 
 interface OnboardingContextValue extends OnboardingState {
-  completeWelcome: (role: UserRole, platforms: string[], goal: UserGoal) => void;
+  completeWelcome: (input: CompleteWelcomeInput) => void;
   markChecklistDone: (id: string) => void;
   markTooltipSeen: (id: string) => void;
   markFeatureSeen: (id: string) => void;
   dismissCreditsBanner: () => void;
+  dismissConnectorsGuide: () => void;
   resetOnboarding: () => void;
 }
 
@@ -81,11 +101,14 @@ function buildDefaultState(): OnboardingState {
     welcomeCompleted: false,
     userRole: null,
     userPlatforms: [],
+    userNiches: [],
+    userStage: null,
     userGoal: null,
     checklistItems: DEFAULT_CHECKLIST,
     tooltipsSeen: {},
     newFeaturesSeen: {},
     creditsBannerDismissed: false,
+    connectorsGuideDismissed: false,
   };
 }
 
@@ -116,7 +139,12 @@ export function OnboardingProvider({ children }: { children: ReactNode }) {
         ...saved.checklistItems,
         ...DEFAULT_CHECKLIST.filter((i) => !existingIds.has(i.id)),
       ];
-      return { ...buildDefaultState(), ...saved, checklistItems: merged };
+      return {
+        ...buildDefaultState(),
+        ...saved,
+        connectorsGuideDismissed: Boolean(saved.connectorsGuideDismissed),
+        checklistItems: merged,
+      };
     }
     return buildDefaultState();
   });
@@ -127,12 +155,14 @@ export function OnboardingProvider({ children }: { children: ReactNode }) {
   }, [state]);
 
   const completeWelcome = useCallback(
-    (role: UserRole, platforms: string[], goal: UserGoal) => {
+    ({ role, platforms, niches, stage, goal }: CompleteWelcomeInput) => {
       setState((prev) => ({
         ...prev,
         welcomeCompleted: true,
         userRole: role,
         userPlatforms: platforms,
+        userNiches: niches,
+        userStage: stage,
         userGoal: goal,
         checklistItems: prev.checklistItems.map((item) =>
           item.id === "welcome" ? { ...item, done: true } : item,
@@ -173,6 +203,10 @@ export function OnboardingProvider({ children }: { children: ReactNode }) {
     setState((prev) => ({ ...prev, creditsBannerDismissed: true }));
   }, []);
 
+  const dismissConnectorsGuide = useCallback(() => {
+    setState((prev) => ({ ...prev, connectorsGuideDismissed: true }));
+  }, []);
+
   const resetOnboarding = useCallback(() => {
     const fresh = buildDefaultState();
     setState(fresh);
@@ -187,6 +221,7 @@ export function OnboardingProvider({ children }: { children: ReactNode }) {
       markTooltipSeen,
       markFeatureSeen,
       dismissCreditsBanner,
+      dismissConnectorsGuide,
       resetOnboarding,
     }),
     [
@@ -196,6 +231,7 @@ export function OnboardingProvider({ children }: { children: ReactNode }) {
       markTooltipSeen,
       markFeatureSeen,
       dismissCreditsBanner,
+      dismissConnectorsGuide,
       resetOnboarding,
     ],
   );

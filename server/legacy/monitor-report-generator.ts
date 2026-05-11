@@ -11,6 +11,7 @@
  */
 
 import { callLLM } from "./llm-gateway.js";
+import { resolveSystemPrompt } from "./prompt-engine.js";
 import { createModuleLogger } from "./logger.js";
 import { query } from "./database.js";
 
@@ -128,7 +129,7 @@ function buildDataContext(diff: DiffResult, taskMeta: TaskMeta): string {
       lines.push(`### ${content.title.slice(0, 50)}`);
       lines.push(`- 作者：${content.authorName}（粉丝 ${formatNumber(content.authorFollowers)}）`);
       lines.push(`- 点赞：${formatNumber(content.likeCount)}，评论：${formatNumber(content.commentCount)}，分享：${formatNumber(content.shareCount)}`);
-      lines.push(`- 播放：${formatNumber(content.playCount)}，互动率：${(content.engagementRate * 100).toFixed(2)}%`);
+      lines.push(`- 互动量：${formatNumber(content.likeCount + content.commentCount + content.shareCount)}，互动率：${(content.engagementRate * 100).toFixed(2)}%`);
       if (content.isLowFollowerAnomaly) {
         lines.push(`- ⚠️ 低粉爆款异常（粉丝 < 1 万但获得高互动），信号强度：${content.anomalyStrength}`);
       }
@@ -313,7 +314,14 @@ export async function generateMonitorReport(
   const generatedAt = new Date().toISOString();
   const taskType = diff.taskType;
 
-  const systemPrompt = SYSTEM_PROMPTS[taskType] ?? SYSTEM_PROMPTS.topic_watch;
+  const fallbackSystemPrompt = SYSTEM_PROMPTS[taskType] ?? SYSTEM_PROMPTS.topic_watch;
+  // 从 prompt_templates 加载 monitor-report-v1（4 类型用 {{taskType}} 变量切换）
+  const systemPrompt = await resolveSystemPrompt(
+    "monitor-report-v1",
+    "doubao",
+    { taskType },
+    fallbackSystemPrompt,
+  );
   const dataContext = buildDataContext(diff, taskMeta);
 
   const userPrompt = `请根据以下监控数据，生成一份专业的监控简报：

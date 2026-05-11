@@ -323,7 +323,7 @@ export function TextExtractPanel({
         setProgressMsg("文案提取完成");
         setProgressPct(100);
       } else {
-        setError(data.error ?? "文案提取失败");
+        setError(data.error ?? "文案提取失败：视频可能已下架或链接已过期，请换一条试试");
         setStatus("error");
       }
     },

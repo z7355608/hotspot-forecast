@@ -25,6 +25,7 @@ import { createModuleLogger } from "./logger.js";
 const log = createModuleLogger("AccountDiagnosis");
 import { randomUUID } from "node:crypto";
 import { callLLM } from "./llm-gateway.js";
+import { resolveSystemPrompt } from "./prompt-engine.js";
 import { execute, query } from "./database.js";
 import type { RowDataPacket } from "./database.js";
 import type { AccountOverview, WorkItem, FanProfile, TrendDataPoint } from "./creator-data-sync.js";
@@ -133,11 +134,11 @@ function buildDiagnosisContext(input: DiagnosisInput): DiagnosisContext {
     `账号：${overview.handle}`,
     `粉丝数：${formatNumber(followers)}（近期变化：${overview.followersChange !== undefined ? (overview.followersChange >= 0 ? "+" : "") + formatNumber(overview.followersChange) : "未知"}）`,
     `作品总数：${overview.totalWorks}`,
-    `平均互动率：${avgRate.toFixed(2)}%（${isXhs ? "基于粉丝数" : "基于播放量"}，变化：${change >= 0 ? "+" : ""}${change.toFixed(2)}%${isKuaishou ? "，注意：快手无收藏数据、无评论文本" : ""}）`,
+    `平均互动率：${avgRate.toFixed(2)}%（基于粉丝数/可用互动指标，变化：${change >= 0 ? "+" : ""}${change.toFixed(2)}%${isKuaishou ? "，注意：快手无收藏数据、无评论文本" : ""}）`,
     isKuaishou ? `快手特有指标：有转发数（代替分享），无收藏数，无评论文本采集` : null,
   ].filter(Boolean).join("\n");
 
-  // 核心指标（小红书隐藏播放量，突出收藏）
+  // 核心指标：只输出 TikHub 稳定可用的互动指标
   const performanceMetrics = isXhs
     ? [
         overview.totalLikes !== undefined ? `总点赞：${formatNumber(overview.totalLikes)}` : null,
@@ -146,7 +147,6 @@ function buildDiagnosisContext(input: DiagnosisInput): DiagnosisContext {
         overview.totalShares !== undefined ? `总分享：${formatNumber(overview.totalShares)}` : null,
       ].filter(Boolean).join("，")
     : [
-        overview.totalViews !== undefined ? `总播放：${formatNumber(overview.totalViews)}` : null,
         overview.totalLikes !== undefined ? `总点赞：${formatNumber(overview.totalLikes)}` : null,
         overview.totalComments !== undefined ? `总评论：${formatNumber(overview.totalComments)}` : null,
         overview.totalShares !== undefined ? `总分享：${formatNumber(overview.totalShares)}` : null,
@@ -163,7 +163,7 @@ function buildDiagnosisContext(input: DiagnosisInput): DiagnosisContext {
   const top3 = sortedByEngagement.slice(0, 3);
   const bottom3 = sortedByEngagement.slice(-3).reverse();
 
-  // 小红书：显示收藏率和笔记类型；快手：显示播放/点赞/转发（无收藏）；其他平台：显示播放量
+  // 作品表现：只显示点赞/评论/收藏/转发等互动指标
   const topWorks = top3.map((w, i) => {
     const base = `${i + 1}. 《${w.title.slice(0, 30)}》`;
     const tags = ` 标签:[${(w.tags ?? []).slice(0, 3).join(",")}]`;
@@ -176,12 +176,12 @@ function buildDiagnosisContext(input: DiagnosisInput): DiagnosisContext {
     }
     if (isKuaishou) {
       return base +
-        ` 播放:${formatNumber(w.views ?? 0)} 点赞:${formatNumber(w.likes ?? 0)}` +
+        ` 点赞:${formatNumber(w.likes ?? 0)}` +
         ` 转发:${formatNumber(w.shares ?? 0)}` +
         ` 互动率:${calcEngagementRate(w, followers).toFixed(2)}%` + tags;
     }
     return base +
-      ` 播放:${formatNumber(w.views ?? 0)} 点赞:${formatNumber(w.likes ?? 0)}` +
+      ` 点赞:${formatNumber(w.likes ?? 0)} 评论:${formatNumber(w.comments ?? 0)}` +
       ` 互动率:${calcEngagementRate(w, followers).toFixed(2)}%` + tags;
   }).join("\n");
 
@@ -195,12 +195,12 @@ function buildDiagnosisContext(input: DiagnosisInput): DiagnosisContext {
     }
     if (isKuaishou) {
       return base +
-        ` 播放:${formatNumber(w.views ?? 0)} 点赞:${formatNumber(w.likes ?? 0)}` +
+        ` 点赞:${formatNumber(w.likes ?? 0)}` +
         ` 转发:${formatNumber(w.shares ?? 0)}` +
         ` 互动率:${calcEngagementRate(w, followers).toFixed(2)}%`;
     }
     return base +
-      ` 播放:${formatNumber(w.views ?? 0)} 互动率:${calcEngagementRate(w, followers).toFixed(2)}%`;
+      ` 点赞:${formatNumber(w.likes ?? 0)} 评论:${formatNumber(w.comments ?? 0)} 互动率:${calcEngagementRate(w, followers).toFixed(2)}%`;
   }).join("\n");
 
   // 趋势摘要
@@ -233,20 +233,14 @@ function buildDiagnosisContext(input: DiagnosisInput): DiagnosisContext {
 
 /**
  * 计算单条作品互动率
- * - 有播放量的平台（抖音/B站）：互动/播放 * 100
- * - 无播放量的平台（小红书）：互动/粉丝数 * 100（需外部传入 followers）
+ * - 默认用互动/粉丝数作为效率指标（需外部传入 followers）
  * - followers=0 时用纯互动量排序（返回互动总数作为 score）
  */
 function calcEngagementRate(work: WorkItem, followers?: number): number {
   const interaction = (work.likes ?? 0) + (work.comments ?? 0) +
     (work.shares ?? 0) + (work.collects ?? 0) + (work.voteups ?? 0);
 
-  const views = work.views ?? work.reads ?? 0;
-  if (views > 0) {
-    return (interaction / views) * 100;
-  }
-
-  // 无播放量（小红书）：基于粉丝数计算
+  // 基于粉丝数计算，避免依赖 TikHub 不稳定的播放字段
   if (followers && followers > 0) {
     return (interaction / followers) * 100;
   }
@@ -319,7 +313,6 @@ function calcVariance(values: number[]): number {
 
 function buildTrendSummary(trendData: TrendDataPoint[], platformId?: string): string {
   const recent7 = trendData.slice(-7);
-  const totalViews = recent7.reduce((s, t) => s + (t.views ?? 0), 0);
   const totalLikes = recent7.reduce((s, t) => s + (t.likes ?? 0), 0);
   const totalComments = recent7.reduce((s, t) => s + (t.comments ?? 0), 0);
   const totalCollects = recent7.reduce((s, t) => s + (t.collects ?? 0), 0);
@@ -329,9 +322,9 @@ function buildTrendSummary(trendData: TrendDataPoint[], platformId?: string): st
   }
   if (platformId === "kuaishou") {
     const totalShares = recent7.reduce((s, t) => s + (Number((t as unknown as Record<string, unknown>).shares ?? 0)), 0);
-    return `近7天：播放${formatNumber(totalViews)} 点赞${formatNumber(totalLikes)} 转发${formatNumber(totalShares)}（无收藏数据，无评论文本）`;
+    return `近7天：点赞${formatNumber(totalLikes)} 转发${formatNumber(totalShares)}（无收藏数据，无评论文本）`;
   }
-  return `近7天：播放${formatNumber(totalViews)} 点赞${formatNumber(totalLikes)} 评论${formatNumber(totalComments)}`;
+  return `近7天：点赞${formatNumber(totalLikes)} 评论${formatNumber(totalComments)}`;
 }
 
 function formatNumber(n: number): string {
@@ -353,7 +346,8 @@ async function runEngagementAnalysis(
   healthScore: number;
   healthLevel: DiagnosisReport["healthLevel"];
 }> {
-  const systemPrompt = `当前日期是 ${new Date().toISOString().slice(0, 10)}。
+  const currentDate = new Date().toISOString().slice(0, 10);
+  const fallbackEngagementSystem = `当前日期是 ${currentDate}。
 你是一位专业的社交媒体账号诊断专家，擅长分析创作者账号的表现数据，找出互动率变化的深层原因。
 
 你的分析必须：
@@ -380,6 +374,13 @@ async function runEngagementAnalysis(
 }
 
 keyFindings 要求：3-6条，覆盖正面发现和问题发现。`;
+
+  const systemPrompt = await resolveSystemPrompt(
+    "account-diagnosis-engagement-v1",
+    "gpt54",
+    { currentDate },
+    fallbackEngagementSystem,
+  );
 
   const userPrompt = `请分析以下账号数据，给出互动率归因分析和关键发现：
 
@@ -530,7 +531,8 @@ async function runStrategyGeneration(
   executionRoadmap: WeeklyPlan[];
   riskWarnings: RiskWarning[];
 }> {
-  const systemPrompt = `当前日期是 ${new Date().toISOString().slice(0, 10)}。
+  const strategyDate = new Date().toISOString().slice(0, 10);
+  const fallbackStrategySystem = `当前日期是 ${strategyDate}。
 你是一位顶级的社交媒体运营策略师，专门为内容创作者制定精准的账号增长策略。
 
 你的策略必须：
@@ -576,6 +578,13 @@ async function runStrategyGeneration(
 - strategyAdd：2-4条
 - executionRoadmap：4周计划
 - riskWarnings：2-4条`;
+
+  const systemPrompt = await resolveSystemPrompt(
+    "account-diagnosis-strategy-v1",
+    "gpt54",
+    { currentDate: strategyDate },
+    fallbackStrategySystem,
+  );
 
   const findingsSummary = keyFindings
     .map((f) => `[${f.type}] ${f.title}：${f.description}`)
@@ -692,7 +701,7 @@ function buildRuleBasedStrategy(
         action: "测试不同发布时间段",
         reason: "找到粉丝最活跃的发布窗口",
         priority: "medium",
-        expectedImpact: "播放量提升 15-25%",
+        expectedImpact: "互动量提升 15-25%",
         timeframe: "2周内完成测试",
       },
     ],
@@ -755,13 +764,18 @@ export async function generateCommentSummary(
     .map((c) => `[${c.sentiment ?? "neutral"}] ${c.content}`)
     .join("\n");
 
+  const fallbackCommentSystem = "你是评论分析专家，用50字以内总结评论区的核心声音，包括用户需求、情绪倾向和高频话题。语言简洁有力，不用客套话。";
+  const commentSystemPrompt = await resolveSystemPrompt(
+    "account-diagnosis-comment-v1",
+    "doubao",
+    {},
+    fallbackCommentSystem,
+  );
+
   try {
     const result = await callLLM({
       messages: [
-        {
-          role: "system",
-          content: "你是评论分析专家，用50字以内总结评论区的核心声音，包括用户需求、情绪倾向和高频话题。语言简洁有力，不用客套话。",
-        },
+        { role: "system", content: commentSystemPrompt },
         {
           role: "user",
           content: `作品《${workTitle}》的评论：\n${topComments}\n\n请用50字以内总结评论区核心声音。`,

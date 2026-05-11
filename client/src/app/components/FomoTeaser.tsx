@@ -24,9 +24,9 @@ const FOMO_SAMPLES: FomoSample[] = [
     tag: "穿搭赛道",
   },
   {
-    title: "低粉号 7 天破 50w 播放的「情绪钩子」公式",
+    title: "低粉号 7 天互动破圈的「情绪钩子」公式",
     metric: "50w+",
-    metricLabel: "播放",
+    metricLabel: "互动",
     tag: "情绪内容",
   },
   {

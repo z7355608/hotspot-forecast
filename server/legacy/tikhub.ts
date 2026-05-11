@@ -139,6 +139,7 @@ function logApiCallToDb(params: {
 }
 
 // 搜索类路径（可缓存）
+// 注：fetch_kuaishou_hot_list_v2 替代了已 404 的 fetch_hot_search_list（2026-04-29 实测）
 const CACHEABLE_PATHS = new Set([
   "/api/v1/douyin/search/fetch_general_search_v2",
   "/api/v1/douyin/search/fetch_video_search_v2",
@@ -146,7 +147,10 @@ const CACHEABLE_PATHS = new Set([
   "/api/v1/kuaishou/app/search_comprehensive",
   "/api/v1/douyin/web/fetch_hot_search_list",
   "/api/v1/xiaohongshu/web/get_hot_topics",
-  "/api/v1/kuaishou/web/fetch_hot_search_list",
+  // 平台原生热榜（services/native-trending.ts 走这三条）
+  "/api/v1/douyin/billboard/fetch_hot_rise_list",
+  "/api/v1/xiaohongshu/web_v2/fetch_hot_list",
+  "/api/v1/kuaishou/web/fetch_kuaishou_hot_list_v2",
 ]);
 
 function getHeaders() {

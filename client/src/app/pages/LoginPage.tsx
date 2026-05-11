@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { useNavigate, Link } from "react-router-dom";
+import { trpc } from "@/lib/trpc";
 import {
   Phone,
   ShieldCheck,
@@ -33,7 +34,7 @@ const TESTIMONIALS = [
     role: "美妆博主 · 12万粉",
   },
   {
-    text: "低粉爆款功能帮我找到了 3 个可复制的内容结构，第一条视频就破了 50 万播放。",
+    text: "低粉爆款功能帮我找到了 3 个可复制的内容结构，第一条视频互动明显破圈。",
     author: "阿杰说职场",
     role: "职场博主 · 8万粉",
   },
@@ -57,6 +58,7 @@ type AuthMode = "sms-login" | "password-login" | "register";
    ═══════════════════════════════════════════════ */
 export function LoginPage() {
   const navigate = useNavigate();
+  const phoneLoginMutation = trpc.auth.phoneLogin.useMutation();
 
   /* ─── Shared state ─── */
   const [mode, setMode] = useState<AuthMode>("sms-login");
@@ -138,31 +140,29 @@ export function LoginPage() {
     setError("");
     setLoading(true);
     try {
-      // TODO: integrate with Alibaba Cloud SMS verification API
-      await new Promise((r) => setTimeout(r, 800));
-      navigate("/");
-    } catch {
-      setError("验证码错误或已过期，请重新获取");
+      await phoneLoginMutation.mutateAsync({ phone, code });
+      navigate("/hot-topic-recommendations");
+    } catch (err: any) {
+      setError(err?.message || "验证码错误或已过期，请重新获取");
     } finally {
       setLoading(false);
     }
-  }, [isCodeValid, phone, code, navigate]);
+  }, [isCodeValid, phone, code, navigate, phoneLoginMutation]);
 
-  /* ─── Password: login ─── */
+  /* ─── Password: login (uses phone + MVP fixed code "888888") ─── */
   const handlePasswordLogin = useCallback(async () => {
     if (!loginAccount || !isPasswordValid) return;
     setError("");
     setLoading(true);
     try {
-      // TODO: integrate with backend auth API
-      await new Promise((r) => setTimeout(r, 800));
-      navigate("/");
-    } catch {
-      setError("账号或密码错误，请重试");
+      await phoneLoginMutation.mutateAsync({ phone: loginAccount, code: loginPassword });
+      navigate("/hot-topic-recommendations");
+    } catch (err: any) {
+      setError(err?.message || "账号或密码错误，请重试");
     } finally {
       setLoading(false);
     }
-  }, [loginAccount, isPasswordValid, navigate]);
+  }, [loginAccount, isPasswordValid, loginPassword, navigate, phoneLoginMutation]);
 
   /* ─── Register: send verification code ─── */
   const handleRegSendCode = useCallback(async () => {
@@ -189,7 +189,7 @@ export function LoginPage() {
     try {
       // TODO: integrate with backend registration API
       await new Promise((r) => setTimeout(r, 1000));
-      navigate("/");
+      navigate("/hot-topic-recommendations");
     } catch {
       setError("注册失败，请稍后重试");
     } finally {
@@ -508,7 +508,7 @@ export function LoginPage() {
             <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary text-sm font-bold text-white">
               AI
             </div>
-            <span className="text-xl font-bold text-gray-900">爆款预测Agent</span>
+            <span className="text-xl font-bold text-gray-900">爆款预测agent</span>
           </Link>
         </div>
 
@@ -536,7 +536,7 @@ export function LoginPage() {
             <div className="grid grid-cols-3 gap-2 p-4">
               {[
                 { label: "爆款预测", value: "7.5x", color: "bg-violet-50 text-violet-700" },
-                { label: "播放增长", value: "+320%", color: "bg-emerald-50 text-emerald-700" },
+                { label: "互动增长", value: "+320%", color: "bg-emerald-50 text-emerald-700" },
                 { label: "监控赛道", value: "12个", color: "bg-amber-50 text-amber-700" },
               ].map((stat) => (
                 <div key={stat.label} className={`rounded-lg p-3 ${stat.color}`}>
@@ -610,7 +610,7 @@ export function LoginPage() {
           <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary text-sm font-bold text-white">
             AI
           </div>
-          <span className="text-xl font-bold text-gray-900">爆款预测Agent</span>
+          <span className="text-xl font-bold text-gray-900">爆款预测agent</span>
         </div>
 
         <div className="w-full max-w-md">
@@ -720,7 +720,7 @@ export function LoginPage() {
 
         {/* Copyright */}
         <div className="mt-4 text-center text-xs text-gray-400">
-          © {new Date().getFullYear()} 爆款预测Agent. All rights reserved.
+          © {new Date().getFullYear()} 爆款预测agent. All rights reserved.
         </div>
       </div>
     </div>

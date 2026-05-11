@@ -9,7 +9,8 @@
  * 输出统一的 SmartParseLinkResult，前端据此在输入框中创建 ResourceItem
  */
 
-import { invokeLLM } from "../_core/llm";
+import { callLLM } from "../legacy/llm-gateway";
+import { extractDouyinAwemeIdFromUrl, pickDouyinCoverFallback } from "./cover-url-fallback.js";
 
 const VIDEO_PARSE_API = "http://watermark-8sgbruqh.zhibofeng.com:8082/video/parse";
 const VIDEO_PARSE_KEY = "dw8uiZ3Z3TF0YqQA";
@@ -131,13 +132,25 @@ async function parseVideoUrl(url: string, platform: string): Promise<SmartParseL
     const videoUrls = ((raw.videos as { url: string }[]) ?? []).map(v => v.url).filter(Boolean);
     const audioUrls = ((raw.audios as { url: string }[]) ?? []).map(a => a.url).filter(Boolean);
 
+    let coverUrl: string | undefined;
+    try {
+      const rc = raw.cover as { url?: string } | undefined;
+      coverUrl = rc?.url && typeof rc.url === "string" ? rc.url : undefined;
+    } catch {
+      coverUrl = undefined;
+    }
+    if (!coverUrl && /抖音/i.test(platform)) {
+      const aid = extractDouyinAwemeIdFromUrl(url);
+      if (aid) coverUrl = pickDouyinCoverFallback(aid) ?? undefined;
+    }
+
     return {
       ok: true,
       kind: "video",
       title: (raw.title as string) || "未知标题",
       sourceUrl: url,
       platform: (raw.pt as string) || platform,
-      coverUrl: (raw.cover as { url: string })?.url,
+      coverUrl,
       videoUrl: videoUrls[0],
       audioUrl: audioUrls[0],
       stats: {
@@ -282,7 +295,8 @@ async function checkContentRestriction(
   if (content.length < 50 && rawHtml.length > 500) {
     // 用 LLM 做二次判断
     try {
-      const response = await invokeLLM({
+      const response = await callLLM({
+        modelId: "doubao",
         messages: [
           {
             role: "system",
@@ -298,7 +312,7 @@ async function checkContentRestriction(
             content: `URL: ${url}\n\n提取到的文本内容（${content.length}字）:\n${content.slice(0, 500)}\n\nHTML 片段:\n${rawHtml.slice(0, 1000)}`,
           },
         ],
-        response_format: {
+        responseFormat: {
           type: "json_schema",
           json_schema: {
             name: "restriction_check",
@@ -316,8 +330,7 @@ async function checkContentRestriction(
         },
       });
 
-      const rawContent = response.choices?.[0]?.message?.content ?? "";
-      const parsed = JSON.parse(typeof rawContent === "string" ? rawContent : JSON.stringify(rawContent));
+      const parsed = JSON.parse(response.content || "{}");
       return {
         isRestricted: parsed.isRestricted ?? false,
         reason: parsed.reason || undefined,

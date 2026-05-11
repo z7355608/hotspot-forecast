@@ -1,0 +1,657 @@
+{
+  "batchId": "industry_eval_2026-05-09T00-50-42-862Z_7e7909fa",
+  "createdAt": "2026-05-09T00:50:42.862Z",
+  "updatedAt": "2026-05-09T06:45:41.803Z",
+  "expiresAt": "2026-05-12T00:50:42.862Z",
+  "status": "running",
+  "cycleHours": 72,
+  "checkpointHours": [
+    6,
+    12,
+    24,
+    48
+  ],
+  "targetAccuracyRate": 50,
+  "platforms": [
+    "douyin"
+  ],
+  "tracks": [
+    {
+      "track": "本地生活探店",
+      "prompt": "本地生活探店赛道现在发什么最容易爆？请给我3个明确、可执行、适合中腰部账号跟进的短视频选题。",
+      "status": "completed",
+      "createdAt": "2026-05-09T00:50:42.862Z",
+      "updatedAt": "2026-05-09T00:52:42.488Z",
+      "predictedTopics": [
+        {
+          "topicId": "topic_52e1177d-06c2-4201-9b10-906c2581ca62",
+          "title": "开了40年的潮汕三无牛肉粿老店，本地人都抢着吃",
+          "angle": "老牌无招牌特色店挖掘",
+          "predictedScore": 92,
+          "tags": [
+            "#潮汕美食",
+            "#本地人爱吃的店",
+            "#抖音美食推荐官"
+          ],
+          "referenceTitle": "潮汕揭阳开了40多年的无门头无招牌无服务的三无牛肉粿老店！ #抖音美食推荐官 #揭阳美食 #潮汕美食 #本地人爱吃的店",
+          "referenceId": "7637205717086209459",
+          "checkpoints": [
+            {
+              "checkpointHour": 6,
+              "dueAt": "2026-05-09T06:50:42.862Z",
+              "status": "pending",
+              "searchedKeywords": [],
+              "matches": []
+            },
+            {
+              "checkpointHour": 12,
+              "dueAt": "2026-05-09T12:50:42.862Z",
+              "status": "pending",
+              "searchedKeywords": [],
+              "matches": []
+            },
+            {
+              "checkpointHour": 24,
+              "dueAt": "2026-05-10T00:50:42.862Z",
+              "status": "pending",
+              "searchedKeywords": [],
+              "matches": []
+            },
+            {
+              "checkpointHour": 48,
+              "dueAt": "2026-05-11T00:50:42.862Z",
+              "status": "pending",
+              "searchedKeywords": [],
+              "matches": []
+            }
+          ]
+        },
+        {
+          "topicId": "topic_975fbdee-1198-45d9-9c3c-126eaa430004",
+          "title": "普陀区新开东北烧烤，45抵100性价比直接拉满",
+          "angle": "新店优惠福利种草",
+          "predictedScore": 88,
+          "tags": [
+            "#百元夯吃大赏",
+            "#寻味烟火气",
+            "#心动榜餐厅"
+          ],
+          "referenceTitle": "普陀区新开的东北烧烤，45可以当成100花#寻味烟火气#心动榜餐厅#烟火老吃家入门考试#百元夯吃大赏",
+          "referenceId": "7637122364577549425",
+          "checkpoints": [
+            {
+              "checkpointHour": 6,
+              "dueAt": "2026-05-09T06:50:42.862Z",
+              "status": "pending",
+              "searchedKeywords": [],
+              "matches": []
+            },
+            {
+              "checkpointHour": 12,
+              "dueAt": "2026-05-09T12:50:42.862Z",
+              "status": "pending",
+              "searchedKeywords": [],
+              "matches": []
+            },
+            {
+              "checkpointHour": 24,
+              "dueAt": "2026-05-10T00:50:42.862Z",
+              "status": "pending",
+              "searchedKeywords": [],
+              "matches": []
+            },
+            {
+              "checkpointHour": 48,
+              "dueAt": "2026-05-11T00:50:42.862Z",
+              "status": "pending",
+              "searchedKeywords": [],
+              "matches": []
+            }
+          ]
+        },
+        {
+          "topicId": "topic_66580dca-40dc-4bf5-a7ef-731bada94907",
+          "title": "本地新开餐饮店今日营业，欢迎周边朋友来打卡",
+          "angle": "新店开业官宣引流",
+          "predictedScore": 83,
+          "tags": [
+            "#本地美食",
+            "#附近美食",
+            "#我是餐饮人"
+          ],
+          "referenceTitle": "我们今天正式营业了！欢迎大家来打卡品鉴#热门美食 #本地美食 #我是餐饮人 #附近美食",
+          "referenceId": "7637016332458043109",
+          "checkpoints": [
+            {
+              "checkpointHour": 6,
+              "dueAt": "2026-05-09T06:50:42.862Z",
+              "status": "pending",
+              "searchedKeywords": [],
+              "matches": []
+            },
+            {
+              "checkpointHour": 12,
+              "dueAt": "2026-05-09T12:50:42.862Z",
+              "status": "pending",
+              "searchedKeywords": [],
+              "matches": []
+            },
+            {
+              "checkpointHour": 24,
+              "dueAt": "2026-05-10T00:50:42.862Z",
+              "status": "pending",
+              "searchedKeywords": [],
+              "matches": []
+            },
+            {
+              "checkpointHour": 48,
+              "dueAt": "2026-05-11T00:50:42.862Z",
+              "status": "pending",
+              "searchedKeywords": [],
+              "matches": []
+            }
+          ]
+        }
+      ],
+      "predictionRunId": "run_f874e51a-bb68-4bed-933e-b7a9dad4af91",
+      "evidenceQuality": {
+        "supportingContents": 10,
+        "supportingAccounts": 5,
+        "lowFollowerEvidence": 1,
+        "whyNowItems": 3,
+        "evidenceGaps": [],
+        "degradeFlags": [],
+        "usableForAccuracyEval": true,
+        "reason": "真实内容样本 10 条，可进入后验准确率验证。"
+      }
+    },
+    {
+      "track": "数码科技",
+      "prompt": "数码科技赛道现在发什么最容易爆？请给我3个明确、可执行、适合中腰部账号跟进的短视频选题。",
+      "status": "completed",
+      "createdAt": "2026-05-09T00:50:42.862Z",
+      "updatedAt": "2026-05-09T00:54:15.580Z",
+      "predictedTopics": [
+        {
+          "topicId": "topic_3c90b3e8-69a9-44df-bac0-f465cc1670fd",
+          "title": "数码界四大生态盘点，你现在在用哪一家的？",
+          "angle": "盘点四大品牌生态，引发用户站队讨论",
+          "predictedScore": 88,
+          "tags": [
+            "#数码科技",
+            "#苹果",
+            "#华为",
+            "#小米"
+          ],
+          "referenceTitle": "「数码界四大生态，你最喜欢哪种生态？#数码科技 #小米 #苹果 #三星 #华为」",
+          "referenceId": "7635745846495727871",
+          "checkpoints": [
+            {
+              "checkpointHour": 6,
+              "dueAt": "2026-05-09T06:50:42.862Z",
+              "status": "pending",
+              "searchedKeywords": [],
+              "matches": []
+            },
+            {
+              "checkpointHour": 12,
+              "dueAt": "2026-05-09T12:50:42.862Z",
+              "status": "pending",
+              "searchedKeywords": [],
+              "matches": []
+            },
+            {
+              "checkpointHour": 24,
+              "dueAt": "2026-05-10T00:50:42.862Z",
+              "status": "pending",
+              "searchedKeywords": [],
+              "matches": []
+            },
+            {
+              "checkpointHour": 48,
+              "dueAt": "2026-05-11T00:50:42.862Z",
+              "status": "pending",
+              "searchedKeywords": [],
+              "matches": []
+            }
+          ]
+        },
+        {
+          "topicId": "topic_00fd6836-741f-4319-8d58-991f59a562ef",
+          "title": "卢伟冰言论引争议，第17周小米新机首销数据曝光",
+          "angle": "跟进数码圈热门爆料，直击小米新机销量情况",
+          "predictedScore": 85,
+          "tags": [
+            "#数码科技",
+            "#小米",
+            "#新机爆料"
+          ],
+          "referenceTitle": "「卢伟冰被证明有些吹大话了！这不，5月1日晚上，数码博主“数码闲聊站”透露了今年第17周几款新机的首销数据！#小米」",
+          "referenceId": "7635888292844474289",
+          "checkpoints": [
+            {
+              "checkpointHour": 6,
+              "dueAt": "2026-05-09T06:50:42.862Z",
+              "status": "pending",
+              "searchedKeywords": [],
+              "matches": []
+            },
+            {
+              "checkpointHour": 12,
+              "dueAt": "2026-05-09T12:50:42.862Z",
+              "status": "pending",
+              "searchedKeywords": [],
+              "matches": []
+            },
+            {
+              "checkpointHour": 24,
+              "dueAt": "2026-05-10T00:50:42.862Z",
+              "status": "pending",
+              "searchedKeywords": [],
+              "matches": []
+            },
+            {
+              "checkpointHour": 48,
+              "dueAt": "2026-05-11T00:50:42.862Z",
+              "status": "pending",
+              "searchedKeywords": [],
+              "matches": []
+            }
+          ]
+        },
+        {
+          "topicId": "topic_0851d95a-8505-4b8a-9557-63516fadcc42",
+          "title": "想买iQOO 16的注意！官方确认没有搭载散热风扇",
+          "angle": "精准触达意向用户，解答购机前核心疑问",
+          "predictedScore": 82,
+          "tags": [
+            "#数码科技",
+            "#iQOO16",
+            "#新机资讯"
+          ],
+          "referenceTitle": "「想买iQOO 16的同学可以放心了，数码博主已经明确这款产品不会搭载散热风扇！#iQOO16」",
+          "referenceId": "7636322425446596337",
+          "checkpoints": [
+            {
+              "checkpointHour": 6,
+              "dueAt": "2026-05-09T06:50:42.862Z",
+              "status": "pending",
+              "searchedKeywords": [],
+              "matches": []
+            },
+            {
+              "checkpointHour": 12,
+              "dueAt": "2026-05-09T12:50:42.862Z",
+              "status": "pending",
+              "searchedKeywords": [],
+              "matches": []
+            },
+            {
+              "checkpointHour": 24,
+              "dueAt": "2026-05-10T00:50:42.862Z",
+              "status": "pending",
+              "searchedKeywords": [],
+              "matches": []
+            },
+            {
+              "checkpointHour": 48,
+              "dueAt": "2026-05-11T00:50:42.862Z",
+              "status": "pending",
+              "searchedKeywords": [],
+              "matches": []
+            }
+          ]
+        }
+      ],
+      "predictionRunId": "run_f49b30a8-19d4-4dcb-a0b4-083db06c1118",
+      "evidenceQuality": {
+        "supportingContents": 10,
+        "supportingAccounts": 6,
+        "lowFollowerEvidence": 4,
+        "whyNowItems": 3,
+        "evidenceGaps": [],
+        "degradeFlags": [],
+        "usableForAccuracyEval": true,
+        "reason": "真实内容样本 10 条，可进入后验准确率验证。"
+      }
+    },
+    {
+      "track": "宠物萌宠",
+      "prompt": "宠物萌宠赛道现在发什么最容易爆？请给我3个明确、可执行、适合中腰部账号跟进的短视频选题。",
+      "status": "completed",
+      "createdAt": "2026-05-09T00:50:42.862Z",
+      "updatedAt": "2026-05-09T00:56:18.286Z",
+      "predictedTopics": [
+        {
+          "topicId": "topic_a6509c95-c7b0-4be6-92f8-33ed5d44fdf6",
+          "title": "翻肚皮卖萌的摆烂小猫咪，试问谁能顶得住啊",
+          "angle": "拍猫咪摆烂卖萌日常，走可爱治愈路线",
+          "predictedScore": 92,
+          "tags": [
+            "#小猫咪的摆烂生活",
+            "#萌宠出道计划",
+            "#记录萌宠日常"
+          ],
+          "referenceTitle": "糟糕，这只翻着肚皮卖萌的小猫咪谁顶得住啊！ #萌宠独白玩法挑战 #抖音玩法合伙人计划 #想做一只猫摆烂又傲娇 #萌宠出道计划 #小猫咪的摆烂生活",
+          "referenceId": "7636336987301549258",
+          "checkpoints": [
+            {
+              "checkpointHour": 6,
+              "dueAt": "2026-05-09T06:50:42.862Z",
+              "status": "pending",
+              "searchedKeywords": [],
+              "matches": []
+            },
+            {
+              "checkpointHour": 12,
+              "dueAt": "2026-05-09T12:50:42.862Z",
+              "status": "pending",
+              "searchedKeywords": [],
+              "matches": []
+            },
+            {
+              "checkpointHour": 24,
+              "dueAt": "2026-05-10T00:50:42.862Z",
+              "status": "pending",
+              "searchedKeywords": [],
+              "matches": []
+            },
+            {
+              "checkpointHour": 48,
+              "dueAt": "2026-05-11T00:50:42.862Z",
+              "status": "pending",
+              "searchedKeywords": [],
+              "matches": []
+            }
+          ]
+        },
+        {
+          "topicId": "topic_ad617164-d9b2-49c8-9e0e-02537b0fddcd",
+          "title": "养久了猫都分不清，家里到底谁是主人谁是猫",
+          "angle": "拍人猫身份错位的搞笑日常，走反差路线",
+          "predictedScore": 88,
+          "tags": [
+            "#记录萌宠日常",
+            "#萌宠日常记录分享"
+          ],
+          "referenceTitle": "这猫养久了，猫不像猫人不像人，都不知道这家里谁是猫谁是主人了[捂脸]。#记录萌宠日常",
+          "referenceId": "7636070129961533632",
+          "checkpoints": [
+            {
+              "checkpointHour": 6,
+              "dueAt": "2026-05-09T06:50:42.862Z",
+              "status": "pending",
+              "searchedKeywords": [],
+              "matches": []
+            },
+            {
+              "checkpointHour": 12,
+              "dueAt": "2026-05-09T12:50:42.862Z",
+              "status": "pending",
+              "searchedKeywords": [],
+              "matches": []
+            },
+            {
+              "checkpointHour": 24,
+              "dueAt": "2026-05-10T00:50:42.862Z",
+              "status": "pending",
+              "searchedKeywords": [],
+              "matches": []
+            },
+            {
+              "checkpointHour": 48,
+              "dueAt": "2026-05-11T00:50:42.862Z",
+              "status": "pending",
+              "searchedKeywords": [],
+              "matches": []
+            }
+          ]
+        },
+        {
+          "topicId": "topic_1344c88c-6585-4c02-80de-ed5a34e602ee",
+          "title": "吐槽我家傻狗，天天瞎吼还不知道自己几斤几两",
+          "angle": "拍狗狗日常搞笑行为，走吐槽逗趣路线",
+          "predictedScore": 85,
+          "tags": [
+            "#狗狗的日常",
+            "#狗狗的心思都写在脸上了"
+          ],
+          "referenceTitle": "松，你几斤几两？你心里面没数啊，一天天在那里瞎吼，都吼不来几个赞的狗，你还自以为是#狗是人类最忠诚的朋友 #狗狗的心思都写在脸上了 #狗狗的日常 #狗",
+          "referenceId": "7636226849228263488",
+          "checkpoints": [
+            {
+              "checkpointHour": 6,
+              "dueAt": "2026-05-09T06:50:42.862Z",
+              "status": "pending",
+              "searchedKeywords": [],
+              "matches": []
+            },
+            {
+              "checkpointHour": 12,
+              "dueAt": "2026-05-09T12:50:42.862Z",
+              "status": "pending",
+              "searchedKeywords": [],
+              "matches": []
+            },
+            {
+              "checkpointHour": 24,
+              "dueAt": "2026-05-10T00:50:42.862Z",
+              "status": "pending",
+              "searchedKeywords": [],
+              "matches": []
+            },
+            {
+              "checkpointHour": 48,
+              "dueAt": "2026-05-11T00:50:42.862Z",
+              "status": "pending",
+              "searchedKeywords": [],
+              "matches": []
+            }
+          ]
+        }
+      ],
+      "predictionRunId": "run_6faa2581-2d69-469f-a9a4-66c635bf90b3",
+      "evidenceQuality": {
+        "supportingContents": 10,
+        "supportingAccounts": 2,
+        "lowFollowerEvidence": 1,
+        "whyNowItems": 3,
+        "evidenceGaps": [],
+        "degradeFlags": [],
+        "usableForAccuracyEval": true,
+        "reason": "真实内容样本 10 条，可进入后验准确率验证。"
+      }
+    },
+    {
+      "track": "餐饮加盟",
+      "prompt": "餐饮加盟赛道现在发什么最容易爆？请给我3个明确、可执行、适合中腰部账号跟进的短视频选题。",
+      "status": "completed",
+      "createdAt": "2026-05-09T00:50:42.862Z",
+      "updatedAt": "2026-05-09T00:57:41.334Z",
+      "predictedTopics": [
+        {
+          "topicId": "topic_2bef551d-bb79-43d6-8d69-945eef6c735b",
+          "title": "餐饮加盟出现这5个信号，别犹豫立刻止损撤退",
+          "angle": "结合加盟纠纷数据讲加盟避坑技巧",
+          "predictedScore": 92,
+          "tags": [
+            "#餐饮加盟",
+            "#餐饮避坑",
+            "#餐饮创业"
+          ],
+          "referenceTitle": "加盟纠纷暴增89%，餐饮加盟这5个信号出现立刻撤退 #餐饮加盟 #餐饮创业 #餐饮避坑 #餐饮人",
+          "referenceId": "7634920265746517275",
+          "checkpoints": [
+            {
+              "checkpointHour": 6,
+              "dueAt": "2026-05-09T06:50:42.862Z",
+              "status": "pending",
+              "searchedKeywords": [],
+              "matches": []
+            },
+            {
+              "checkpointHour": 12,
+              "dueAt": "2026-05-09T12:50:42.862Z",
+              "status": "pending",
+              "searchedKeywords": [],
+              "matches": []
+            },
+            {
+              "checkpointHour": 24,
+              "dueAt": "2026-05-10T00:50:42.862Z",
+              "status": "pending",
+              "searchedKeywords": [],
+              "matches": []
+            },
+            {
+              "checkpointHour": 48,
+              "dueAt": "2026-05-11T00:50:42.862Z",
+              "status": "pending",
+              "searchedKeywords": [],
+              "matches": []
+            }
+          ]
+        },
+        {
+          "topicId": "topic_b4f39361-6fe4-4448-9c29-56a8c6d04fb8",
+          "title": "六线小县城开阿遇烧烤，到底能不能赚到钱？",
+          "angle": "下沉市场烧烤加盟可行性分析",
+          "predictedScore": 88,
+          "tags": [
+            "#阿遇烧烤",
+            "#餐饮加盟",
+            "#小县城创业"
+          ],
+          "referenceTitle": "六线小县城里的阿遇烧烤，到底有没有机会？#商业思维 #认知 #阿遇烧烤 #餐饮人",
+          "referenceId": "7635908633419271025",
+          "checkpoints": [
+            {
+              "checkpointHour": 6,
+              "dueAt": "2026-05-09T06:50:42.862Z",
+              "status": "pending",
+              "searchedKeywords": [],
+              "matches": []
+            },
+            {
+              "checkpointHour": 12,
+              "dueAt": "2026-05-09T12:50:42.862Z",
+              "status": "pending",
+              "searchedKeywords": [],
+              "matches": []
+            },
+            {
+              "checkpointHour": 24,
+              "dueAt": "2026-05-10T00:50:42.862Z",
+              "status": "pending",
+              "searchedKeywords": [],
+              "matches": []
+            },
+            {
+              "checkpointHour": 48,
+              "dueAt": "2026-05-11T00:50:42.862Z",
+              "status": "pending",
+              "searchedKeywords": [],
+              "matches": []
+            }
+          ]
+        },
+        {
+          "topicId": "topic_1ef62c2e-8d0e-45c2-9594-ce740ae773c2",
+          "title": "已经踩了餐饮加盟的坑，现在该怎么自救？",
+          "angle": "针对已入坑用户的解决方案输出",
+          "predictedScore": 85,
+          "tags": [
+            "#餐饮加盟",
+            "#餐饮避坑",
+            "#餐饮创业"
+          ],
+          "checkpoints": [
+            {
+              "checkpointHour": 6,
+              "dueAt": "2026-05-09T06:50:42.862Z",
+              "status": "pending",
+              "searchedKeywords": [],
+              "matches": []
+            },
+            {
+              "checkpointHour": 12,
+              "dueAt": "2026-05-09T12:50:42.862Z",
+              "status": "pending",
+              "searchedKeywords": [],
+              "matches": []
+            },
+            {
+              "checkpointHour": 24,
+              "dueAt": "2026-05-10T00:50:42.862Z",
+              "status": "pending",
+              "searchedKeywords": [],
+              "matches": []
+            },
+            {
+              "checkpointHour": 48,
+              "dueAt": "2026-05-11T00:50:42.862Z",
+              "status": "pending",
+              "searchedKeywords": [],
+              "matches": []
+            }
+          ]
+        }
+      ],
+      "predictionRunId": "run_b2160927-2079-421e-a541-9e645e0a8c5e",
+      "evidenceQuality": {
+        "supportingContents": 7,
+        "supportingAccounts": 6,
+        "lowFollowerEvidence": 3,
+        "whyNowItems": 3,
+        "evidenceGaps": [],
+        "degradeFlags": [],
+        "usableForAccuracyEval": true,
+        "reason": "真实内容样本 7 条，可进入后验准确率验证。"
+      }
+    }
+  ],
+  "summary": {
+    "totalTracks": 4,
+    "completedTracks": 4,
+    "dataInsufficientTracks": 0,
+    "totalTopics": 12,
+    "evaluatedCheckpoints": 0,
+    "accurateCheckpoints": 0,
+    "accuracyRate": 0,
+    "averageAccuracy": 0,
+    "averagePredictedScore": 0,
+    "averageActualScore": 0,
+    "coverageRate": 0,
+    "targetAccuracyRate": 50,
+    "passesTarget": false,
+    "overestimated": [],
+    "underestimated": [],
+    "byTrack": [
+      {
+        "track": "本地生活探店",
+        "evaluatedCheckpoints": 0,
+        "accuracyRate": 0,
+        "averageAccuracy": 0
+      },
+      {
+        "track": "数码科技",
+        "evaluatedCheckpoints": 0,
+        "accuracyRate": 0,
+        "averageAccuracy": 0
+      },
+      {
+        "track": "宠物萌宠",
+        "evaluatedCheckpoints": 0,
+        "accuracyRate": 0,
+        "averageAccuracy": 0
+      },
+      {
+        "track": "餐饮加盟",
+        "evaluatedCheckpoints": 0,
+        "accuracyRate": 0,
+        "averageAccuracy": 0
+      }
+    ],
+    "conclusion": "还没有到期检查点，无法判断行业词选题准确率。"
+  }
+}

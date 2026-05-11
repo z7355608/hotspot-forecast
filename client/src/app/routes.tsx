@@ -1,4 +1,4 @@
-import { createBrowserRouter } from "react-router-dom";
+import { Navigate, createBrowserRouter } from "react-router-dom";
 import { Root } from "./components/Root";
 import { AccountCenterPage } from "./pages/AccountCenterPage";
 import { BreakdownPage } from "./pages/BreakdownPage";
@@ -6,8 +6,8 @@ import { ConnectorsPage } from "./pages/ConnectorsPage";
 import { CreditsPage } from "./pages/CreditsPage";
 import { HistoryPage } from "./pages/HistoryPage";
 import { HomePage } from "./pages/HomePage";
+import { HotTopicRecommendationsPage } from "./pages/HotTopicRecommendationsPage";
 import { LandingPage } from "./pages/LandingPage";
-import { LoginPage } from "./pages/LoginPage";
 import { LowFollowerPage } from "./pages/LowFollowerPage";
 import { MonitorPage } from "./pages/MonitorPage";
 import { NotFoundPage } from "./pages/NotFoundPage";
@@ -17,11 +17,16 @@ import { TermsPage } from "./pages/TermsPage";
 import { ToolboxPage } from "./pages/ToolboxPage";
 import { PerformancePage } from "./pages/PerformancePage";
 import { PrivacyPage } from "./pages/PrivacyPage";
+import { PredictionAgentResultsPage } from "./pages/PredictionAgentResultsPage";
 
 export const router = createBrowserRouter([
   /* ─── Public pages (no sidebar / header) ─── */
   { path: "/landing", Component: LandingPage },
-  { path: "/login", Component: LoginPage },
+  { path: "/prediction-agent-results", Component: PredictionAgentResultsPage },
+  { path: "/prediction-agent-results/:id", Component: PredictionAgentResultsPage },
+  // /login no longer renders its own page — it redirects to default landing
+  // where AuthModalProvider overlays the WelcomeTrial / Login modal flow.
+  { path: "/login", element: <Navigate to="/hot-topic-recommendations" replace /> },
   { path: "/terms", Component: TermsPage },
   { path: "/privacy", Component: PrivacyPage },
 
@@ -30,7 +35,11 @@ export const router = createBrowserRouter([
     path: "/",
     Component: Root,
     children: [
-      { index: true, Component: HomePage },
+      // 默认登录后落地页：爆款选题推荐
+      { index: true, element: <Navigate to="/hot-topic-recommendations" replace /> },
+      { path: "hot-topic-recommendations", Component: HotTopicRecommendationsPage },
+      // 「爆款预测agent」迁到 /predict（之前在 / 下）
+      { path: "predict", Component: HomePage },
       { path: "results/:id", Component: ResultsPage },
       { path: "history", Component: HistoryPage },
       { path: "credits", Component: CreditsPage },

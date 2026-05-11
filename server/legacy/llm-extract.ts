@@ -16,7 +16,7 @@
  */
 
 import { createModuleLogger } from "./logger.js";
-import { invokeLLM } from "../_core/llm";
+import { callLLM } from "./llm-gateway.js";
 
 const log = createModuleLogger("LLMExtract");
 
@@ -74,7 +74,7 @@ const EXTRACTION_SCHEMA = {
             },
             viewCount: {
               type: ["number", "null"],
-              description: "播放量/浏览量，没有则为 null",
+              description: "公开浏览量/阅读量，没有则为 null；不要猜测",
             },
             likeCount: {
               type: ["number", "null"],
@@ -153,7 +153,7 @@ function buildSystemPrompt(platform: string): string {
 1. 提取所有能找到的内容条目（视频、笔记、短视频等），不要遗漏
 2. 每个内容必须有一个唯一 ID（contentId）和标题/描述（title），标题长度至少 8 个字符
 3. 如果标题太短（少于 8 个字符），跳过该条目
-4. 数值字段（播放量、点赞数等）如果找不到就填 null，不要猜测
+4. 数值字段（点赞数、评论数等）如果找不到就填 null，不要猜测
 5. ID 字段统一转为字符串类型
 6. 同时提取作者/账号信息到 accounts 数组
 7. 去重：相同 contentId 只保留一条，相同 accountId 只保留一条
@@ -228,7 +228,8 @@ export async function llmExtractFromPayload(
   log.info(`LLM extract for ${platform}: payload ${payloadStr.length} chars`);
 
   try {
-    const result = await invokeLLM({
+    const result = await callLLM({
+      modelId: "doubao",
       messages: [
         {
           role: "system",
@@ -239,21 +240,16 @@ export async function llmExtractFromPayload(
           content: `请从以下 ${platform} 搜索 API 返回的 JSON 数据中提取所有内容和账号信息：\n\n${payloadStr}`,
         },
       ],
-      response_format: {
+      responseFormat: {
         type: "json_schema",
         json_schema: EXTRACTION_SCHEMA,
       },
-      max_tokens: 16384,
+      maxTokens: 16384,
     });
 
-    const rawContent = result.choices?.[0]?.message?.content ?? "";
-    const contentStr = typeof rawContent === "string" ? rawContent : JSON.stringify(rawContent);
-    const promptTokens = result.usage?.prompt_tokens ?? 0;
-    const completionTokens = result.usage?.completion_tokens ?? 0;
+    log.info(`LLM extract OK — prompt:${result.promptTokens} completion:${result.completionTokens}`);
 
-    log.info(`LLM extract OK — prompt:${promptTokens} completion:${completionTokens}`);
-
-    const parsed = JSON.parse(contentStr) as LLMExtractionResult;
+    const parsed = JSON.parse(result.content || "{}") as LLMExtractionResult;
 
     // 基本校验
     if (!Array.isArray(parsed.contents)) parsed.contents = [];

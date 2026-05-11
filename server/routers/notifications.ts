@@ -1,10 +1,12 @@
 import { z } from "zod";
 import { protectedProcedure, router } from "../_core/trpc";
 import {
-  getUserNotifications,
-  markNotificationRead,
-  markAllNotificationsRead,
+  deleteAllNotifications,
+  deleteNotification,
   getUnreadNotificationCount,
+  getUserNotifications,
+  markAllNotificationsRead,
+  markNotificationRead,
 } from "../db";
 
 export const notificationsRouter = router({
@@ -35,6 +37,20 @@ export const notificationsRouter = router({
   /** 标记所有通知为已读 */
   markAllRead: protectedProcedure.mutation(async ({ ctx }) => {
     await markAllNotificationsRead(ctx.user.openId);
+    return { success: true };
+  }),
+
+  /** 删除单条通知（物理删除，按 userOpenId 限定） */
+  delete: protectedProcedure
+    .input(z.object({ id: z.number() }))
+    .mutation(async ({ ctx, input }) => {
+      await deleteNotification(input.id, ctx.user.openId);
+      return { success: true };
+    }),
+
+  /** 清空当前用户的全部通知 */
+  clearAll: protectedProcedure.mutation(async ({ ctx }) => {
+    await deleteAllNotifications(ctx.user.openId);
     return { success: true };
   }),
 });

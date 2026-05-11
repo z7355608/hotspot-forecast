@@ -1,15 +1,37 @@
 import { useEffect, useRef, useState } from "react";
-import { Bell, ChevronDown, Coins, LogOut, Menu, Settings, Sparkles, Link2 } from "lucide-react";
+import { Bell, Coins, LogOut, Menu, Settings, Link2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/_core/hooks/useAuth";
-import {
-  AI_MODELS,
-  canUseModel,
-  getModelOption,
-  getModelRequiredPlanLabel,
-} from "../store/app-data";
 import { getMembershipLabel, useAppStore } from "../store/app-store";
 import { trpc } from "../../lib/trpc";
+
+/** 通知铃铛 + 真实未读红点 */
+function NotificationBellButton({
+  onOpenNotifications,
+}: {
+  onOpenNotifications?: () => void;
+}) {
+  const { user } = useAuth();
+  const unreadQuery = trpc.notifications.unreadCount.useQuery(undefined, {
+    enabled: !!user,
+    staleTime: 30_000,
+    refetchInterval: 60_000,
+    refetchOnWindowFocus: true,
+  });
+  const hasUnread = (unreadQuery.data?.count ?? 0) > 0;
+  return (
+    <button
+      type="button"
+      onClick={onOpenNotifications}
+      className="relative rounded-lg p-2 text-gray-600 transition-colors hover:bg-gray-50 hover:text-gray-900"
+    >
+      <Bell className="h-5 w-5" />
+      {hasUnread && (
+        <span className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full bg-red-500" />
+      )}
+    </button>
+  );
+}
 
 /** 实时从后端获取积分余额的按钮 */
 function HeaderCreditsButton({
@@ -64,17 +86,12 @@ export function Header({
 }) {
   const navigate = useNavigate();
   const { user, logout } = useAuth();
-  const { state, resetAppState, setSelectedModel } = useAppStore();
-  const [showModelMenu, setShowModelMenu] = useState(false);
+  const { state, resetAppState } = useAppStore();
   const [showProfileMenu, setShowProfileMenu] = useState(false);
-  const modelRef = useRef<HTMLDivElement>(null);
   const profileRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const onPointerDown = (event: MouseEvent) => {
-      if (!modelRef.current?.contains(event.target as Node)) {
-        setShowModelMenu(false);
-      }
       if (!profileRef.current?.contains(event.target as Node)) {
         setShowProfileMenu(false);
       }
@@ -84,7 +101,6 @@ export function Header({
     return () => document.removeEventListener("mousedown", onPointerDown);
   }, []);
 
-  const selectedModel = getModelOption(state.selectedModel);
   const membershipLabel = getMembershipLabel(state.membershipPlan);
 
   // Use real user info from auth, with fallbacks
@@ -100,7 +116,7 @@ export function Header({
     }
     resetAppState();
     setShowProfileMenu(false);
-    navigate("/");
+    navigate("/hot-topic-recommendations");
   };
 
   return (
@@ -114,93 +130,13 @@ export function Header({
           >
             <Menu className="h-5 w-5" />
           </button>
-          <div className="relative min-w-0" ref={modelRef}>
-            <button
-              type="button"
-              onClick={() => setShowModelMenu((value) => !value)}
-              className="flex max-w-full items-center gap-2 rounded-lg px-2 py-1.5 text-sm text-gray-900 transition-colors hover:bg-gray-50 sm:px-3"
-            >
-              <span className="max-w-[11rem] truncate sm:max-w-[15rem]">
-                {selectedModel.name}
-              </span>
-              <span className="shrink-0 rounded-full bg-gray-100 px-2 py-0.5 text-[10px] text-gray-500">
-                {selectedModel.badge}
-              </span>
-              <ChevronDown
-                className={`h-4 w-4 shrink-0 text-gray-500 transition-transform ${showModelMenu ? "rotate-180" : ""}`}
-              />
-            </button>
-            {showModelMenu && (
-              <div className="absolute left-0 top-full mt-2 w-[min(18rem,calc(100vw-2rem))] max-w-[calc(100vw-2rem)] rounded-2xl border border-gray-100 bg-white p-2 shadow-2xl">
-                {AI_MODELS.map((model) => {
-                  const active = model.id === state.selectedModel;
-                  const available = canUseModel(state.membershipPlan, model.id);
-                  return (
-                    <button
-                      key={model.id}
-                      type="button"
-                      onClick={() => {
-                        if (!available) {
-                          setShowModelMenu(false);
-                          onOpenCredits?.();
-                          return;
-                        }
-
-                        setSelectedModel(model.id);
-                        setShowModelMenu(false);
-                      }}
-                      className={`flex w-full items-center justify-between rounded-xl px-3 py-3 text-left transition-colors ${
-                        active
-                          ? "bg-gray-900 text-white"
-                          : available
-                            ? "hover:bg-gray-50"
-                            : "opacity-70 hover:bg-gray-50"
-                      }`}
-                    >
-                      <div>
-                        <div className="text-sm">{model.name}</div>
-                        <div
-                          className={`mt-1 text-xs ${active ? "text-white/70" : "text-gray-400"}`}
-                        >
-                          {available
-                            ? `创作趋势分析模型 · ${model.badge} 计费`
-                            : `${getModelRequiredPlanLabel(model.id)} · ${model.badge} 计费`}
-                        </div>
-                      </div>
-                      <span
-                        className={`rounded-full px-2 py-0.5 text-[10px] ${
-                          active
-                            ? "bg-white/15 text-white"
-                            : available
-                              ? "bg-gray-100 text-gray-500"
-                              : "bg-amber-50 text-amber-700"
-                        }`}
-                      >
-                        {active
-                          ? "当前"
-                          : available
-                            ? model.badge
-                            : model.requiredPlan === "plus"
-                              ? "Plus"
-                              : "Pro"}
-                      </span>
-                    </button>
-                  );
-                })}
-              </div>
-            )}
+          <div className="min-w-0 text-sm font-medium text-gray-900">
+            爆款预测agent
           </div>
         </div>
 
         <div className="ml-auto flex shrink-0 flex-wrap items-center justify-end gap-2 sm:gap-3">
-          <button
-            type="button"
-            onClick={onOpenNotifications}
-            className="relative rounded-lg p-2 text-gray-600 transition-colors hover:bg-gray-50 hover:text-gray-900"
-          >
-            <Bell className="h-5 w-5" />
-            <span className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full bg-red-500" />
-          </button>
+          <NotificationBellButton onOpenNotifications={onOpenNotifications} />
           <HeaderCreditsButton onOpenCredits={onOpenCredits} fallbackCredits={state.credits} />
           <div className="relative" ref={profileRef}>
             <button

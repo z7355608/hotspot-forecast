@@ -12,7 +12,7 @@ export function PrivacyPage() {
               <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-sm font-bold text-white">
                 AI
               </div>
-              <span className="text-lg font-bold text-gray-900">爆款预测Agent</span>
+              <span className="text-lg font-bold text-gray-900">爆款预测agent</span>
             </Link>
           </div>
           <Link to="/landing" className="flex items-center gap-1.5 text-sm text-gray-500 transition hover:text-gray-900">
@@ -31,7 +31,7 @@ export function PrivacyPage() {
           <section>
             <h2 className="mb-3 text-lg font-bold text-gray-900">一、引言</h2>
             <p>
-              峰极科技（以下简称"我们"）深知个人信息对您的重要性，我们将按照法律法规的规定，采取相应的安全保护措施，尽力保护您的个人信息安全可控。本隐私政策适用于"爆款预测Agent"平台（以下简称"本平台"）提供的所有服务。
+              峰极科技（以下简称"我们"）深知个人信息对您的重要性，我们将按照法律法规的规定，采取相应的安全保护措施，尽力保护您的个人信息安全可控。本隐私政策适用于"爆款预测agent"平台（以下简称"本平台"）提供的所有服务。
             </p>
             <p className="mt-2">
               请您在使用本平台服务前，仔细阅读并充分理解本隐私政策的全部内容。一旦您开始使用本平台服务，即表示您已充分理解并同意本政策。

@@ -14,7 +14,8 @@
 import { z } from "zod";
 import { TRPCError } from "@trpc/server";
 import { protectedProcedure, router } from "../_core/trpc";
-import { invokeLLM } from "../_core/llm";
+import { callLLM } from "../legacy/llm-gateway";
+import { stripJsonFences } from "../legacy/json-extract";
 import { query, execute } from "../legacy/database";
 import type { RowDataPacket } from "../legacy/database";
 import crypto from "node:crypto";
@@ -94,7 +95,7 @@ async function extractWorksFeatureSummary(userId: string, platformId: string): P
     .map((r, i) => {
       const duration = Number(r.duration || 0);
       const durationLabel = duration > 60 ? `${Math.round(duration / 60)}分钟` : `${duration}秒`;
-      return `${i + 1}. 「${String(r.title || "无标题")}」 时长${durationLabel} | 播放${Number(r.view_count || 0)} 点赞${Number(r.like_count || 0)} 评论${Number(r.comment_count || 0)} | 标签: ${String(r.hashtags || "无")}`;
+      return `${i + 1}. 「${String(r.title || "无标题")}」 时长${durationLabel} | 点赞${Number(r.like_count || 0)} 评论${Number(r.comment_count || 0)} 分享${Number(r.share_count || 0)} | 标签: ${String(r.hashtags || "无")}`;
     })
     .join("\n");
 }
@@ -176,7 +177,7 @@ async function extractTopWorksSummary(userId: string, platformId: string): Promi
 
   if (!rows.length) return "暂无作品数据";
   return (rows as Record<string, unknown>[])
-    .map((r, i) => `${i + 1}. 「${String(r.title || "无标题")}」 播放${Number(r.view_count || 0)} 点赞${Number(r.like_count || 0)} 评论${Number(r.comment_count || 0)} 转发${Number(r.share_count || 0)} | 标签: ${String(r.hashtags || "无")}`)
+    .map((r, i) => `${i + 1}. 「${String(r.title || "无标题")}」 点赞${Number(r.like_count || 0)} 评论${Number(r.comment_count || 0)} 转发${Number(r.share_count || 0)} | 标签: ${String(r.hashtags || "无")}`)
     .join("\n");
 }
 
@@ -220,21 +221,19 @@ async function callLLMWithJsonResponse(
   systemPrompt: string,
   userPrompt: string,
 ): Promise<{ content: string; tokensUsed: number; durationMs: number }> {
+  // Doubao 不支持 response_format(任何 type),靠 prompt + stripJsonFences 容错(forge 弃用,见 P0-A)
   const start = Date.now();
-  const result = await invokeLLM({
+  const enhancedSystem = systemPrompt + "\n\n严格输出 JSON 对象,不要 markdown 围栏(```),不要解释性前后缀。";
+  const result = await callLLM({
+    modelId: "doubao",
     messages: [
-      { role: "system", content: systemPrompt },
+      { role: "system", content: enhancedSystem },
       { role: "user", content: userPrompt },
     ],
-    response_format: { type: "json_object" },
   });
-
-  const content = typeof result.choices[0]?.message?.content === "string"
-    ? result.choices[0].message.content
-    : "";
-  const tokensUsed = result.usage?.total_tokens || 0;
-
-  return { content, tokensUsed, durationMs: Date.now() - start };
+  const tokensUsed = result.promptTokens + result.completionTokens;
+  // 预清洗 JSON,callers 可以直接 JSON.parse
+  return { content: stripJsonFences(result.content), tokensUsed, durationMs: Date.now() - start };
 }
 
 async function callLLMWithMarkdownResponse(
@@ -242,19 +241,15 @@ async function callLLMWithMarkdownResponse(
   userPrompt: string,
 ): Promise<{ content: string; tokensUsed: number; durationMs: number }> {
   const start = Date.now();
-  const result = await invokeLLM({
+  const result = await callLLM({
+    modelId: "doubao",
     messages: [
       { role: "system", content: systemPrompt },
       { role: "user", content: userPrompt },
     ],
   });
-
-  const content = typeof result.choices[0]?.message?.content === "string"
-    ? result.choices[0].message.content
-    : "";
-  const tokensUsed = result.usage?.total_tokens || 0;
-
-  return { content, tokensUsed, durationMs: Date.now() - start };
+  const tokensUsed = result.promptTokens + result.completionTokens;
+  return { content: result.content, tokensUsed, durationMs: Date.now() - start };
 }
 
 // ─────────────────────────────────────────────
@@ -566,8 +561,11 @@ async function loadPromptTemplate(templateId: string): Promise<{
   systemPrompt: string;
   userTemplate: string;
 }> {
+  // 与 prompt-engine 主表对齐：读 system_prompt_doubao（默认 doubao 模型） + user_prompt_template
   const rows = await query<RowDataPacket[]>(
-    `SELECT system_prompt, user_prompt_template FROM prompt_templates WHERE id = ? AND is_active = 1`,
+    `SELECT system_prompt_doubao, user_prompt_template
+       FROM prompt_templates
+      WHERE id = ? AND is_active = 1`,
     [templateId],
   );
 
@@ -580,7 +578,7 @@ async function loadPromptTemplate(templateId: string): Promise<{
 
   const r = rows[0] as Record<string, unknown>;
   return {
-    systemPrompt: String(r.system_prompt || ""),
+    systemPrompt: String(r.system_prompt_doubao || ""),
     userTemplate: String(r.user_prompt_template || ""),
   };
 }

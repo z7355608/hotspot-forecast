@@ -90,6 +90,12 @@ function MarkdownRenderer({ content }: { content: string }) {
       '<blockquote class="my-3 border-l-3 border-blue-300 bg-blue-50/50 px-4 py-2.5 text-xs text-gray-700">$1</blockquote>',
     );
 
+    // 图片。用于标题封面生成结果里直接预览 Apollo 返回的封面图。
+    md = md.replace(
+      /!\[([^\]]*)\]\((https?:\/\/[^)\s]+)\)/g,
+      '<img src="$2" alt="$1" class="my-4 max-h-[520px] w-full rounded-xl border border-gray-200 object-contain bg-gray-50" />',
+    );
+
     // 标题
     md = md.replace(/^#### (.+)$/gm, '<h4 class="mt-5 mb-2 text-sm font-semibold text-gray-800">$1</h4>');
     md = md.replace(/^### (.+)$/gm, '<h3 class="mt-6 mb-2 text-sm font-semibold text-gray-800">$1</h3>');

@@ -32,6 +32,10 @@ interface RuntimeContext {
   noteId?: string;
   photoId?: string;
   cookie?: string;
+  /** 抖音垂类标签筛选（来自 content-tag-cache.mapPromptToTag），传给互动率榜单 */
+  contentTags?: Array<{ value: number; children?: Array<{ value: number }> }>;
+  /** 抖音城市编码（来自 city-cache.extractCityFromPrompt），传给同城热点榜 */
+  cityCode?: string;
 }
 
 interface RouteSpec {
@@ -65,12 +69,12 @@ interface RunWatchTaskResult {
 // - fetch_hot_total_search_list (POST, 200)
 // - fetch_hot_total_low_fan_list (POST, 200)
 // - fetch_hot_total_hot_word_list (POST, 200)
+// - fetch_hot_rise_list (GET, 200，需传 page/page_size/order；2026-04-29 重新启用)
 // 仍然禁用的路由：
 const DEFAULT_DISABLED_ENDPOINTS = new Set([
   "/api/v1/douyin/billboard/fetch_hot_total_topic_list",
   "/api/v1/douyin/billboard/fetch_hot_total_video_list",
   "/api/v1/douyin/billboard/fetch_hot_total_high_search_list",
-  "/api/v1/douyin/billboard/fetch_hot_rise_list",
   "/api/v1/douyin/billboard/fetch_hot_total_list",
   "/api/v1/douyin/billboard/fetch_hot_item_trends_list",
 ]);
@@ -199,7 +203,48 @@ const DOUYIN_ROUTES: RouteSpec[] = [
     tier: "L1",
     method: "POST",
     path: "/api/v1/douyin/billboard/fetch_hot_total_low_fan_list",
-    buildParams: () => ({}),
+    buildParams: (ctx) => ({
+      page: 1,
+      page_size: 10,
+      date_window: 168,
+      ...(ctx.contentTags && ctx.contentTags.length > 0 ? { tags: ctx.contentTags } : {}),
+    }),
+  },
+  {
+    capability: "high_like_billboard",
+    tier: "L1",
+    method: "POST",
+    path: "/api/v1/douyin/billboard/fetch_hot_total_high_like_list",
+    buildParams: (ctx) => ({
+      page: 1,
+      page_size: 10,
+      date_window: 168,
+      ...(ctx.contentTags && ctx.contentTags.length > 0 ? { tags: ctx.contentTags } : {}),
+    }),
+  },
+  {
+    capability: "high_fan_billboard",
+    tier: "L1",
+    method: "POST",
+    path: "/api/v1/douyin/billboard/fetch_hot_total_high_fan_list",
+    buildParams: (ctx) => ({
+      page: 1,
+      page_size: 10,
+      date_window: 168,
+      ...(ctx.contentTags && ctx.contentTags.length > 0 ? { tags: ctx.contentTags } : {}),
+    }),
+  },
+  {
+    capability: "high_play_billboard",
+    tier: "L1",
+    method: "POST",
+    path: "/api/v1/douyin/billboard/fetch_hot_total_high_play_list",
+    buildParams: (ctx) => ({
+      page: 1,
+      page_size: 10,
+      date_window: 168,
+      ...(ctx.contentTags && ctx.contentTags.length > 0 ? { tags: ctx.contentTags } : {}),
+    }),
   },
   {
     capability: "hot_search_billboard",
@@ -207,6 +252,16 @@ const DOUYIN_ROUTES: RouteSpec[] = [
     method: "POST",
     path: "/api/v1/douyin/billboard/fetch_hot_total_search_list",
     buildParams: () => ({}),
+  },
+  {
+    capability: "city_hot_billboard",
+    tier: "L1",
+    method: "GET",
+    path: "/api/v1/douyin/billboard/fetch_hot_city_list",
+    buildParams: (ctx) =>
+      ctx.cityCode
+        ? { page: 1, page_size: 10, order: "rank", city_code: ctx.cityCode }
+        : null, // 没有 cityCode 时跳过该 capability
   },
   {
     capability: "hot_word_billboard",
@@ -235,6 +290,45 @@ const DOUYIN_ROUTES: RouteSpec[] = [
     method: "GET",
     path: "/api/v1/douyin/web/handler_user_profile_v4",
     buildParams: ({ secUserId }) => (secUserId ? { sec_user_id: secUserId } : null),
+  },
+  // ── 账号诊断五件套（P1）：均要求 sec_uid，buildParams 在缺失时返回 null 自动跳过 ──
+  {
+    capability: "account_fans_portrait",
+    tier: "L1",
+    method: "GET",
+    path: "/api/v1/douyin/billboard/fetch_hot_account_fans_portrait_list",
+    buildParams: (ctx) => (ctx.secUserId ? { sec_uid: ctx.secUserId, option: 1 } : null),
+    // option=1 手机价格分布（实测 1-5 都返回相同 portrait/portrait_tgi 结构；option=8 实际不可用返回 400）
+  },
+  {
+    capability: "account_fans_interest_topics",
+    tier: "L1",
+    method: "GET",
+    path: "/api/v1/douyin/billboard/fetch_hot_account_fans_interest_topic_list",
+    buildParams: (ctx) => (ctx.secUserId ? { sec_uid: ctx.secUserId } : null),
+  },
+  {
+    capability: "account_fans_interest_searches",
+    tier: "L1",
+    method: "GET",
+    path: "/api/v1/douyin/billboard/fetch_hot_account_fans_interest_search_list",
+    buildParams: (ctx) => (ctx.secUserId ? { sec_uid: ctx.secUserId } : null),
+  },
+  {
+    capability: "account_item_analysis",
+    tier: "L1",
+    method: "GET",
+    path: "/api/v1/douyin/billboard/fetch_hot_account_item_analysis_list",
+    buildParams: (ctx) => (ctx.secUserId ? { sec_uid: ctx.secUserId } : null),
+  },
+  {
+    capability: "account_fan_trends",
+    tier: "L1",
+    method: "GET",
+    path: "/api/v1/douyin/billboard/fetch_hot_account_trends_list",
+    buildParams: (ctx) =>
+      ctx.secUserId ? { sec_uid: ctx.secUserId, option: 2 } : null,
+    // option=2 新增点赞量；不传 date_window（用接口默认；实测 168/2 会 400，仅 1/24 有效）
   },
   {
     capability: "creator_posts",
@@ -470,19 +564,15 @@ const KUAISHOU_ROUTES: RouteSpec[] = [
       keyword ? { keyword: keyword.trim(), page: 1 } : null,
   },
   // ===== 热榜 =====
+  // 2026-04-29 实测旧的 fetch_hot_search_list 已 HTTP 404，
+  // fetch_kuaishou_hot_list_v2 是新版替代（带 hotValue + pvSoarSignal）。
+  // 旧 L1/L2 都失效了，把 v2 提到 L1，旧的全部摘掉。
   {
     capability: "hot_seed",
     tier: "L1",
     method: "GET",
-    path: "/api/v1/kuaishou/web/fetch_hot_search_list",
-    buildParams: () => ({}),
-  },
-  {
-    capability: "hot_seed",
-    tier: "L2",
-    method: "GET",
-    path: "/api/v1/kuaishou/web/fetch_hot_topic_list",
-    buildParams: () => ({}),
+    path: "/api/v1/kuaishou/web/fetch_kuaishou_hot_list_v2",
+    buildParams: () => ({ board_type: "1" }),
   },
   {
     capability: "hot_seed",
@@ -549,7 +639,16 @@ function getTaskPlan(platform: SupportedPlatform, taskType: WatchTaskType) {
     if (taskType === "account_watch") {
       return {
         required: ["account_profile"] as string[],
-        optional: ["creator_posts", "hot_seed"] as string[],
+        optional: [
+          "creator_posts",
+          "hot_seed",
+          // 账号诊断五件套（P1）—— 仅在 sec_uid 提取成功时实际跑（buildParams 自动跳过）
+          "account_fans_portrait",
+          "account_fans_interest_topics",
+          "account_fans_interest_searches",
+          "account_item_analysis",
+          "account_fan_trends",
+        ] as string[],
       };
     }
     if (taskType === "validation_watch") {
@@ -559,8 +658,12 @@ function getTaskPlan(platform: SupportedPlatform, taskType: WatchTaskType) {
           "topic_discovery",
           "hot_seed",
           "low_fan_billboard",
+          "high_like_billboard",
+          "high_fan_billboard",
+          "high_play_billboard",
           "hot_search_billboard",
           "hot_word_billboard",
+          "city_hot_billboard",
           "content_detail",
           "comments",
           "trend_growth",
@@ -570,7 +673,20 @@ function getTaskPlan(platform: SupportedPlatform, taskType: WatchTaskType) {
     }
     return {
       required: ["keyword_content_search"] as string[],
-      optional: ["topic_discovery", "hot_seed", "low_fan_billboard", "hot_search_billboard", "hot_word_billboard", "content_detail", "comments", "cookie_enrich"] as string[],
+      optional: [
+        "topic_discovery",
+        "hot_seed",
+        "low_fan_billboard",
+        "high_like_billboard",
+        "high_fan_billboard",
+        "high_play_billboard",
+        "hot_search_billboard",
+        "hot_word_billboard",
+        "city_hot_billboard",
+        "content_detail",
+        "comments",
+        "cookie_enrich",
+      ] as string[],
     };
   }
 
@@ -688,12 +804,15 @@ function validatePayload(capability: string, payload: unknown): string[] {
       ? []
       : ["missing_posts"];
   }
-  if (capability === "low_fan_billboard") {
-    // 低粉爆款榜: data.data.objs[]
+  if (capability === "low_fan_billboard" ||
+      capability === "high_like_billboard" ||
+      capability === "high_fan_billboard" ||
+      capability === "high_play_billboard") {
+    // 互动率榜单家族（low_fan / high_like / high_fan / high_play）：data.data.objs[]
     return hasNonEmptyArray(payload, ["objs"]) ||
       hasAnyObjectKey(payload, ["data"])
       ? []
-      : ["missing_low_fan_data"];
+      : [`missing_${capability}_data`];
   }
   if (capability === "hot_search_billboard") {
     // 热搜榜: data.data.search_list[]
@@ -708,6 +827,23 @@ function validatePayload(capability: string, payload: unknown): string[] {
       hasAnyObjectKey(payload, ["data"])
       ? []
       : ["missing_hot_word_data"];
+  }
+  if (capability === "city_hot_billboard") {
+    // 同城热点榜: data.data.objs[] (sentence/sentence_id/hot_score 结构)
+    return hasNonEmptyArray(payload, ["objs"]) ||
+      hasAnyObjectKey(payload, ["data"])
+      ? []
+      : ["missing_city_hot_data"];
+  }
+  if (
+    capability === "account_fans_portrait" ||
+    capability === "account_fans_interest_topics" ||
+    capability === "account_fans_interest_searches" ||
+    capability === "account_item_analysis" ||
+    capability === "account_fan_trends"
+  ) {
+    // 账号诊断五件套：响应都是 data.data.{xxx_list 或 trends 等结构}
+    return hasAnyObjectKey(payload, ["data"]) ? [] : [`missing_${capability}_data`];
   }
   if (capability === "trend_growth" || capability === "cookie_enrich" || capability === "cookie_verify") {
     return hasAnyObjectKey(payload, ["data", "result", "extra"]) ? [] : ["missing_cookie_data"];
@@ -854,8 +990,19 @@ function getFallbackFlag(capability: string): DegradeFlag | null {
   if (capability === "hot_seed") {
     return "fallback_hotlist_route";
   }
-  if (capability === "low_fan_billboard" || capability === "hot_search_billboard" || capability === "hot_word_billboard") {
+  if (capability === "low_fan_billboard" || capability === "hot_search_billboard" || capability === "hot_word_billboard" ||
+      capability === "high_like_billboard" || capability === "high_fan_billboard" || capability === "high_play_billboard" ||
+      capability === "city_hot_billboard") {
     return "fallback_billboard_route";
+  }
+  if (
+    capability === "account_fans_portrait" ||
+    capability === "account_fans_interest_topics" ||
+    capability === "account_fans_interest_searches" ||
+    capability === "account_item_analysis" ||
+    capability === "account_fan_trends"
+  ) {
+    return "fallback_account_diagnosis_route";
   }
   if (capability === "trend_growth") {
     return "fallback_billboard_route";
@@ -973,10 +1120,20 @@ export async function runWatchTaskWithFallback(params: {
   task: StoredWatchTask;
   runId: string;
   cookie?: string;
+  /** 抖音垂类标签筛选（来自 content-tag-cache.mapPromptToTag），可选 */
+  contentTags?: Array<{ value: number; children?: Array<{ value: number }> }>;
+  /** 抖音城市编码（来自 city-cache.extractCityFromPrompt），可选 */
+  cityCode?: string;
 }): Promise<RunWatchTaskResult> {
-  const { task, runId, cookie } = params;
+  const { task, runId, cookie, contentTags, cityCode } = params;
   const healthStore = await readEndpointHealthStore();
   const context = buildRuntimeContext(task, cookie);
+  if (contentTags && contentTags.length > 0) {
+    context.contentTags = contentTags;
+  }
+  if (cityCode) {
+    context.cityCode = cityCode;
+  }
   const plan = getTaskPlan(task.platform, task.taskType);
   const degradeFlags: DegradeFlag[] = [];
   const usedRouteChain: string[] = [];

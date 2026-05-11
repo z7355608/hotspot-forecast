@@ -91,7 +91,10 @@ function fmtMs(ms: number | null | undefined): string {
 }
 
 function fmtDate(dateStr: string): string {
-  return new Date(dateStr).toLocaleString("zh-CN", {
+  if (!dateStr) return "—";
+  const d = new Date(dateStr);
+  if (Number.isNaN(d.getTime())) return "—";
+  return d.toLocaleString("zh-CN", {
     month: "2-digit",
     day: "2-digit",
     hour: "2-digit",

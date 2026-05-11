@@ -539,96 +539,6 @@ function toneClasses(tone: "blue" | "green" | "amber" | "gray") {
   };
 }
 
-/**
- * 从用户的真实操作历史中生成通知列表
- */
-function buildRealNotifications(input: {
-  results: Array<{ query: string; createdAt?: string; taskIntent?: string }>;
-  connectors: Array<{ id: string; name: string; connected: boolean; lastSync?: string }>;
-  credits: number;
-  membershipPlan: string;
-}) {
-  const items: Array<{
-    id: string;
-    title: string;
-    body: string;
-    time: string;
-    unread: boolean;
-    tone: "blue" | "green" | "amber" | "gray";
-  }> = [];
-
-  // 最近的预测结果
-  const recentResults = [...input.results]
-    .sort((a, b) => {
-      const ta = a.createdAt ? new Date(a.createdAt).getTime() : 0;
-      const tb = b.createdAt ? new Date(b.createdAt).getTime() : 0;
-      return tb - ta;
-    })
-    .slice(0, 2);
-
-  for (const result of recentResults) {
-    const timeStr = result.createdAt
-      ? formatRelativeTime(new Date(result.createdAt))
-      : "最近";
-    items.push({
-      id: `result-${result.query.slice(0, 10)}`,
-      title: "分析结果已生成",
-      body: `「${result.query.slice(0, 30)}${result.query.length > 30 ? "..." : ""}」分析完成，可查看详细结果。`,
-      time: timeStr,
-      unread: true,
-      tone: "blue",
-    });
-  }
-
-  // 已连接的平台
-  const connectedPlatforms = input.connectors.filter((c) => c.connected);
-  if (connectedPlatforms.length > 0) {
-    const names = connectedPlatforms.map((c) => c.name).join("、");
-    items.push({
-      id: "sync-status",
-      title: "平台数据同步",
-      body: `${names}已连接，数据同步可用。打开创作中心查看最新数据。`,
-      time: "最近",
-      unread: false,
-      tone: "green",
-    });
-  }
-
-  // 积分状态
-  if (input.credits < 50) {
-    items.push({
-      id: "credits-low",
-      title: "积分余额提醒",
-      body: `当前剩余 ${input.credits} 积分，建议及时充值以确保分析任务不中断。`,
-      time: "系统提醒",
-      unread: true,
-      tone: "amber",
-    });
-  }
-
-  // 如果没有任何真实通知，显示引导
-  if (items.length === 0) {
-    items.push({
-      id: "welcome",
-      title: "欢迎使用爆款预测Agent",
-      body: "开始你的第一次内容分析，在首页输入框输入话题或粘贴链接即可。",
-      time: "刚刚",
-      unread: true,
-      tone: "blue",
-    });
-    items.push({
-      id: "connect-tip",
-      title: "连接你的创作账号",
-      body: "前往「账号连接」绑定抖音、小红书或快手账号，解锁创作中心数据看板。",
-      time: "系统提示",
-      unread: false,
-      tone: "gray",
-    });
-  }
-
-  return items.slice(0, 4);
-}
-
 function formatRelativeTime(date: Date): string {
   const now = new Date();
   const diffMs = now.getTime() - date.getTime();
@@ -651,49 +561,38 @@ export function NotificationsModal({
   onClose: () => void;
 }) {
   const navigate = useNavigate();
-  const { state } = useAppStore();
-  const [dbNotifications, setDbNotifications] = useState<Array<{
-    id: number;
-    type: string;
-    title: string;
-    body: string;
-    tone: string;
-    isRead: number;
-    relatedId: string | null;
-    actionUrl: string | null;
-    createdAt: string;
-  }>>([]);
-  const [loading, setLoading] = useState(false);
-
-  // 当弹窗打开时从数据库加载通知
-  useEffect(() => {
-    if (!open) return;
-    setLoading(true);
-    fetch("/api/trpc/notifications.list", {
-      method: "GET",
-      headers: { "Content-Type": "application/json" },
-      credentials: "include",
-    })
-      .then((res) => res.json())
-      .then((data) => {
-        if (data?.result?.data?.items) {
-          setDbNotifications(data.result.data.items);
-        }
-      })
-      .catch(() => {})
-      .finally(() => setLoading(false));
-  }, [open]);
-
-  // 合并数据库通知和前端状态通知
-  const frontendNotifications = buildRealNotifications({
-    results: state.results,
-    connectors: state.connectors,
-    credits: state.credits,
-    membershipPlan: state.membershipPlan,
+  const utils = trpc.useUtils();
+  const listQuery = trpc.notifications.list.useQuery(undefined, {
+    enabled: open,
+    staleTime: 10_000,
+  });
+  const markReadMutation = trpc.notifications.markRead.useMutation({
+    onSuccess: () => {
+      utils.notifications.list.invalidate();
+      utils.notifications.unreadCount.invalidate();
+    },
+  });
+  const markAllReadMutation = trpc.notifications.markAllRead.useMutation({
+    onSuccess: () => {
+      utils.notifications.list.invalidate();
+      utils.notifications.unreadCount.invalidate();
+    },
+  });
+  const deleteMutation = trpc.notifications.delete.useMutation({
+    onSuccess: () => {
+      utils.notifications.list.invalidate();
+      utils.notifications.unreadCount.invalidate();
+    },
+  });
+  const clearAllMutation = trpc.notifications.clearAll.useMutation({
+    onSuccess: () => {
+      utils.notifications.list.invalidate();
+      utils.notifications.unreadCount.invalidate();
+    },
   });
 
-  // 将数据库通知转换为统一格式
-  const dbItems = dbNotifications.map((n) => ({
+  const loading = listQuery.isLoading;
+  const allNotifications = (listQuery.data?.items ?? []).map((n) => ({
     id: `db-${n.id}`,
     dbId: n.id,
     title: n.title,
@@ -704,44 +603,23 @@ export function NotificationsModal({
     actionUrl: n.actionUrl,
   }));
 
-  // 数据库通知优先，前端通知补充
-  const allNotifications = [
-    ...dbItems,
-    ...frontendNotifications.filter(
-      (fn) => !dbItems.some((db) => db.title === fn.title && db.body === fn.body)
-    ),
-  ].slice(0, 10);
-
   const unreadCount = allNotifications.filter((item) => item.unread).length;
 
   const handleMarkAllRead = () => {
-    fetch("/api/trpc/notifications.markAllRead", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      credentials: "include",
-      body: JSON.stringify({}),
-    }).then(() => {
-      setDbNotifications((prev) => prev.map((n) => ({ ...n, isRead: 1 })));
-    }).catch(() => {});
+    markAllReadMutation.mutate();
   };
 
   const handleMarkRead = (dbId: number) => {
-    fetch("/api/trpc/notifications.markRead", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      credentials: "include",
-      body: JSON.stringify({ id: dbId }),
-    }).then(() => {
-      setDbNotifications((prev) =>
-        prev.map((n) => (n.id === dbId ? { ...n, isRead: 1 } : n))
-      );
-    }).catch(() => {});
+    markReadMutation.mutate({ id: dbId });
   };
 
-  const handleDismiss = (item: typeof allNotifications[0]) => {
-    if (item.id.startsWith("db-") && "dbId" in item) {
-      handleMarkRead((item as any).dbId);
-    }
+  const handleDelete = (dbId: number) => {
+    deleteMutation.mutate({ id: dbId });
+  };
+
+  const handleClearAll = () => {
+    if (!window.confirm("确认清空全部通知？此操作不可恢复。")) return;
+    clearAllMutation.mutate();
   };
 
   return (
@@ -777,6 +655,15 @@ export function NotificationsModal({
               </button>
             </>
           )}
+          {allNotifications.length > 0 && (
+            <button
+              type="button"
+              onClick={handleClearAll}
+              className="rounded-full bg-gray-100 px-3 py-1 text-[11px] text-gray-500 transition-colors hover:bg-gray-200"
+            >
+              清空全部
+            </button>
+          )}
         </div>
       </HeroCard>
 
@@ -790,18 +677,17 @@ export function NotificationsModal({
         )}
         {allNotifications.map((item) => {
           const toneClass = toneClasses(item.tone);
-          const isDbItem = item.id.startsWith("db-");
           return (
             <div
               key={item.id}
               className={`rounded-2xl border border-gray-100 bg-white p-4 transition-colors hover:bg-gray-50 cursor-pointer ${item.unread ? "" : "opacity-60"}`}
               onClick={() => {
-                if (isDbItem && item.unread && "dbId" in item) {
-                  handleMarkRead((item as any).dbId);
+                if (item.unread) {
+                  handleMarkRead(item.dbId);
                 }
-                if ("actionUrl" in item && (item as any).actionUrl) {
+                if (item.actionUrl) {
                   onClose();
-                  navigate((item as any).actionUrl);
+                  navigate(item.actionUrl);
                 }
               }}
             >
@@ -833,19 +719,33 @@ export function NotificationsModal({
                   <div className="text-xs leading-relaxed text-gray-500">{item.body}</div>
                   <div className="mt-2 flex items-center justify-between">
                     <span className="text-[11px] text-gray-400">{item.time}</span>
-                    {item.unread && isDbItem && (
+                    <div className="flex items-center gap-1">
+                      {item.unread && (
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleMarkRead(item.dbId);
+                          }}
+                          className="flex items-center gap-1 rounded-lg px-2 py-1 text-[10px] text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600"
+                        >
+                          <Check className="h-3 w-3" />
+                          标记已读
+                        </button>
+                      )}
                       <button
                         type="button"
                         onClick={(e) => {
                           e.stopPropagation();
-                          handleDismiss(item);
+                          handleDelete(item.dbId);
                         }}
-                        className="flex items-center gap-1 rounded-lg px-2 py-1 text-[10px] text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600"
+                        className="flex items-center gap-1 rounded-lg px-2 py-1 text-[10px] text-gray-400 transition-colors hover:bg-red-50 hover:text-red-500"
+                        title="删除通知"
                       >
-                        <Check className="h-3 w-3" />
-                        标记已读
+                        <X className="h-3 w-3" />
+                        删除
                       </button>
-                    )}
+                    </div>
                   </div>
                 </div>
               </div>

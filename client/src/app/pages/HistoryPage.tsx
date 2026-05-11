@@ -51,11 +51,20 @@ type MergedEntry =
   | { kind: "local"; result: ReturnType<typeof useAppStore>["state"]["results"][number]; artifact?: SavedResultArtifactSummary }
   | { kind: "artifact"; artifact: SavedResultArtifactSummary };
 
-function isWatching(entry: MergedEntry): boolean {
-  if (entry.kind === "local") {
-    return !!(entry.result.artifactStatus?.watchTaskId || entry.artifact?.artifactStatus?.watchTaskId);
-  }
-  return !!entry.artifact.artifactStatus?.watchTaskId;
+/**
+ * 判断条目是否仍在被实时监控。
+ * 看的是运行时 watchTasks（非 failed 即视为活跃），不是 artifact 上冻结的 watchTaskId 字段，
+ * 否则一旦监控任务被删除/失败，artifact 上的 ID 不会同步刷新，会出现"假数据"。
+ */
+function isWatching(
+  entry: MergedEntry,
+  activeArtifactIds: Set<string>,
+): boolean {
+  const artifactId =
+    entry.kind === "local"
+      ? entry.artifact?.artifactId ?? entry.result.artifactStatus?.artifactId
+      : entry.artifact.artifactId;
+  return !!artifactId && activeArtifactIds.has(artifactId);
 }
 
 /* ------------------------------------------------------------------ */
@@ -71,7 +80,7 @@ function HistoryCard({
   entry: MergedEntry;
   watching: boolean;
   onNavigate: (path: string) => void;
-  onRemove: (id: string) => void;
+  onRemove: (id: string) => Promise<void> | void;
 }) {
   const result = entry.kind === "local" ? entry.result : null;
   const artifact = (entry.kind === "local" ? entry.artifact : entry.artifact) ?? null;
@@ -204,7 +213,7 @@ function HistoryCard({
               <>
                 <span className="text-xs text-gray-300">·</span>
                 <span className="rounded-md bg-gray-50 px-1.5 py-0.5 text-[11px] text-gray-500">
-                  {artifactStatus.watchTaskId ? "观察中" : "已保存"}
+                  {watching ? "观察中" : "已保存"}
                 </span>
               </>
             )}
@@ -239,9 +248,13 @@ function HistoryCard({
           </button>
           <button
             type="button"
-            onClick={() => result && onRemove(result.id)}
-            disabled={!result}
+            onClick={() => {
+              if (!window.confirm("确认删除这条记录？删除后将不再出现在历史列表中。")) return;
+              const removeId = result?.id ?? safeArtifact.artifactId;
+              void onRemove(removeId);
+            }}
             className="rounded-lg p-1.5 text-gray-300 transition-colors hover:bg-red-50 hover:text-red-400"
+            title="删除"
           >
             <Trash2 className="h-3.5 w-3.5" />
           </button>
@@ -281,9 +294,19 @@ function HistoryCard({
 
 export function HistoryPage() {
   const navigate = useNavigate();
-  const { state, savedArtifacts, removeResult } = useAppStore();
+  const { state, savedArtifacts, watchTasks, removeResult } = useAppStore();
   const [search, setSearch] = useState("");
   const [onlyFollowUps, setOnlyFollowUps] = useState(false);
+
+  const activeArtifactIds = useMemo(
+    () =>
+      new Set(
+        watchTasks
+          .filter((task) => task.status !== "failed")
+          .map((task) => task.artifactId),
+      ),
+    [watchTasks],
+  );
 
   const { activeEntries, archivedEntries } = useMemo(() => {
     const artifactByClientId = new Map(
@@ -350,7 +373,7 @@ export function HistoryPage() {
     const archived: MergedEntry[] = [];
 
     for (const entry of all) {
-      if (isWatching(entry)) {
+      if (isWatching(entry, activeArtifactIds)) {
         active.push(entry);
       } else {
         archived.push(entry);
@@ -358,7 +381,7 @@ export function HistoryPage() {
     }
 
     return { activeEntries: active, archivedEntries: archived };
-  }, [onlyFollowUps, savedArtifacts, search, state.results]);
+  }, [activeArtifactIds, onlyFollowUps, savedArtifacts, search, state.results]);
 
   const totalCount = activeEntries.length + archivedEntries.length;
 
@@ -464,7 +487,7 @@ export function HistoryPage() {
               <div className="flex flex-col items-center gap-3 sm:flex-row">
                 <button
                   type="button"
-                  onClick={() => navigate("/")}
+                  onClick={() => navigate("/predict")}
                   className="flex items-center gap-2 rounded-xl bg-gray-900 px-5 py-2.5 text-sm text-white hover:bg-gray-800 transition-colors"
                 >
                   开始第一次分析

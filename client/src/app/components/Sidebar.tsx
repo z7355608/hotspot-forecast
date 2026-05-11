@@ -6,6 +6,7 @@ import {
   Clock,
   Download,
   FileText,
+  Flame,
   Headphones,
   Link2,
   LineChart,
@@ -27,7 +28,8 @@ import { useOnboarding } from "../lib/onboarding-context";
 /* ------------------------------------------------------------------ */
 
 const MAIN_NAV = [
-  { to: "/", icon: SquarePen, label: "爆款预测Agent", end: true },
+  { to: "/hot-topic-recommendations", icon: Flame, label: "爆款推荐" },
+  { to: "/predict", icon: SquarePen, label: "爆款预测agent" },
   { to: "/low-follower-opportunities", icon: Search, label: "低粉爆款" },
   { to: "/monitor", icon: Activity, label: "智能监控", badge: "Pro" },
   { to: "/account-center", icon: BarChart3, label: "创作中心" },
@@ -185,7 +187,7 @@ function SidebarContent({
             <Sparkles className="h-4 w-4 text-white" />
           </div>
           <span className="text-base font-medium text-gray-900">
-            爆款预测Agent
+            爆款预测agent
           </span>
         </div>
       </div>

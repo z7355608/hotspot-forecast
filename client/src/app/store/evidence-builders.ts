@@ -181,26 +181,22 @@ export function buildContentCandidate(params: {
 
   const engagementStrength = Math.min(
     25,
-    (content.performance.viewCount ?? 0) >= 150000
-      ? 12
-      : (content.performance.viewCount ?? 0) >= 80000
-        ? 9
-        : 5 +
-          ((content.performance.likeCount ?? 0) >= 8000
-            ? 6
-            : (content.performance.likeCount ?? 0) >= 4000
-              ? 4
-              : 2) +
-          ((content.performance.commentCount ?? 0) >= 500
-            ? 4
-            : (content.performance.commentCount ?? 0) >= 200
-              ? 3
-              : 1) +
-          ((content.performance.shareCount ?? 0) >= 800
-            ? 3
-            : (content.performance.shareCount ?? 0) >= 200
-              ? 2
-              : 1),
+    5 +
+      ((content.performance.likeCount ?? 0) >= 8000
+        ? 8
+        : (content.performance.likeCount ?? 0) >= 4000
+          ? 5
+          : 2) +
+      ((content.performance.commentCount ?? 0) >= 500
+        ? 6
+        : (content.performance.commentCount ?? 0) >= 200
+          ? 4
+          : 1) +
+      ((content.performance.shareCount ?? 0) >= 800
+        ? 4
+        : (content.performance.shareCount ?? 0) >= 200
+          ? 3
+          : 1),
   );
   const authorFit = content.topicCluster === fixture.trend.topicCluster ? 22 : 14;
   const qualityScore = Math.min(
@@ -212,9 +208,9 @@ export function buildContentCandidate(params: {
         [
           content.title,
           content.performance.publishedAt,
-          content.performance.viewCount,
           content.performance.likeCount,
           content.performance.commentCount,
+          content.performance.shareCount,
           content.structureSummary,
           content.keywordTokens.join(" "),
         ],

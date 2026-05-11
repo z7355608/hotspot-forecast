@@ -31,7 +31,7 @@ export interface RawContentItem {
   title: string;
   /** 平台 */
   platform: "douyin" | "xiaohongshu" | "kuaishou" | "bilibili";
-  /** 播放量 / 阅读量（可能为 null，不再作为判定条件） */
+  /** 历史播放/阅读字段（可能为 null，不再作为判定条件） */
   viewCount: number | null;
   /** 点赞数 */
   likeCount: number | null;
@@ -77,7 +77,7 @@ export interface LowFollowerSample {
   platform: string;
   /** 粉丝量 */
   followerCount: number;
-  /** 播放量（可能为 0，不作为判定条件） */
+  /** 历史播放/阅读字段（可能为 0，不作为判定条件） */
   viewCount: number;
   /** 原始互动数（点赞+评论+分享+收藏） */
   interactionCount: number;
@@ -85,9 +85,9 @@ export interface LowFollowerSample {
   weightedInteraction: number;
   /** 粉丝效率比（加权互动分 / 粉丝数） */
   fanEfficiencyRatio: number;
-  /** 互动率（互动数/播放量，0-1，播放量为0时为0） */
+  /** 历史互动率字段（互动数/历史播放字段，播放字段为0时为0） */
   engagementRate: number;
-  /** 粉播比（播放量/粉丝量，播放量为0时为0） */
+  /** 历史粉播比字段（历史播放字段/粉丝量，播放字段为0时为0） */
   viewToFollowerRatio: number;
   /** 加权互动分超越 P75 基准的倍数 */
   engagementBenchmarkMultiplier: number;
@@ -472,7 +472,7 @@ export function formatFollowerLabel(count: number): string {
   return `${count}粉`;
 }
 
-/** 格式化播放量标签 */
+/** 格式化播放量标签（仅兼容历史字段，不作为前端展示口径） */
 export function formatViewLabel(count: number): string {
   if (count >= 10_000_000) return `${(count / 10_000_000).toFixed(1)}千万`;
   if (count >= 1_000_000) return `${(count / 1_000_000).toFixed(1)}百万`;
@@ -524,7 +524,7 @@ export function toLowFollowerEvidenceItem(sample: LowFollowerSample): {
     fansLabel: formatFollowerLabel(sample.followerCount),
     fansCount: sample.followerCount,
     anomaly: sample.anomalyScore,
-    playCount: sample.viewCount > 0 ? formatViewLabel(sample.viewCount) : formatInteractionLabel(sample.interactionCount),
+    playCount: formatInteractionLabel(sample.interactionCount),
     engagementRate: `效率比 ${sample.fanEfficiencyRatio.toFixed(1)}x`,
     viewToFollowerRatio: sample.viewToFollowerRatio > 0 ? `粉播比 ${sample.viewToFollowerRatio.toFixed(0)}x` : `粉丝效率 ${sample.fanEfficiencyRatio.toFixed(1)}x`,
     isStrictAnomaly: sample.isStrictAnomaly,

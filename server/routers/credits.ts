@@ -13,6 +13,7 @@
  * ═══════════════════════════════════════════════════════════════
  */
 
+import { randomUUID } from "node:crypto";
 import { z } from "zod";
 import { protectedProcedure, router } from "../_core/trpc";
 import { execute, query, queryOne } from "../legacy/database.js";
@@ -72,20 +73,35 @@ async function getUserProfile(openId: string): Promise<UserProfileRow | null> {
   );
 }
 
+/**
+ * 仅取积分余额。导出给其它 router（如 copywriting）做扣减前的余额检查用。
+ * 用户记录不存在时返回 0（注意：不会自动创建 profile，调用方按需自行 ensure）。
+ */
+export async function getCreditBalance(openId: string): Promise<number> {
+  const profile = await getUserProfile(openId);
+  return profile?.credits ?? 0;
+}
+
 /** 确保用户有 user_profiles 记录，没有则创建（赠送60积分） */
 async function ensureUserProfile(openId: string): Promise<{ credits: number }> {
   const existing = await getUserProfile(openId);
   if (existing) return { credits: existing.credits };
 
-  // 新用户：创建 profile 并赠送 60 积分
+  // 从 users 表拉取昵称，保持两表同步
+  interface UsersRow extends RowDataPacket { name: string | null; }
+  const userRow = await queryOne<UsersRow>(
+    "SELECT name FROM users WHERE openId = ? LIMIT 1",
+    [openId]
+  );
+  const nickname = userRow?.name ?? "";
+
   await execute(
-    `INSERT INTO user_profiles (id, credits, total_earned, created_at, updated_at)
-     VALUES (?, ?, ?, NOW(), NOW())
+    `INSERT INTO user_profiles (id, nickname, credits, total_earned, created_at, updated_at)
+     VALUES (?, ?, ?, ?, NOW(), NOW())
      ON DUPLICATE KEY UPDATE id = id`,
-    [openId, NEW_USER_CREDITS, NEW_USER_CREDITS]
+    [openId, nickname, NEW_USER_CREDITS, NEW_USER_CREDITS]
   );
 
-  // 写入赠送流水
   await execute(
     `INSERT INTO credit_transactions (userOpenId, amount, balance, type, description, createdAt)
      VALUES (?, ?, ?, 'admin', '新用户注册赠送', NOW())`,
@@ -95,8 +111,14 @@ async function ensureUserProfile(openId: string): Promise<{ credits: number }> {
   return { credits: NEW_USER_CREDITS };
 }
 
-/** 原子扣减积分 */
-async function deductCreditsInternal(
+/**
+ * 原子扣减积分。
+ *
+ * **导出供其它 router 使用**（如 copywriting.viralBreakdownDirect 计费）。
+ * 调用方需自行判断 ENV.creditDeductionEnabled 才决定是否真扣，
+ * 本函数本身只负责"原子扣减并写流水"的执行层语义。
+ */
+export async function deductCreditsInternal(
   openId: string,
   amount: number,
   description: string,
@@ -372,7 +394,7 @@ export const creditsRouter = router({
     return { subscription: rows[0] ?? null };
   }),
 
-  /** 购买/升级会员套餐（模拟支付） */
+  /** 购买/升级会员套餐 */
   subscribe: protectedProcedure
     .input(z.object({
       plan: z.enum(["plus", "pro"]),
@@ -390,8 +412,27 @@ export const creditsRouter = router({
         endAt.setMonth(endAt.getMonth() + 1);
       }
 
-      const autoRenew = input.billingCycle === "monthly_auto" ? 1 : 0;
       await ensureUserProfile(openId);
+
+      // 创建订单
+      const orderId = randomUUID();
+      const orderNo = `ORD${Date.now()}${Math.floor(Math.random() * 1000).toString().padStart(3, "0")}`;
+      const orderExpiredAt = new Date(now.getTime() + 30 * 60 * 1000); // 30分钟有效期
+      const revenueType = input.billingCycle === "yearly" ? "membership_yearly" : "membership_monthly";
+
+      await execute(
+        `INSERT INTO orders (id, user_open_id, order_no, type, plan, billing_cycle, credits, amount_cents, status, expired_at, description, created_at, updated_at)
+         VALUES (?, ?, ?, 'membership', ?, ?, ?, ?, 'pending', ?, ?, NOW(), NOW())`,
+        [orderId, openId, orderNo, input.plan, input.billingCycle, planConfig.credits, planConfig.price * 100, orderExpiredAt, planConfig.label]
+      );
+
+      // 标记订单已支付（待接入真实支付网关时在此处改为异步回调）
+      await execute(
+        `UPDATE orders SET status = 'paid', paid_at = NOW(), payment_method = 'mock', updated_at = NOW() WHERE id = ?`,
+        [orderId]
+      );
+
+      const autoRenew = input.billingCycle === "monthly_auto" ? 1 : 0;
 
       // 取消旧的活跃订阅
       await execute(
@@ -401,9 +442,9 @@ export const creditsRouter = router({
 
       // 创建新订阅
       await execute(
-        `INSERT INTO subscriptions (userOpenId, plan, billingCycle, status, startAt, endAt, autoRenew, monthlyCredits, amountCents, createdAt, updatedAt)
-         VALUES (?, ?, ?, 'active', ?, ?, ?, ?, ?, NOW(), NOW())`,
-        [openId, input.plan, input.billingCycle, now, endAt, autoRenew, planConfig.credits, planConfig.price * 100]
+        `INSERT INTO subscriptions (userOpenId, plan, billingCycle, status, startAt, endAt, autoRenew, monthlyCredits, amountCents, paymentOrderId, createdAt, updatedAt)
+         VALUES (?, ?, ?, 'active', ?, ?, ?, ?, ?, ?, NOW(), NOW())`,
+        [openId, input.plan, input.billingCycle, now, endAt, autoRenew, planConfig.credits, planConfig.price * 100, orderNo]
       );
 
       // 赠送积分
@@ -411,18 +452,28 @@ export const creditsRouter = router({
         openId,
         planConfig.credits,
         "subscription",
-        `${planConfig.label}订阅赠送积分`
+        `${planConfig.label}订阅赠送积分`,
+        orderNo
       );
 
-      // 更新用户membership_plan
+      // 更新会员等级
       const planLabel = input.billingCycle === "yearly" ? `${input.plan}_yearly` : input.plan;
       await execute(
         `UPDATE user_profiles SET membership_plan = ? WHERE id = ?`,
         [planLabel, openId]
       );
 
+      // 写入营收记录
+      await execute(
+        `INSERT INTO revenue_records (id, user_id, type, amount, description, payment_method, revenue_date, created_at)
+         VALUES (?, ?, ?, ?, ?, 'wechat', CURDATE(), NOW())`,
+        [randomUUID(), openId, revenueType, planConfig.price, planConfig.label]
+      );
+
       return {
         success: true,
+        orderId,
+        orderNo,
         plan: input.plan,
         billingCycle: input.billingCycle,
         creditsAwarded: planConfig.credits,
@@ -432,7 +483,7 @@ export const creditsRouter = router({
       };
     }),
 
-  /** 购买积分包（模拟支付） */
+  /** 购买积分包 */
   purchaseCredits: protectedProcedure
     .input(z.object({ packageId: z.string() }))
     .mutation(async ({ ctx, input }) => {
@@ -442,14 +493,39 @@ export const creditsRouter = router({
       const openId = ctx.user.openId;
       await ensureUserProfile(openId);
 
+      // 创建订单
+      const orderId = randomUUID();
+      const orderNo = `ORD${Date.now()}${Math.floor(Math.random() * 1000).toString().padStart(3, "0")}`;
+      const orderExpiredAt = new Date(Date.now() + 30 * 60 * 1000);
+
+      await execute(
+        `INSERT INTO orders (id, user_open_id, order_no, type, package_id, credits, amount_cents, status, expired_at, description, created_at, updated_at)
+         VALUES (?, ?, ?, 'credit_purchase', ?, ?, ?, 'pending', ?, ?, NOW(), NOW())`,
+        [orderId, openId, orderNo, pkg.id, pkg.credits, pkg.price * 100, orderExpiredAt, `购买${pkg.label}`]
+      );
+
+      // 标记订单已支付（待接入真实支付网关时在此处改为异步回调）
+      await execute(
+        `UPDATE orders SET status = 'paid', paid_at = NOW(), payment_method = 'mock', updated_at = NOW() WHERE id = ?`,
+        [orderId]
+      );
+
       const { balance } = await addCreditsInternal(
         openId,
         pkg.credits,
         "purchase",
-        `购买${pkg.label}（¥${pkg.price}）`
+        `购买${pkg.label}（¥${pkg.price}）`,
+        orderNo
       );
 
-      return { success: true, creditsAdded: pkg.credits, balance, price: pkg.price };
+      // 写入营收记录
+      await execute(
+        `INSERT INTO revenue_records (id, user_id, type, amount, description, payment_method, revenue_date, created_at)
+         VALUES (?, ?, 'credit_purchase', ?, ?, 'wechat', CURDATE(), NOW())`,
+        [randomUUID(), openId, pkg.price, `购买${pkg.label}`]
+      );
+
+      return { success: true, orderId, orderNo, creditsAdded: pkg.credits, balance, price: pkg.price };
     }),
 
   /** 分析时扣减积分 */

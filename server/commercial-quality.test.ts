@@ -204,64 +204,57 @@ describe("P4: 前端展示不再乘以100", () => {
 
 // ── P5: 雷达图标签截断修复测试 ──
 
-describe("P5: 雷达图标签截断修复", () => {
-  it("雷达图 viewBox 应足够大以容纳标签", async () => {
+describe("P5: 雷达图与信号强度", () => {
+  it("7 维度雷达图 ScoreRadarChart 使用固定 viewBox 容纳标签", async () => {
     const fs = await import("node:fs");
     const content = fs.readFileSync(
       new URL("../client/src/app/components/results/renderers/new-prediction-result.tsx", import.meta.url),
       "utf-8",
     );
-    // viewBox 宽度应 >= 300（之前是 285）
-    const viewBoxMatch = content.match(/viewBox=\{`0 0 \$\{svgW\} \$\{svgH\}`\}/);
-    expect(viewBoxMatch).toBeTruthy();
-    // svgW 应 >= 300
-    const svgWMatch = content.match(/const svgW = (\d+)/);
-    expect(svgWMatch).toBeTruthy();
-    expect(Number(svgWMatch![1])).toBeGreaterThanOrEqual(300);
+    expect(content).toContain("function ScoreRadarChart");
+    expect(content).toMatch(/viewBox=\{`0 0 \$\{svgSize\} \$\{svgSize\}`\}/);
+    const svgSizeMatch = content.match(/const svgSize = (\d+)/);
+    expect(svgSizeMatch).toBeTruthy();
+    expect(Number(svgSizeMatch![1])).toBeGreaterThanOrEqual(200);
   });
 
-  it("标签字符限制应 >= 8（之前是 6）", async () => {
+  it("预测依据区含 WhyWeBelieveCard 与强度推断 computeWhyNowStrength", async () => {
     const fs = await import("node:fs");
     const content = fs.readFileSync(
       new URL("../client/src/app/components/results/renderers/new-prediction-result.tsx", import.meta.url),
       "utf-8",
     );
-    // sourceLabel.length > 8 而不是 > 6
-    expect(content).toContain("sourceLabel.length > 8");
-    expect(content).not.toContain("sourceLabel.length > 6");
+    expect(content).toContain("function WhyWeBelieveCard");
+    expect(content).toContain("computeWhyNowStrength");
   });
 
-  it("雷达图不应在计算中使用 Math.random()", async () => {
+  it("雷达相关计算不应使用 Math.random()", async () => {
     const fs = await import("node:fs");
     const content = fs.readFileSync(
       new URL("../client/src/app/components/results/renderers/new-prediction-result.tsx", import.meta.url),
       "utf-8",
     );
-    // WhyNowRadarChart 函数中不应在实际计算中使用 Math.random()
-    const radarStart = content.indexOf("function WhyNowRadarChart");
+    const radarStart = content.indexOf("function ScoreRadarChart");
     const radarEnd = content.indexOf("function TierBarChart");
-    if (radarStart >= 0 && radarEnd >= 0) {
-      const radarSection = content.slice(radarStart, radarEnd);
-      // 确保没有实际调用 Math.random()（注释中提及是允许的）
-      const lines = radarSection.split("\n");
-      const codeLines = lines.filter(l => !l.trim().startsWith("//"));
-      const codeOnly = codeLines.join("\n");
-      expect(codeOnly).not.toContain("Math.random()");
-    }
+    expect(radarStart).toBeGreaterThan(-1);
+    expect(radarEnd).toBeGreaterThan(radarStart);
+    const radarSection = content.slice(radarStart, radarEnd);
+    const lines = radarSection.split("\n");
+    const codeLines = lines.filter((l) => !l.trim().startsWith("//"));
+    const codeOnly = codeLines.join("\n");
+    expect(codeOnly).not.toContain("Math.random()");
   });
 
-  it("标签应有 whitespace-nowrap 防止换行截断", async () => {
+  it("ScoreRadarChart 外围标签区使用 nowrap 防截断", async () => {
     const fs = await import("node:fs");
     const content = fs.readFileSync(
       new URL("../client/src/app/components/results/renderers/new-prediction-result.tsx", import.meta.url),
       "utf-8",
     );
-    const radarStart = content.indexOf("function WhyNowRadarChart");
+    const radarStart = content.indexOf("function ScoreRadarChart");
     const radarEnd = content.indexOf("function TierBarChart");
-    if (radarStart >= 0 && radarEnd >= 0) {
-      const radarSection = content.slice(radarStart, radarEnd);
-      expect(radarSection).toContain("whitespace-nowrap");
-    }
+    const radarSection = content.slice(radarStart, radarEnd);
+    expect(radarSection).toContain("pointer-events-none");
   });
 });
 

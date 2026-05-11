@@ -339,6 +339,34 @@ export function selectOptimalModel(
 }
 
 // -------------------------------------------------------
+// 轻量加载：仅取 system prompt（保留模块原有 LLM 调用方式）
+// -------------------------------------------------------
+
+/**
+ * 从 prompt_templates 加载 system prompt 并注入变量。
+ * 失败时返回 fallback —— 用于把硬编码 prompt 渐进迁移到模板，
+ * 不强制每个调用点改造为 callWithTemplate（适合 invokeLLM + json_schema 等特殊调用形态）。
+ */
+export async function resolveSystemPrompt(
+  templateId: string,
+  modelId: ModelId,
+  context: RenderContext,
+  fallback: string,
+): Promise<string> {
+  try {
+    const tpl = await getTemplateById(templateId);
+    if (!tpl) {
+      log.warn(`Prompt template not found: ${templateId}, using fallback`);
+      return fallback;
+    }
+    return injectVariables(selectSystemPrompt(tpl, modelId), context);
+  } catch (err) {
+    log.warn(`Failed to load prompt template ${templateId}: ${err instanceof Error ? err.message : err}`);
+    return fallback;
+  }
+}
+
+// -------------------------------------------------------
 // 核心渲染函数
 // -------------------------------------------------------
 

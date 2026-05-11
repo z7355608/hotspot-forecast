@@ -20,6 +20,7 @@ import { createModuleLogger } from "./logger.js";
 
 const log = createModuleLogger("DecisionBoundary");
 import { callLLM, type LLMMessage } from "./llm-gateway.js";
+import { resolveSystemPrompt } from "./prompt-engine.js";
 import {
   TREND_THRESHOLDS,
   type EvidenceMetrics,
@@ -214,8 +215,14 @@ ${evidenceGaps.length > 0 ? evidenceGaps.map((g, i) => `${i + 1}. ${g}`).join("\
 // ─────────────────────────────────────────────
 
 async function callLLMForRiskAnalysis(ctx: RiskAnalysisContext): Promise<LLMRiskAnalysis | null> {
+  const riskSystemPrompt = await resolveSystemPrompt(
+    "risk-analysis-v1",
+    "doubao",
+    {},
+    buildRiskAnalysisSystemPrompt(),
+  );
   const messages: LLMMessage[] = [
-    { role: "system", content: buildRiskAnalysisSystemPrompt() },
+    { role: "system", content: riskSystemPrompt },
     { role: "user", content: buildRiskAnalysisUserPrompt(ctx) },
   ];
 

@@ -29,13 +29,7 @@ export default function App() {
         httpBatchLink({
           url: "/api/trpc",
           transformer: superjson,
-          // Fail silently in Figma Make environment
-          fetch: (url, options) => {
-            if (!import.meta.env.VITE_OAUTH_PORTAL_URL) {
-              return Promise.reject(new Error("Mock environment - no backend"));
-            }
-            return fetch(url, options);
-          },
+          fetch: (url, options) => fetch(url, { ...(options ?? {}), credentials: "include" }),
         }),
       ],
     }),

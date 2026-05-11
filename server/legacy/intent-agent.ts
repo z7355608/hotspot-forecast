@@ -30,6 +30,7 @@ import { createModuleLogger } from "./logger.js";
 const log = createModuleLogger("IntentAgent");
 import type { IncomingMessage, ServerResponse } from "http";
 import { callLLM } from "./llm-gateway.js";
+import { resolveSystemPrompt } from "./prompt-engine.js";
 
 // ----------------------------------------------------------------
 // 类型定义（与 prediction-types.ts 保持一致，避免循环依赖）
@@ -63,6 +64,22 @@ export interface IntentClassifyRequest {
   hasMediaItems?: boolean;
   hasConnectedPlatforms?: boolean;
   modelId?: "doubao" | "gpt54" | "claude46";
+  /** parseInput 解析后的输入摘要（来自 input-parser.ts） */
+  parsedInputSummary?: {
+    kind: "url_video" | "url_article" | "url_social" | "image_ocr" | "document_text" | "plain_text" | "unknown";
+    platform?: string;
+    title?: string;
+    hasContent: boolean;
+  };
+  /** payload-extractor 提取的关键参数摘要 */
+  extractedPayloadSummary?: {
+    hasAwemeId: boolean;
+    hasNoteId: boolean;
+    hasUniqueId: boolean;
+    industry?: string;
+  };
+  /** evidenceItems 中各类媒体的数量统计 */
+  mediaCount?: { video: number; image: number; file: number };
 }
 
 // ----------------------------------------------------------------
@@ -102,7 +119,7 @@ const FAST_PATH_TEMPLATE_MAP: Record<string, TaskIntent> = {
   "account_diagnosis": "account_diagnosis",
 };
 
-function tryFastPath(req: IntentClassifyRequest): LLMIntentResult | null {
+export function tryFastPath(req: IntentClassifyRequest): LLMIntentResult | null {
   // Skill 选择：最高置信度，直接返回
   if (req.selectedSkillId && FAST_PATH_SKILL_MAP[req.selectedSkillId]) {
     const intent = FAST_PATH_SKILL_MAP[req.selectedSkillId];
@@ -135,61 +152,36 @@ function tryFastPath(req: IntentClassifyRequest): LLMIntentResult | null {
 // ----------------------------------------------------------------
 
 const INTENT_SYSTEM_PROMPT = `你是一个内容创作 AI 助手的意图识别模块。
-你的任务是分析用户输入，判断用户最想要哪种类型的分析结果。
+用户的输入形态多样：关键词、一句话需求、视频/账号链接、上传的图片/视频/文档。
+你的任务是综合「输入形态信号」和「用户文字诉求」，判断最匹配的意图。
+不要预设用户一定在做赛道分析。
 
-## 核心消歧规则（最高优先级）
+## 输入形态优先级（结合上下文信号判断）
 
-本产品是一个「内容赛道机会分析工具」，用户来这里是为了判断某个内容方向/赛道是否值得做。
-因此：
-- 当用户输入的是一个内容方向、话题、赛道名称（如"美女跳舞"、"萌宠"、"健身减脂"、"AI教程"），
-  即使它看起来像一个动作，也应该理解为「分析这个赛道的视频内容机会」，而不是「教用户怎么做这件事」。
-- 例如：
-  - "美女跳舞" → 分析「美女跳舞」这个内容赛道的机会 → opportunity_prediction
-  - "做饭" → 分析「做饭/美食」赛道的视频机会 → opportunity_prediction
-  - "健身减脂" → 分析「健身减脂」赛道的机会 → opportunity_prediction
-  - "搞笑段子" → 分析「搞笑段子」赛道的机会 → opportunity_prediction
-- 只有当用户明确说"帮我写一个xxx脚本"、"帮我拆解这条视频"、"帮我提取文案"等带有明确动作指令时，
-  才分类到对应的非 opportunity_prediction 意图。
-- 如果用户输入只是一个短名词/短语（2-8个字），没有动作动词，默认分类为 opportunity_prediction。
+1. 用户提供视频链接或视频文件 → 优先 viral_breakdown 或 breakdown_sample
+   - 仅链接、无其他诉求 → viral_breakdown
+   - 含「为什么爆 / 拆解爆因 / 低粉爆款」 → breakdown_sample
+2. 用户上传图片 / 文档 / 文章链接 → 优先 copy_extraction
+3. 用户已连接平台 + prompt 含「我是 XX 博主 / 我的账号 / 我粉丝 / 我主页」 → account_diagnosis
+4. 否则按 prompt 文字诉求判断（见下方意图说明）
 
-## 爆款预测识别强化（最高优先级，优先于选题策略）
+## 意图说明（必须从中选一个）
 
-当用户输入包含以下任意关键词时，必须分类为 opportunity_prediction：
-- "什么会火"、"什么容易爆"、"什么内容火"、"什么内容爆"
-- "爆款"、"爆款预测"、"爆款机会"、"爆款方向"
-- "值得做"、"要不要做"、"还有机会"、"赛道分析"
-- "判断"、"评估"、"赛道趋势"、"市场分析"
-- "未来多少天"、"未来多少月"、"近期趋势"
-- "现在发什么"、"现在做什么"、"现在什么火"（注意：这些是问「什么内容有爆款机会」，不是选题策略）
-- "发什么会火"、"做什么会火"、"做什么容易火"
-- "有没有机会"、"机会在哪"、"赛道机会"
+- opportunity_prediction：用户问「值得做吗 / 有没有机会 / 这个赛道怎么样 / 要不要下注 / 有没有爆款机会」
+- trend_watch：用户问「最近什么火 / 趋势如何 / 监控热点」，重观察轻执行
+- viral_breakdown：用户给出某条爆款视频链接，想拆解结构和可抄点
+- breakdown_sample：用户提供「低粉爆款」样本，想分析爆因机制
+- topic_strategy：用户要「选题清单 / 内容规划 / 排期 / 给我 N 个选题」
+- copy_extraction：用户要「提取文案 / 钩子 / CTA / 标题模板」
+- account_diagnosis：用户要诊断账号定位、问题、打法
+- direct_request：以上都不匹配，或用户输入过于模糊。这是兜底选项，不要回避使用。
 
-注意区分：
-- "现在发什么会火？" → opportunity_prediction（问爆款机会）
-- "帮我规划下周发什么" → topic_strategy（要内容计划）
-- "给我10个选题" → topic_strategy（要选题清单）
+## 关键规则
 
-## 选题策略识别（次优先级）
-
-当用户输入**明确要求生成选题清单、内容计划或内容排期**时，分类为 topic_strategy：
-- "选题"、"选题策略"、"选题方向"、"选题计划"、"选题清单"
-- "内容策略"、"内容规划"、"内容日历"、"内容排期"
-- "帮我规划"、"帮我想选题"、"给我几个题目"、"给我10个"
-- "一周内容"、"本月内容"
-
-注意："内容方向"、"做什么"、"发什么" 单独出现时**不足以**判定为 topic_strategy，
-需要结合"规划"、"清单"、"策略"等词才能确认是选题策略需求。
-
-## 可选的意图类型（必须从以下选项中选择一个）
-
-- opportunity_prediction：机会判断 - 用户想判断某个赛道/话题是否值得做，该不该下注
-- trend_watch：趋势观察 - 用户想监控/观察某个热点或趋势，不急于执行
-- viral_breakdown：爆款拆解 - 用户想拆解某个爆款内容的结构、可抄点和迁移方式
-- topic_strategy：选题策略 - 用户想获得具体的内容选题方向和题目清单
-- copy_extraction：文案提取 - 用户想提取可复用的钩子、文案结构、CTA 模式
-- account_diagnosis：账号诊断 - 用户想诊断自己或他人账号的定位、问题和打法
-- breakdown_sample：样本拆解 - 用户提供了具体的低粉爆款视频，想拆解其爆因
-- direct_request：智能分析 - 用户的需求不属于以上任何类型，直接生成分析报告
+- **不要把短关键词默认归到任何特定意图**。短词（2-8 字）若无任何动作动词/上下文信号，归 direct_request 并标 confidence=low。
+- "现在发什么会火"类提问：用户问大方向 → opportunity_prediction；用户要具体题目（含"清单/几个/规划"）→ topic_strategy。
+- 当输入形态信号（如有视频 URL）与文字诉求冲突时，**文字诉求优先**。例：URL + "帮我规划一周选题" → topic_strategy。
+- 用户明确说"帮我写脚本/拆解视频/提取文案/做账号诊断"时，按动作指令分类。
 
 ## 输出格式（严格的 JSON，不要输出其他内容）
 
@@ -202,16 +194,45 @@ const INTENT_SYSTEM_PROMPT = `你是一个内容创作 AI 助手的意图识别�
 
 ## 判断规则
 
-- confidence=high：用户明确表达了某种意图，关键词高度匹配
-- confidence=medium：有一定信号但不够明确，或有多个候选
-- confidence=low：用户输入模糊，只能猜测
-- candidateIntents 最多2个，按置信度排序，第一个必须与 taskIntent 一致
-- reasons 最多2条，每条不超过30字，用中文`;
+- confidence=high：形态+文字双重命中，意图明确
+- confidence=medium：单一信号命中，或有多个候选
+- confidence=low：用户输入模糊，仅靠猜测
+- candidateIntents 最多 2 个，按置信度排序，第一个必须与 taskIntent 一致
+- reasons 最多 2 条，每条不超过 30 字，用中文`;
 
 function buildIntentUserMessage(req: IntentClassifyRequest): string {
   const lines: string[] = [];
   lines.push(`用户输入：${req.prompt}`);
 
+  // ── 输入形态信号（结构化解析结果） ──
+  if (req.parsedInputSummary) {
+    const p = req.parsedInputSummary;
+    const platformPart = p.platform ? `（平台：${p.platform}）` : "";
+    const titlePart = p.title ? `，标题摘要：「${p.title.slice(0, 80)}」` : "";
+    lines.push(`输入形态：${p.kind}${platformPart}${titlePart}`);
+  }
+
+  if (req.extractedPayloadSummary) {
+    const e = req.extractedPayloadSummary;
+    const flags: string[] = [];
+    if (e.hasAwemeId) flags.push("含抖音视频ID");
+    if (e.hasNoteId) flags.push("含小红书笔记ID");
+    if (e.hasUniqueId) flags.push("含账号唯一标识");
+    if (e.industry) flags.push(`行业：${e.industry}`);
+    if (flags.length > 0) {
+      lines.push(`提取参数：${flags.join("、")}`);
+    }
+  }
+
+  if (req.mediaCount && (req.mediaCount.video > 0 || req.mediaCount.image > 0 || req.mediaCount.file > 0)) {
+    const parts: string[] = [];
+    if (req.mediaCount.video > 0) parts.push(`${req.mediaCount.video} 个视频`);
+    if (req.mediaCount.image > 0) parts.push(`${req.mediaCount.image} 张图片`);
+    if (req.mediaCount.file > 0) parts.push(`${req.mediaCount.file} 个文档`);
+    lines.push(`上传素材：${parts.join("、")}`);
+  }
+
+  // ── 布尔信号（向后兼容） ──
   if (req.hasExternalLinks) {
     lines.push("上下文信号：用户输入中包含外部链接（可能是视频链接或内容链接）");
   }
@@ -259,16 +280,23 @@ export async function classifyIntentWithLLM(
   }
 
   // 2. 调用 LLM 进行意图分类
-  const modelId = req.modelId ?? "doubao";
+  const modelId = req.modelId ?? "gpt54";
   const userMessage = buildIntentUserMessage(req);
 
   log.info(`调用 LLM (${modelId}) 进行意图识别: "${req.prompt.slice(0, 60)}..."`);
+
+  const systemPrompt = await resolveSystemPrompt(
+    "intent-classification-v1",
+    modelId,
+    {},
+    INTENT_SYSTEM_PROMPT,
+  );
 
   try {
     const response = await callLLM({
       modelId,
       messages: [
-        { role: "system", content: INTENT_SYSTEM_PROMPT },
+        { role: "system", content: systemPrompt },
         { role: "user", content: userMessage },
       ],
       temperature: 0.1, // 低温度，保证分类稳定性
@@ -330,9 +358,15 @@ export async function classifyIntentWithLLM(
     return result;
 
   } catch (error) {
-    // 5. LLM 调用失败时，降级到正则规则（在 live-predictions.ts 中处理）
-    log.error({ err: error }, `LLM 意图识别失败，降级到正则规则`);
-    throw error; // 让调用方处理降级
+    // 5. LLM 调用失败时，直接降级到 direct_request（不再抛错让上游兜底为赛道）
+    log.error({ err: error }, `LLM 意图识别失败，降级 direct_request`);
+    return {
+      taskIntent: "direct_request",
+      confidence: "low",
+      candidateIntents: ["direct_request"],
+      reasons: ["LLM 意图识别失败，使用兜底分类。"],
+      llmUsed: false,
+    };
   }
 }
 
@@ -372,7 +406,7 @@ export async function handleIntentClassify(
       hasExternalLinks: body.hasExternalLinks ?? false,
       hasMediaItems: body.hasMediaItems ?? false,
       hasConnectedPlatforms: body.hasConnectedPlatforms ?? false,
-      modelId: body.modelId ?? "doubao",
+      modelId: body.modelId ?? "gpt54",
     };
 
     const result = await classifyIntentWithLLM(request);

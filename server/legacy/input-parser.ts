@@ -152,7 +152,7 @@ async function ocrImageWithLLM(imageUrl: string): Promise<{
   error?: string;
 }> {
   try {
-    // 使用 GPT-5.4 的 Vision 能力（第三方 API 支持）
+    // 使用 GPT-5.5 的 Vision 能力(第三方 API 支持)
     const response = await fetch("https://api.ablai.top/v1/chat/completions", {
       method: "POST",
       headers: {
@@ -160,7 +160,7 @@ async function ocrImageWithLLM(imageUrl: string): Promise<{
         Authorization: `Bearer ${process.env.THIRD_PARTY_API_KEY ?? ""}`,
       },
       body: JSON.stringify({
-        model: "gpt-5.4",
+        model: "gpt-5.5",
         messages: [
           {
             role: "user",

@@ -35,9 +35,6 @@ export function WorkCardGrid({
   const getWorkMetrics = () => {
     const metrics: { icon: typeof Heart; value: string; label: string }[] = [];
 
-    if (work.views !== undefined && work.views > 0) {
-      metrics.push({ icon: Eye, value: formatNumber(work.views), label: "播放" });
-    }
     if (work.reads !== undefined) {
       metrics.push({ icon: Eye, value: formatNumber(work.reads), label: "阅读" });
     }
@@ -250,7 +247,6 @@ export function WorkDetailModal({
 
   const getDetailMetrics = () => {
     const metrics: { icon: typeof Heart; value: string; label: string; color: string }[] = [];
-    if (detail.views !== undefined && detail.views > 0) metrics.push({ icon: Eye, value: formatNumber(detail.views), label: "播放量", color: "text-blue-500" });
     if (detail.reads !== undefined) metrics.push({ icon: Eye, value: formatNumber(detail.reads), label: "阅读量", color: "text-blue-500" });
     if (detail.likes !== undefined) metrics.push({ icon: Heart, value: formatNumber(detail.likes), label: "点赞", color: "text-red-500" });
     if (detail.voteups !== undefined) metrics.push({ icon: ThumbsUp, value: formatNumber(detail.voteups), label: "赞同", color: "text-blue-500" });

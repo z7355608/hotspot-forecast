@@ -19,6 +19,7 @@
  */
 
 import { callLLM } from "./llm-gateway.js";
+import { resolveSystemPrompt } from "./prompt-engine.js";
 
 // ----------------------------------------------------------------
 // 类型定义
@@ -242,7 +243,8 @@ function buildStaticRecommendations(ctx: ArtifactContext): RecommendedNextAction
 async function buildLLMRecommendations(
   ctx: ArtifactContext,
 ): Promise<RecommendedNextAction[]> {
-  const systemPrompt = `当前日期是 ${new Date().toISOString().slice(0, 10)}。
+  const currentDate = new Date().toISOString().slice(0, 10);
+  const fallbackSystemPrompt = `当前日期是 ${currentDate}。
 你是一个内容创作策略助手。根据以下真实数据分析结果，生成 3 条下一步行动建议。
 
 规则：
@@ -265,6 +267,13 @@ async function buildLLMRecommendations(
 ]
 
 只返回 JSON 数组，不要任何解释。`;
+
+  const systemPrompt = await resolveSystemPrompt(
+    "next-action-recommendation-v1",
+    "doubao",
+    { currentDate },
+    fallbackSystemPrompt,
+  );
 
   const dataContext = `
 当前分析数据：

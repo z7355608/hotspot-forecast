@@ -19,6 +19,11 @@ export type ContentSampleItem = {
   platform: string;
   likeCount?: number;
   viewCount?: number;
+  commentCount?: number;
+  collectCount?: number;
+  shareCount?: number;
+  authorFollowerCount?: number;
+  whyIncluded?: string;
 };
 export type AccountSampleItem = {
   displayName: string;
@@ -68,6 +73,7 @@ const LIVE_PREDICTION_TIMEOUT_MS = 180_000;
 export async function runLivePredictionStream(
   payload: PredictionRequestDraft,
   onProgress: (event: ProgressEvent) => void,
+  options?: { taskId?: string },
 ): Promise<LivePredictionResult> {
   return new Promise((resolve, reject) => {
     const timeoutId = setTimeout(() => {
@@ -77,9 +83,14 @@ export async function runLivePredictionStream(
     // 使用fetch + ReadableStream读取SSE（EventSource不支持POST）
     const controller = new AbortController();
 
+    // x-task-id:把客户端 task_id 透传给 server,用于 running_predictions 表
+    // 持久化(切走再回来通过 GET /api/predictions/:taskId/status 恢复)。
+    const headers: Record<string, string> = { "Content-Type": "application/json" };
+    if (options?.taskId) headers["x-task-id"] = options.taskId;
+
     fetch("/api/predictions/run-live-stream", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers,
       credentials: "include",
       body: JSON.stringify(payload),
       signal: controller.signal,

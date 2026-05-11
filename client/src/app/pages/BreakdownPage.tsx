@@ -1,5 +1,5 @@
-import { useEffect, useState, type ReactNode } from "react";
-import { useNavigate, useParams, useSearchParams } from "react-router-dom";
+import { useEffect, useRef, useState, type ReactNode } from "react";
+import { useLocation, useNavigate, useParams, useSearchParams } from "react-router-dom";
 import {
   AlertTriangle,
   ArrowLeft,
@@ -7,20 +7,47 @@ import {
   Coins,
   Eye,
   Lightbulb,
+  Loader2,
   Lock,
+  RotateCcw,
+  Sparkles,
   TrendingUp,
   Users,
   Zap,
 } from "lucide-react";
+// `Coins` 已经在原 import 里：用于「余额 / 本次消耗」展示
 import { ImageWithFallback } from "../components/figma/ImageWithFallback";
+import { PaywallModal, type PaywallContext } from "../components/PaywallModal";
 import {
   getChargedCost,
   getModelOption,
   normalizePlan,
   type LowFollowerSample,
 } from "../store/app-data";
+
+/**
+ * 与后端 `BASE_ANALYSIS_COST` 同值。后端是计费源，这里仅做 UI 展示与拦截。
+ */
+const BREAKDOWN_COST = 20;
+
+/**
+ * 解析 viralBreakdownDirect 抛的 INSUFFICIENT_CREDITS 错误：
+ * 错误 message 形如 `INSUFFICIENT_CREDITS:{cost}:{balance}`，
+ * 由 server/routers/copywriting.ts 在余额不足或扣减失败时构造。
+ */
+function parseInsufficientCreditsError(
+  msg: string | undefined,
+): { cost: number; balance: number } | null {
+  if (!msg) return null;
+  const m = /INSUFFICIENT_CREDITS:(\d+):(\d+)/.exec(msg);
+  if (!m) return null;
+  return { cost: Number(m[1]), balance: Number(m[2]) };
+}
 import { useAppStore } from "../store/app-store";
 import { useOnboarding } from "../lib/onboarding-context";
+import { getProxiedImageUrl } from "../lib/media-proxy";
+import { trpc } from "@/lib/trpc";
+import { stripHashtags, type LowFollowerItem } from "./HotTopicRecommendationsPage";
 
 const ACTIONS = [
   {
@@ -159,6 +186,7 @@ function SimilarCard({
   sample: LowFollowerSample;
   locked?: boolean;
 }) {
+  const coverUrl = getProxiedImageUrl(sample.img);
   return (
     <div className="relative overflow-hidden rounded-2xl border border-gray-100 bg-white">
       {locked && (
@@ -169,7 +197,7 @@ function SimilarCard({
       )}
       <div className={locked ? "select-none opacity-25" : ""}>
         <div className="relative">
-          <ImageWithFallback src={sample.img} alt={sample.title} className="h-28 w-full object-cover" />
+          <ImageWithFallback src={coverUrl ?? sample.img} alt={sample.title} className="h-28 w-full object-cover" />
           <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent" />
           <div className="absolute left-2 top-2">
             <span className="rounded-md bg-gray-900 px-1.5 py-0.5 text-[10px] text-white">
@@ -251,10 +279,508 @@ function InvalidBreakdown({ onBack }: { onBack: () => void }) {
   );
 }
 
+/* ------------------------------------------------------------------ */
+/*  Live Breakdown View                                                 */
+/*                                                                      */
+/*  当从「爆款选题推荐」页跳转过来（location.state.kind === "live"）时，     */
+/*  使用作品的 contentUrl 调用 viralBreakdownDirect，渲染完整拆解结果。   */
+/*  这条路径绕过预测 agent / 意图识别，作品信息已知，直接拆解。            */
+/* ------------------------------------------------------------------ */
+
+function LiveBreakdownView({ item }: { item: LowFollowerItem }) {
+  const navigate = useNavigate();
+  const trpcUtils = trpc.useUtils();
+  const triggeredRef = useRef(false);
+  const cleanTitle = stripHashtags(item.title) || item.title || "未命名作品";
+  const coverUrl = getProxiedImageUrl(item.coverUrl);
+
+  // 余额：进页拉一次，扣减成功后会用返回的 balanceAfter 直接 setQueryData 同步
+  const balanceQuery = trpc.credits.getBalance.useQuery(undefined, {
+    refetchOnWindowFocus: false,
+  });
+  const credits = balanceQuery.data?.credits ?? 0;
+
+  // 付费墙状态：从拆解 mutation 错误中识别 INSUFFICIENT_CREDITS 时打开
+  const [paywallContext, setPaywallContext] = useState<PaywallContext | null>(null);
+
+  const mutation = trpc.copywriting.viralBreakdownDirect.useMutation({
+    onSuccess: (data) => {
+      // 后端返回 charge.balanceAfter；写回本地缓存避免重复 query
+      if (data?.charge && typeof data.charge.balanceAfter === "number") {
+        const next = data.charge.balanceAfter;
+        trpcUtils.credits.getBalance.setData(undefined, (prev) => ({
+          ...(prev ?? { credits: 0, membershipPlan: "free" }),
+          credits: next,
+        }));
+      }
+    },
+    onError: (err) => {
+      const insufficient = parseInsufficientCreditsError(err.message);
+      if (insufficient) {
+        // 同步真实余额（后端给的更可信），并打开付费墙
+        trpcUtils.credits.getBalance.setData(undefined, (prev) => ({
+          ...(prev ?? { credits: 0, membershipPlan: "free" }),
+          credits: insufficient.balance,
+        }));
+        setPaywallContext({
+          actionLabel: "深度拆解",
+          requiredCredits: insufficient.cost,
+          shortfall: Math.max(0, insufficient.cost - insufficient.balance),
+          contextDescription: `解锁「${cleanTitle}」的完整 AI 拆解（含 25 分镜脚本）`,
+        });
+      }
+    },
+  });
+
+  const trigger = () => {
+    if (!item.contentUrl) return;
+    triggeredRef.current = true;
+    mutation.mutate({
+      videoUrl: item.contentUrl,
+      videoId: item.videoId,
+      platform: item.platform,
+      title: cleanTitle,
+      coverUrl: item.coverUrl ?? undefined,
+      author: item.authorName,
+    });
+  };
+
+  useEffect(() => {
+    if (triggeredRef.current) return;
+    // 余额不足时不直接发起拆解，先弹付费墙；用户充值后会被 onTopUpComplete 重试
+    if (credits > 0 && credits < BREAKDOWN_COST) {
+      triggeredRef.current = true;
+      setPaywallContext({
+        actionLabel: "深度拆解",
+        requiredCredits: BREAKDOWN_COST,
+        shortfall: BREAKDOWN_COST - credits,
+        contextDescription: `解锁「${cleanTitle}」的完整 AI 拆解（含 25 分镜脚本）`,
+      });
+      return;
+    }
+    trigger();
+    // 余额可能在异步 query 后才回来；balanceQuery.data 变化时让 effect 再判断一次
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [balanceQuery.data]);
+
+  const breakdown = mutation.data?.breakdown ?? null;
+  const charge = mutation.data?.charge ?? null;
+  const isPending = mutation.isPending;
+  const error = mutation.error;
+  // 错误是 INSUFFICIENT_CREDITS 时，错误卡不展示（已用付费墙处理）
+  const isInsufficientErr = !!parseInsufficientCreditsError(error?.message);
+  const displayError = error && !isInsufficientErr ? error : null;
+
+  return (
+    <div className="mx-auto max-w-4xl space-y-5 px-4 py-6 sm:px-6">
+      {/* 顶部返回 + 余额状态条 */}
+      <div className="flex items-center justify-between gap-2">
+        <button
+          type="button"
+          onClick={() => navigate(-1)}
+          className="flex items-center gap-1.5 text-xs text-gray-400 transition-colors hover:text-gray-700"
+        >
+          <ArrowLeft className="h-3.5 w-3.5" />
+          返回选题推荐
+        </button>
+        {/*
+         * 配额可视化：本次消耗 / 缓存命中 / 余额。
+         * - 加载完成后，charge.cacheHit=true 时显示「本次缓存命中，未扣积分」
+         * - charge.deducted=true 时显示「本次消耗 -20」，并把余额压到这一刻的值
+         * - 失败/未触发时仅显示当前余额
+         */}
+        <div className="flex items-center gap-2 text-[11px] text-gray-500">
+          {charge?.cacheHit && (
+            <span className="rounded-md bg-emerald-50 px-1.5 py-0.5 font-medium text-emerald-700">
+              缓存命中 · 免费
+            </span>
+          )}
+          {charge?.deducted && (
+            <span className="rounded-md bg-amber-50 px-1.5 py-0.5 font-medium text-amber-700">
+              本次消耗 −{charge.cost}
+            </span>
+          )}
+          <span className="flex items-center gap-1 text-gray-500">
+            <Coins className="h-3 w-3" />
+            余额 {credits} 积分
+          </span>
+        </div>
+      </div>
+
+      {/* 作品头部 */}
+      <div className="overflow-hidden rounded-3xl border border-gray-100 bg-white shadow-sm">
+        <div className="flex flex-col lg:flex-row">
+          <div className="relative shrink-0 border-b border-gray-100 lg:w-56 lg:border-b-0 lg:border-r">
+            {coverUrl ? (
+              <ImageWithFallback
+                src={coverUrl}
+                alt={cleanTitle}
+                className="min-h-[220px] w-full object-cover lg:h-full"
+              />
+            ) : (
+              <div className="flex min-h-[220px] w-full items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200">
+                <Zap className="h-8 w-8 text-gray-300" />
+              </div>
+            )}
+            <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
+            <div className="absolute left-3 top-3">
+              <span className="rounded-md bg-gradient-to-br from-purple-600 to-pink-500 px-2 py-0.5 text-[11px] font-bold text-white shadow-sm">
+                {item.viralScore}%
+              </span>
+            </div>
+            <div className="absolute bottom-3 left-3">
+              <span className="rounded-md bg-white/90 px-2 py-0.5 text-xs text-gray-700">
+                {item.platform}
+              </span>
+            </div>
+          </div>
+
+          <div className="flex flex-1 flex-col px-5 py-5 sm:px-7">
+            <h1 className="mb-2 text-lg leading-snug text-gray-900">{cleanTitle}</h1>
+            <div className="mb-4 flex flex-wrap items-center gap-3 text-xs text-gray-400">
+              <span>{item.authorName}</span>
+              {item.publishedAt && (
+                <>
+                  <span className="text-gray-200">·</span>
+                  <span>{item.publishedAt.slice(0, 10)}</span>
+                </>
+              )}
+            </div>
+            <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-4">
+              {[
+                { label: "互动", value: formatStat(item.likeCount + item.commentCount + item.shareCount + item.saveCount) },
+                { label: "点赞", value: formatStat(item.likeCount) },
+                { label: "评论", value: formatStat(item.commentCount) },
+                { label: "互动率", value: `${(item.engagementRate * 100).toFixed(1)}%` },
+              ].map((stat) => (
+                <div key={stat.label} className="rounded-xl bg-gray-50 px-3 py-2.5">
+                  <div className="text-[11px] text-gray-400">{stat.label}</div>
+                  <p className="mt-0.5 text-sm text-gray-800">{stat.value}</p>
+                </div>
+              ))}
+            </div>
+            {item.contentUrl && (
+              <a
+                href={item.contentUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="mt-3 inline-flex w-fit items-center gap-1 text-xs text-gray-500 hover:text-gray-900"
+              >
+                查看原视频 →
+              </a>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* 拆解结果 */}
+      {isPending && (
+        <div className="flex flex-col items-center justify-center gap-3 rounded-3xl border border-gray-100 bg-white px-6 py-16 shadow-sm">
+          <Loader2 className="h-6 w-6 animate-spin text-gray-400" />
+          <p className="text-sm text-gray-600">AI 正在拆解视频结构…</p>
+          <p className="text-xs text-gray-400">通常需要 30-90 秒，正在做多模态分析</p>
+        </div>
+      )}
+
+      {displayError && !isPending && (() => {
+        const msg = displayError.message || "";
+        const is503 = /503|high demand|Service Unavailable/i.test(msg);
+        const is429 = /429|rate limit/i.test(msg);
+        const isTransient = is503 || is429;
+        return (
+          <div
+            className={`rounded-3xl border px-6 py-8 text-sm ${
+              isTransient
+                ? "border-amber-100 bg-amber-50 text-amber-800"
+                : "border-red-100 bg-red-50 text-red-700"
+            }`}
+          >
+            <div className="mb-2 flex items-center gap-2">
+              <AlertTriangle className="h-4 w-4" />
+              <span className="font-medium">
+                {is503
+                  ? "AI 模型当前正忙"
+                  : is429
+                  ? "请求过于频繁"
+                  : "拆解失败"}
+              </span>
+            </div>
+            <p
+              className={`text-xs leading-relaxed ${
+                isTransient ? "text-amber-700" : "text-red-600"
+              }`}
+            >
+              {is503
+                ? "Apollo Gemini 模型正处于高峰，已自动重试 3 次仍未成功。请稍后再试，通常 1-3 分钟可恢复。"
+                : is429
+                ? "短时间内请求过多，请稍等几秒再重试。"
+                : msg}
+            </p>
+            <button
+              type="button"
+              onClick={trigger}
+              className={`mt-3 inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs text-white transition-colors ${
+                isTransient
+                  ? "bg-amber-600 hover:bg-amber-700"
+                  : "bg-red-600 hover:bg-red-700"
+              }`}
+            >
+              <RotateCcw className="h-3 w-3" />
+              重试
+            </button>
+          </div>
+        );
+      })()}
+
+      {breakdown && !isPending && <BreakdownResultBody breakdown={breakdown} />}
+
+      {/* 余额不足付费墙：mutation 报错 INSUFFICIENT_CREDITS 或 effect 主动检测时打开 */}
+      <PaywallModal
+        open={paywallContext !== null}
+        onClose={() => {
+          setPaywallContext(null);
+          // 用户取消付费，回到选题页避免空白卡死
+          if (!breakdown) navigate(-1);
+        }}
+        context={
+          paywallContext ?? {
+            actionLabel: "深度拆解",
+            requiredCredits: BREAKDOWN_COST,
+            shortfall: 0,
+          }
+        }
+        onTopUpComplete={() => {
+          // 充值完成后：重置已触发标记 → 让 effect 重新发起拆解
+          triggeredRef.current = false;
+          setPaywallContext(null);
+          // 直接调一次（不等 effect）
+          mutation.reset();
+          trigger();
+        }}
+      />
+    </div>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/*  BreakdownResult 渲染：meta_strategy + shot_list                     */
+/* ------------------------------------------------------------------ */
+
+type BreakdownData = NonNullable<
+  ReturnType<typeof trpc.copywriting.viralBreakdownDirect.useMutation>["data"]
+>["breakdown"];
+
+function BreakdownResultBody({ breakdown }: { breakdown: BreakdownData }) {
+  const meta = breakdown.meta_strategy;
+  const shots = breakdown.shot_list ?? [];
+
+  return (
+    <div className="space-y-4">
+      {/* 1. 核心叙事与变现 */}
+      <section className="overflow-hidden rounded-3xl border border-gray-100 bg-white shadow-sm">
+        <div className="border-b border-gray-50 px-5 pb-3 pt-5 sm:px-7">
+          <div className="flex items-center gap-2">
+            <Sparkles className="h-3.5 w-3.5 text-violet-500" />
+            <h2 className="text-sm font-semibold text-gray-900">核心叙事与变现逻辑</h2>
+          </div>
+        </div>
+        <div className="space-y-3 px-5 py-4 sm:px-7">
+          <p className="text-sm leading-relaxed text-gray-700">{meta.summary}</p>
+          {meta.visual_hammer && (
+            <div className="rounded-2xl bg-violet-50 px-4 py-3">
+              <div className="mb-1 text-xs font-medium text-violet-700">🔨 视觉锤</div>
+              <p className="text-sm leading-relaxed text-violet-900">{meta.visual_hammer}</p>
+            </div>
+          )}
+        </div>
+      </section>
+
+      {/* 2. 爆款公式 */}
+      {meta.viral_formula && (
+        <section className="overflow-hidden rounded-3xl border border-gray-100 bg-white shadow-sm">
+          <div className="border-b border-gray-50 px-5 pb-3 pt-5 sm:px-7">
+            <div className="flex items-center gap-2">
+              <Lightbulb className="h-3.5 w-3.5 text-amber-500" />
+              <h2 className="text-sm font-semibold text-gray-900">爆款公式</h2>
+            </div>
+            {meta.viral_formula.tagline && (
+              <p className="mt-1 text-xs leading-relaxed text-gray-500">
+                {meta.viral_formula.tagline}
+              </p>
+            )}
+          </div>
+          <div className="grid gap-3 px-5 py-4 sm:grid-cols-2 sm:px-7">
+            <div className="rounded-2xl bg-amber-50 px-4 py-3">
+              <div className="mb-1 text-xs font-medium text-amber-700">⚡ 黄金 3 秒钩子</div>
+              <p className="text-sm leading-relaxed text-amber-950">
+                {meta.viral_formula.hook_strategy}
+              </p>
+            </div>
+            <div className="rounded-2xl bg-emerald-50 px-4 py-3">
+              <div className="mb-1 text-xs font-medium text-emerald-700">🎯 转化漏斗</div>
+              <p className="text-sm leading-relaxed text-emerald-950">
+                {meta.viral_formula.conversion_logic}
+              </p>
+            </div>
+            <div className="rounded-2xl bg-pink-50 px-4 py-3 sm:col-span-2">
+              <div className="mb-1 text-xs font-medium text-pink-700">📊 节奏与信息密度</div>
+              <p className="text-sm leading-relaxed text-pink-950">
+                {meta.viral_formula.pacing_analysis}
+              </p>
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* 3. 复刻建议 */}
+      {meta.replication_advice && (
+        <section className="overflow-hidden rounded-3xl border border-gray-100 bg-white shadow-sm">
+          <div className="border-b border-gray-50 px-5 pb-3 pt-5 sm:px-7">
+            <div className="flex items-center gap-2">
+              <Check className="h-3.5 w-3.5 text-blue-500" />
+              <h2 className="text-sm font-semibold text-gray-900">复刻与优化建议</h2>
+            </div>
+          </div>
+          <div className="grid gap-3 px-5 py-4 sm:grid-cols-2 sm:px-7">
+            <div className="rounded-2xl bg-rose-50 px-4 py-3">
+              <div className="mb-1 text-xs font-medium text-rose-700">⚠️ 原视频不足</div>
+              <p className="text-sm leading-relaxed text-rose-950">
+                {meta.replication_advice.flaws}
+              </p>
+            </div>
+            <div className="rounded-2xl bg-blue-50 px-4 py-3">
+              <div className="mb-1 text-xs font-medium text-blue-700">✨ 升级方案</div>
+              <p className="text-sm leading-relaxed text-blue-950">
+                {meta.replication_advice.improvement_plan}
+              </p>
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* 4. 分镜脚本 */}
+      {shots.length > 0 && (
+        <section className="overflow-hidden rounded-3xl border border-gray-100 bg-white shadow-sm">
+          <div className="border-b border-gray-50 px-5 pb-3 pt-5 sm:px-7">
+            <div className="flex items-center justify-between gap-2">
+              <div className="flex items-center gap-2">
+                <Eye className="h-3.5 w-3.5 text-indigo-500" />
+                <h2 className="text-sm font-semibold text-gray-900">逐镜复刻脚本</h2>
+              </div>
+              <span className="text-xs text-gray-400">{shots.length} 个分镜</span>
+            </div>
+          </div>
+          <div className="divide-y divide-gray-50">
+            {shots.map((shot) => (
+              <ShotCard key={shot.id} shot={shot} />
+            ))}
+          </div>
+        </section>
+      )}
+    </div>
+  );
+}
+
+function ShotCard({ shot }: { shot: BreakdownData["shot_list"][number] }) {
+  const start = shot.timestamp?.start_seconds ?? 0;
+  const end = shot.timestamp?.end_seconds ?? 0;
+  return (
+    <div className="px-5 py-4 sm:px-7">
+      <div className="mb-3 flex flex-wrap items-center gap-2">
+        <span className="rounded-md bg-gray-900 px-2 py-0.5 text-xs font-semibold text-white">
+          #{shot.id}
+        </span>
+        <span className="rounded-md bg-gray-100 px-2 py-0.5 text-xs text-gray-700">
+          {start.toFixed(1)}s – {end.toFixed(1)}s
+        </span>
+        {shot.scene_type && (
+          <span className="rounded-md bg-indigo-50 px-2 py-0.5 text-xs text-indigo-700">
+            {shot.scene_type}
+          </span>
+        )}
+      </div>
+
+      {shot.audio_layer && (
+        <div className="mb-2 rounded-2xl bg-gray-50 px-3 py-2.5">
+          <div className="mb-1 text-[11px] font-medium text-gray-500">🎙 音频层</div>
+          {shot.audio_layer.script && (
+            <p className="mb-1 text-sm leading-relaxed text-gray-800">
+              「{shot.audio_layer.script}」
+            </p>
+          )}
+          <div className="flex flex-wrap gap-2 text-xs text-gray-500">
+            {shot.audio_layer.bgm_mood && <span>BGM：{shot.audio_layer.bgm_mood}</span>}
+            {shot.audio_layer.sfx_design && <span>音效：{shot.audio_layer.sfx_design}</span>}
+          </div>
+        </div>
+      )}
+
+      {shot.visual_layer && (
+        <div className="mb-2 rounded-2xl bg-amber-50/50 px-3 py-2.5">
+          <div className="mb-1 text-[11px] font-medium text-amber-700">🎬 画面层</div>
+          {shot.visual_layer.subject_action && (
+            <p className="mb-1 text-sm leading-relaxed text-gray-800">
+              {shot.visual_layer.subject_action}
+            </p>
+          )}
+          <div className="flex flex-wrap gap-x-3 gap-y-1 text-xs text-amber-900/70">
+            {shot.visual_layer.environment && <span>环境：{shot.visual_layer.environment}</span>}
+            {shot.visual_layer.camera_language && <span>运镜：{shot.visual_layer.camera_language}</span>}
+            {shot.visual_layer.lighting_style && <span>光影：{shot.visual_layer.lighting_style}</span>}
+            {shot.visual_layer.visual_stimuli && <span>刺激点：{shot.visual_layer.visual_stimuli}</span>}
+          </div>
+        </div>
+      )}
+
+      {shot.neuro_marketing_layer && (
+        <div className="mb-2 rounded-2xl bg-pink-50/60 px-3 py-2.5">
+          <div className="mb-1 text-[11px] font-medium text-pink-700">🧠 神经营销</div>
+          <div className="flex flex-wrap gap-x-3 gap-y-1 text-xs text-pink-900/70">
+            {shot.neuro_marketing_layer.audience_emotion && (
+              <span>情绪：{shot.neuro_marketing_layer.audience_emotion}</span>
+            )}
+            {shot.neuro_marketing_layer.retention_tactic && (
+              <span>留存：{shot.neuro_marketing_layer.retention_tactic}</span>
+            )}
+            {shot.neuro_marketing_layer.conversion_priming && (
+              <span>转化铺垫：{shot.neuro_marketing_layer.conversion_priming}</span>
+            )}
+          </div>
+        </div>
+      )}
+
+      {shot.replication_note && (
+        <div className="rounded-2xl border border-gray-100 bg-white px-3 py-2.5 text-xs leading-relaxed text-gray-600">
+          <span className="font-medium text-gray-700">📝 复刻要点：</span>
+          {shot.replication_note}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function formatStat(n: number): string {
+  if (!n || n <= 0) return "—";
+  if (n >= 100000) return `${(n / 10000).toFixed(0)}万`;
+  if (n >= 10000) return `${(n / 10000).toFixed(1)}万`;
+  if (n >= 1000) return `${(n / 1000).toFixed(1)}千`;
+  return String(n);
+}
+
 export function BreakdownPage() {
   const { id } = useParams<{ id: string }>();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
+  const location = useLocation();
+
+  // Live 模式：从「爆款选题推荐」携带 LowFollowerItem 跳转过来
+  const liveItem =
+    location.state &&
+    typeof location.state === "object" &&
+    (location.state as Record<string, unknown>).kind === "live" &&
+    (location.state as Record<string, unknown>).item
+      ? ((location.state as Record<string, unknown>).item as LowFollowerItem)
+      : null;
   const {
     dataMode,
     state,
@@ -281,14 +807,20 @@ export function BreakdownPage() {
   /**
    * 方案B 兴容层：将 /breakdown/:id 重定向到统一结果页
    * 旧书签和外部链接仍可正常访问，会自动跳转到 /results/:id
+   * Live 模式（从选题推荐携带 item 跳转）跳过此重定向，由 LiveBreakdownView 接管。
    */
   useEffect(() => {
-    if (!id || dataMode === "live") return;
+    if (!id || dataMode === "live" || liveItem) return;
     const result = createBreakdownSampleResult(id);
     if (result.ok) {
       navigate(`/results/${result.resultId}`, { replace: true });
     }
-  }, [id, dataMode]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [id, dataMode, liveItem]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Live 模式：从「爆款选题推荐」跳转过来，直接拆解视频，不走 sample/store 路径
+  if (liveItem) {
+    return <LiveBreakdownView item={liveItem} />;
+  }
 
   if (dataMode === "live") {
     return (
@@ -345,7 +877,7 @@ export function BreakdownPage() {
       title: "选题切口",
       judgment: `「${sample.burstReasons[0]}」让这条 ${primaryTrack} 内容具备了更强的代入点`,
       explanation: `样本没有泛泛谈 ${primaryTrack}，而是把问题压缩成一个观众能立刻识别的具体场景。`,
-      evidence: `近 30 天同类 ${primaryTrack} 样本中，具备明确场景限定的内容平均播放更高。`,
+      evidence: `近 30 天同类 ${primaryTrack} 样本中，具备明确场景限定的内容互动表现更高。`,
       evidenceStat: `+${sample.anomaly.toFixed(1)}× 表现`,
       icon: <Lightbulb className="h-3.5 w-3.5 text-gray-500" />,
       locked: false,
@@ -417,7 +949,7 @@ export function BreakdownPage() {
         <div className="flex flex-col lg:flex-row">
           <div className="relative shrink-0 border-b border-gray-100 lg:w-52 lg:border-b-0 lg:border-r">
             <ImageWithFallback
-              src={sample.img}
+              src={getProxiedImageUrl(sample.img) ?? sample.img}
               alt="样本封面"
               className="min-h-[240px] w-full object-cover lg:h-full"
             />

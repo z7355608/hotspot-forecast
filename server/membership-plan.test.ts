@@ -1,6 +1,6 @@
 /**
- * membership-plan.test.ts — 会员等级归一化 & 模型解锁测试
- * 验证 plus_yearly / pro_yearly 等年付变体能正确解锁对应模型
+ * membership-plan.test.ts — 会员等级归一化 & 默认模型测试
+ * 模型选择已收敛为全用户默认 GPT-5.5，会员等级不再影响模型可用性。
  */
 import { describe, it, expect } from "vitest";
 import {
@@ -42,18 +42,18 @@ describe("canUseModel with yearly plans", () => {
   }> = [
     // free plan
     { plan: "free", model: "doubao", expected: true, desc: "free can use doubao" },
-    { plan: "free", model: "gpt54", expected: false, desc: "free cannot use gpt54" },
-    { plan: "free", model: "claude46", expected: false, desc: "free cannot use claude46" },
+    { plan: "free", model: "gpt54", expected: true, desc: "free can use gpt55" },
+    { plan: "free", model: "claude46", expected: true, desc: "free can use legacy claude id" },
 
     // plus plan
     { plan: "plus", model: "doubao", expected: true, desc: "plus can use doubao" },
     { plan: "plus", model: "gpt54", expected: true, desc: "plus can use gpt54" },
-    { plan: "plus", model: "claude46", expected: false, desc: "plus cannot use claude46" },
+    { plan: "plus", model: "claude46", expected: true, desc: "plus can use legacy claude id" },
 
     // plus_yearly plan — should behave same as plus
     { plan: "plus_yearly", model: "doubao", expected: true, desc: "plus_yearly can use doubao" },
     { plan: "plus_yearly", model: "gpt54", expected: true, desc: "plus_yearly can use gpt54" },
-    { plan: "plus_yearly", model: "claude46", expected: false, desc: "plus_yearly cannot use claude46" },
+    { plan: "plus_yearly", model: "claude46", expected: true, desc: "plus_yearly can use legacy claude id" },
 
     // pro plan
     { plan: "pro", model: "doubao", expected: true, desc: "pro can use doubao" },
@@ -74,8 +74,8 @@ describe("canUseModel with yearly plans", () => {
 });
 
 describe("getHighestAvailableModel with yearly plans", () => {
-  it("free → doubao", () => {
-    expect(getHighestAvailableModel("free")).toBe("doubao");
+  it("free → gpt54 (GPT-5.5)", () => {
+    expect(getHighestAvailableModel("free")).toBe("gpt54");
   });
 
   it("plus → gpt54", () => {
@@ -86,11 +86,11 @@ describe("getHighestAvailableModel with yearly plans", () => {
     expect(getHighestAvailableModel("plus_yearly")).toBe("gpt54");
   });
 
-  it("pro → claude46", () => {
-    expect(getHighestAvailableModel("pro")).toBe("claude46");
+  it("pro → gpt54 (GPT-5.5)", () => {
+    expect(getHighestAvailableModel("pro")).toBe("gpt54");
   });
 
-  it("pro_yearly → claude46 (same as pro)", () => {
-    expect(getHighestAvailableModel("pro_yearly")).toBe("claude46");
+  it("pro_yearly → gpt54 (same as pro)", () => {
+    expect(getHighestAvailableModel("pro_yearly")).toBe("gpt54");
   });
 });

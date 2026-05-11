@@ -16,6 +16,7 @@ import type {
 import { getTikHub } from "./tikhub.js";
 import { walkObjects } from "./prediction-helpers.js";
 import type { ExtractedContent } from "./prediction-helpers.js";
+import { callLLM } from "./llm-gateway.js";
 
 /* ── Types ── */
 
@@ -249,11 +250,112 @@ export async function fetchCommentInsight(
 
   log.info(`评论采集完成：${totalCollected} 条评论，${highlights.length} 个内容，高频词: [${highFreqKeywords.join(", ")}]`);
 
+  // LLM 深度分析评论，生成一句话结论
+  let aiSummary: string | undefined;
+  try {
+    const topCommentsSample = highlights
+      .flatMap((h) => h.topComments.slice(0, 2).map((c) => `"${c.text}"（${c.likeCount}赞）`))
+      .slice(0, 10)
+      .join("\n");
+    const prompt = `你是爆款内容分析师。以下是真实采集到的视频评论数据：
+
+高频词：${highFreqKeywords.slice(0, 10).join("、")}
+需求信号：${demandSignals.slice(0, 5).join("、") || "无明显需求词"}
+情感倾向：${sentimentSummary === "positive" ? "正向为主" : sentimentSummary === "mixed" ? "正负混合" : sentimentSummary === "negative" ? "负向为主" : "情感中性"}
+热门评论摘录：
+${topCommentsSample}
+
+请根据以上数据，用一句话（25字以内）说明：用户在评论区最强烈表达的是什么需求或情绪？这对内容创作者意味着什么机会？
+
+要求：
+- 直接给出结论，不要说"根据评论"或"分析显示"等引导语
+- 必须包含具体的行动指向（用户想要什么 → 创作者能做什么）
+- 语气确定，不使用"可能""也许""建议"等模糊词
+- 示例格式："用户强烈需要[具体内容]，[平台]上这类[具体形式]内容正在被大量搜索"`;
+
+    const result = await callLLM({
+      modelId: "doubao",
+      messages: [{ role: "user", content: prompt }],
+      maxTokens: 100,
+      temperature: 0.3,
+      timeoutMs: 8000,
+    });
+    const raw = result.content.trim().replace(/^["「]|["」]$/g, "");
+    if (raw.length >= 10 && raw.length <= 80) {
+      aiSummary = raw;
+    }
+  } catch (err) {
+    log.warn(`评论AI总结生成失败: ${err instanceof Error ? err.message : String(err)}`);
+  }
+
   return {
     totalCommentsCollected: totalCollected,
     highFreqKeywords,
     sentimentSummary,
     demandSignals,
     highlights,
+    aiSummary,
   };
+}
+
+/* ── Single-video Comment Fetch (用于爆款拆解结果页) ── */
+
+export interface SingleVideoCommentInsight {
+  /** Top N 热评（按点赞数倒序） */
+  topComments: ExtractedComment[];
+  /** 实际拉到的评论总条数（不一定等于 count） */
+  totalCount: number;
+  /** 情感倾向（基于全部评论 text 的轻量启发式） */
+  sentiment: "positive" | "mixed" | "negative" | "unknown";
+  /** 高频词 Top 10（剔除停用词） */
+  highFreqKeywords: string[];
+}
+
+/**
+ * 单视频评论拉取（爆款拆解专用 — 不走 LLM 二次分析，让前端直接展示真实评论）
+ *
+ * @param awemeId 抖音 aweme_id
+ * @param count 拉取条数上限（默认 20，TikHub 单次返回上限通常 20-30）
+ * @returns 评论洞察；视频被删/接口失败/无评论时返回 null
+ */
+export async function fetchSingleVideoComments(
+  awemeId: string,
+  count = 20,
+): Promise<SingleVideoCommentInsight | null> {
+  if (!awemeId || !/^\d+$/.test(awemeId)) {
+    log.warn(`fetchSingleVideoComments: 无效的 aweme_id: ${awemeId}`);
+    return null;
+  }
+
+  try {
+    let resp = await getTikHub<Record<string, unknown>>(
+      "/api/v1/douyin/web/fetch_video_comments",
+      { aweme_id: awemeId, cursor: 0, count },
+    );
+    if (!resp.ok) {
+      resp = await getTikHub<Record<string, unknown>>(
+        "/api/v1/douyin/app/v3/fetch_video_comments",
+        { aweme_id: awemeId, cursor: 0, count },
+      );
+    }
+    if (!resp.ok || !resp.payload) {
+      log.warn(`fetchSingleVideoComments: TikHub 调用失败 aweme_id=${awemeId}`);
+      return null;
+    }
+
+    const all = extractCommentsFromPayload(resp.payload);
+    if (all.length === 0) return null;
+
+    const sorted = [...all].sort((a, b) => b.likeCount - a.likeCount);
+    const allText = all.map((c) => c.text);
+    return {
+      topComments: sorted.slice(0, 8), // 取 Top 8（前端可截断展示）
+      totalCount: all.length,
+      sentiment: inferSentiment(allText),
+      highFreqKeywords: extractHighFreqKeywords(allText).slice(0, 10),
+    };
+  } catch (err) {
+    log.warn({ err }, `fetchSingleVideoComments 异常 (aweme_id=${awemeId})`);
+    return null;
+  }
 }

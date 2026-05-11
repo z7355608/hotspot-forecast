@@ -46,7 +46,6 @@ export function getPlatformMetrics(platformId: string): PlatformMetricConfig[] {
     case "pipixia":
       return [
         ...common,
-        { key: "views", label: "总播放", icon: Eye, color: "bg-sky-50 text-sky-500", valueKey: "totalViews", changeKey: "viewsChange" },
         { key: "likes", label: "总点赞", icon: Heart, color: "bg-red-50 text-red-500", valueKey: "totalLikes", changeKey: "likesChange" },
         { key: "comments", label: "总评论", icon: MessageCircle, color: "bg-green-50 text-green-500", valueKey: "totalComments", changeKey: "commentsChange" },
         { key: "shares", label: "总分享", icon: Share2, color: "bg-purple-50 text-purple-500", valueKey: "totalShares", changeKey: "sharesChange" },
@@ -65,7 +64,6 @@ export function getPlatformMetrics(platformId: string): PlatformMetricConfig[] {
     case "bilibili":
       return [
         ...common,
-        { key: "views", label: "总播放", icon: Eye, color: "bg-sky-50 text-sky-500", valueKey: "totalViews", changeKey: "viewsChange" },
         { key: "likes", label: "总点赞", icon: Heart, color: "bg-red-50 text-red-500", valueKey: "totalLikes", changeKey: "likesChange" },
         { key: "coins", label: "总投币", icon: Coins, color: "bg-amber-50 text-amber-500", valueKey: "totalCoins", changeKey: "coinsChange" },
         { key: "favorites", label: "总收藏", icon: Bookmark, color: "bg-orange-50 text-orange-500", valueKey: "totalFavorites", changeKey: "favoritesChange" },
@@ -91,7 +89,6 @@ export function getPlatformMetrics(platformId: string): PlatformMetricConfig[] {
     case "wechat":
       return [
         ...common,
-        { key: "views", label: "总播放", icon: Eye, color: "bg-sky-50 text-sky-500", valueKey: "totalViews", changeKey: "viewsChange" },
         { key: "likes", label: "总点赞", icon: Heart, color: "bg-red-50 text-red-500", valueKey: "totalLikes", changeKey: "likesChange" },
         { key: "comments", label: "总评论", icon: MessageCircle, color: "bg-green-50 text-green-500", valueKey: "totalComments", changeKey: "commentsChange" },
         { key: "shares", label: "总分享", icon: Share2, color: "bg-purple-50 text-purple-500", valueKey: "totalShares", changeKey: "sharesChange" },
@@ -106,7 +103,6 @@ export function getPlatformMetrics(platformId: string): PlatformMetricConfig[] {
     default:
       return [
         ...common,
-        { key: "views", label: "总播放", icon: Eye, color: "bg-sky-50 text-sky-500", valueKey: "totalViews", changeKey: "viewsChange" },
         { key: "likes", label: "总点赞", icon: Heart, color: "bg-red-50 text-red-500", valueKey: "totalLikes", changeKey: "likesChange" },
         { key: "comments", label: "总评论", icon: MessageCircle, color: "bg-green-50 text-green-500", valueKey: "totalComments", changeKey: "commentsChange" },
         { key: "shares", label: "总分享", icon: Share2, color: "bg-purple-50 text-purple-500", valueKey: "totalShares", changeKey: "sharesChange" },
@@ -123,12 +119,12 @@ export function getWorkSortOptions(platformId: string): { key: string; label: st
     case "xigua":
     case "pipixia":
     case "wechat":
-      return [...base, { key: "views", label: "播放量" }, { key: "likes", label: "点赞" }, { key: "comments", label: "评论" }];
+      return [...base, { key: "likes", label: "点赞" }, { key: "comments", label: "评论" }, { key: "shares", label: "分享" }];
     case "xiaohongshu":
     case "lemon8":
       return [...base, { key: "likes", label: "点赞" }, { key: "collects", label: "收藏" }, { key: "comments", label: "评论" }];
     case "bilibili":
-      return [...base, { key: "views", label: "播放量" }, { key: "likes", label: "点赞" }, { key: "coins", label: "投币" }, { key: "favorites", label: "收藏" }];
+      return [...base, { key: "likes", label: "点赞" }, { key: "coins", label: "投币" }, { key: "favorites", label: "收藏" }];
     case "weibo":
       return [...base, { key: "likes", label: "点赞" }, { key: "reposts", label: "转发" }, { key: "comments", label: "评论" }];
     case "zhihu":
@@ -136,7 +132,7 @@ export function getWorkSortOptions(platformId: string): { key: string; label: st
     case "wechat-mp":
       return [...base, { key: "reads", label: "阅读" }, { key: "likes", label: "在看" }, { key: "comments", label: "评论" }];
     default:
-      return [...base, { key: "views", label: "播放量" }, { key: "likes", label: "点赞" }, { key: "comments", label: "评论" }];
+      return [...base, { key: "likes", label: "点赞" }, { key: "comments", label: "评论" }, { key: "shares", label: "分享" }];
   }
 }
 

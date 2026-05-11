@@ -2,16 +2,49 @@ import { useState } from "react";
 import type { AdminUser } from "../api";
 import { clearToken } from "../api";
 
-export type AdminPage = "dashboard" | "users" | "config" | "skills" | "logs" | "performance" | "api-usage";
+export type AdminPage =
+  | "dashboard"
+  | "users"
+  | "config"
+  | "skills:overview"
+  | "skills:stage1"
+  | "skills:stage2"
+  | "skills:stage3"
+  | "skills:stage4"
+  | "skills:stage5"
+  | "skills:stage6"
+  | "skills:entry"
+  | "traces"
+  | "logs"
+  | "performance"
+  | "api-usage";
+
+interface NavLeaf {
+  type: "leaf";
+  id: AdminPage;
+  label: string;
+}
+
+interface NavGroup {
+  type: "group";
+  id: string;
+  label: string;
+  icon: React.ReactNode;
+  children: NavLeaf[];
+}
 
 interface NavItem {
+  type: "leaf";
   id: AdminPage;
   label: string;
   icon: React.ReactNode;
 }
 
-const NAV_ITEMS: NavItem[] = [
+type NavEntry = NavItem | NavGroup;
+
+const NAV_ITEMS: NavEntry[] = [
   {
+    type: "leaf",
     id: "dashboard",
     label: "数据看板",
     icon: (
@@ -21,6 +54,7 @@ const NAV_ITEMS: NavItem[] = [
     ),
   },
   {
+    type: "leaf",
     id: "users",
     label: "用户管理",
     icon: (
@@ -30,6 +64,7 @@ const NAV_ITEMS: NavItem[] = [
     ),
   },
   {
+    type: "leaf",
     id: "config",
     label: "系统配置",
     icon: (
@@ -40,6 +75,7 @@ const NAV_ITEMS: NavItem[] = [
     ),
   },
   {
+    type: "group",
     id: "skills",
     label: "技能管理",
     icon: (
@@ -47,8 +83,29 @@ const NAV_ITEMS: NavItem[] = [
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M13 10V3L4 14h7v7l9-11h-7z" />
       </svg>
     ),
+    children: [
+      { type: "leaf", id: "skills:overview", label: "链路总览" },
+      { type: "leaf", id: "skills:stage1",   label: "Stage 1 · 输入理解" },
+      { type: "leaf", id: "skills:stage2",   label: "Stage 2 · 数据采集" },
+      { type: "leaf", id: "skills:stage3",   label: "Stage 3 · 清洗分析" },
+      { type: "leaf", id: "skills:stage4",   label: "Stage 4 · 核心预测" },
+      { type: "leaf", id: "skills:stage5",   label: "Stage 5 · 动作推荐" },
+      { type: "leaf", id: "skills:stage6",   label: "Stage 6 · 用户工具" },
+      { type: "leaf", id: "skills:entry",    label: "入口技能（工作台）" },
+    ],
   },
   {
+    type: "leaf",
+    id: "traces",
+    label: "调用追踪",
+    icon: (
+      <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M3 12h4l3-9 4 18 3-9h4" />
+      </svg>
+    ),
+  },
+  {
+    type: "leaf",
     id: "logs",
     label: "操作日志",
     icon: (
@@ -58,6 +115,7 @@ const NAV_ITEMS: NavItem[] = [
     ),
   },
   {
+    type: "leaf",
     id: "performance",
     label: "性能监控",
     icon: (
@@ -67,7 +125,8 @@ const NAV_ITEMS: NavItem[] = [
     ),
   },
   {
-    id: "api-usage" as AdminPage,
+    type: "leaf",
+    id: "api-usage",
     label: "API消耗",
     icon: (
       <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -76,6 +135,21 @@ const NAV_ITEMS: NavItem[] = [
     ),
   },
 ];
+
+function isPageInGroup(group: NavGroup, page: AdminPage): boolean {
+  return group.children.some((c) => c.id === page);
+}
+
+function findCurrentLabel(currentPage: AdminPage): string {
+  for (const item of NAV_ITEMS) {
+    if (item.type === "leaf" && item.id === currentPage) return item.label;
+    if (item.type === "group") {
+      const child = item.children.find((c) => c.id === currentPage);
+      if (child) return `${item.label} · ${child.label}`;
+    }
+  }
+  return "管理后台";
+}
 
 interface Props {
   user: AdminUser;
@@ -88,12 +162,94 @@ interface Props {
 export function AdminShell({ user, currentPage, onNavigate, onLogout, children }: Props) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
+  // Auto-expand the group that contains the active page
+  const initialExpanded = NAV_ITEMS.reduce<Record<string, boolean>>((acc, item) => {
+    if (item.type === "group") acc[item.id] = isPageInGroup(item, currentPage);
+    return acc;
+  }, {});
+  const [expanded, setExpanded] = useState<Record<string, boolean>>(initialExpanded);
+
   function handleLogout() {
     clearToken();
     onLogout();
   }
 
-  const currentNav = NAV_ITEMS.find((n) => n.id === currentPage);
+  function toggleGroup(id: string) {
+    setExpanded((prev) => ({ ...prev, [id]: !prev[id] }));
+  }
+
+  const currentLabel = findCurrentLabel(currentPage);
+
+  function renderNav(closeMobile = false) {
+    return NAV_ITEMS.map((item) => {
+      if (item.type === "leaf") {
+        const active = currentPage === item.id;
+        return (
+          <button
+            key={item.id}
+            type="button"
+            onClick={() => {
+              onNavigate(item.id);
+              if (closeMobile) setSidebarOpen(false);
+            }}
+            className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+              active ? "bg-indigo-600 text-white" : "text-gray-400 hover:text-white hover:bg-gray-800"
+            }`}
+          >
+            {item.icon}
+            {item.label}
+          </button>
+        );
+      }
+
+      const isOpen = expanded[item.id] ?? false;
+      const groupActive = isPageInGroup(item, currentPage);
+
+      return (
+        <div key={item.id} className="space-y-0.5">
+          <button
+            type="button"
+            onClick={() => toggleGroup(item.id)}
+            className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+              groupActive ? "text-white bg-gray-800" : "text-gray-400 hover:text-white hover:bg-gray-800"
+            }`}
+          >
+            {item.icon}
+            <span className="flex-1 text-left">{item.label}</span>
+            <svg
+              className={`w-3 h-3 flex-shrink-0 transition-transform ${isOpen ? "rotate-90" : ""}`}
+              fill="none" viewBox="0 0 24 24" stroke="currentColor"
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
+            </svg>
+          </button>
+
+          {isOpen && (
+            <div className="ml-3 pl-3 border-l border-gray-800 space-y-0.5">
+              {item.children.map((child) => {
+                const active = currentPage === child.id;
+                return (
+                  <button
+                    key={child.id}
+                    type="button"
+                    onClick={() => {
+                      onNavigate(child.id);
+                      if (closeMobile) setSidebarOpen(false);
+                    }}
+                    className={`w-full text-left px-3 py-1.5 rounded-md text-xs transition-colors ${
+                      active ? "bg-indigo-600 text-white" : "text-gray-500 hover:text-white hover:bg-gray-800"
+                    }`}
+                  >
+                    {child.label}
+                  </button>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      );
+    });
+  }
 
   return (
     <div className="min-h-screen bg-gray-950 flex">
@@ -108,27 +264,13 @@ export function AdminShell({ user, currentPage, onNavigate, onLogout, children }
           </div>
           <div className="min-w-0">
             <p className="text-sm font-semibold text-white truncate">管理后台</p>
-            <p className="text-xs text-gray-500 truncate">爆款预测Agent</p>
+            <p className="text-xs text-gray-500 truncate">爆款预测agent</p>
           </div>
         </div>
 
         {/* Nav */}
-        <nav className="flex-1 px-2 py-3 space-y-0.5">
-          {NAV_ITEMS.map((item) => (
-            <button
-              key={item.id}
-              type="button"
-              onClick={() => onNavigate(item.id)}
-              className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-                currentPage === item.id
-                  ? "bg-indigo-600 text-white"
-                  : "text-gray-400 hover:text-white hover:bg-gray-800"
-              }`}
-            >
-              {item.icon}
-              {item.label}
-            </button>
-          ))}
+        <nav className="flex-1 px-2 py-3 space-y-0.5 overflow-y-auto">
+          {renderNav(false)}
         </nav>
 
         {/* User */}
@@ -179,22 +321,8 @@ export function AdminShell({ user, currentPage, onNavigate, onLogout, children }
             </svg>
           </button>
         </div>
-        <nav className="flex-1 px-2 py-3 space-y-0.5">
-          {NAV_ITEMS.map((item) => (
-            <button
-              key={item.id}
-              type="button"
-              onClick={() => { onNavigate(item.id); setSidebarOpen(false); }}
-              className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-                currentPage === item.id
-                  ? "bg-indigo-600 text-white"
-                  : "text-gray-400 hover:text-white hover:bg-gray-800"
-              }`}
-            >
-              {item.icon}
-              {item.label}
-            </button>
-          ))}
+        <nav className="flex-1 px-2 py-3 space-y-0.5 overflow-y-auto">
+          {renderNav(true)}
         </nav>
       </aside>
 
@@ -211,7 +339,7 @@ export function AdminShell({ user, currentPage, onNavigate, onLogout, children }
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
             </svg>
           </button>
-          <h1 className="text-sm font-semibold text-white">{currentNav?.label ?? "管理后台"}</h1>
+          <h1 className="text-sm font-semibold text-white">{currentLabel}</h1>
         </header>
 
         {/* Page content */}

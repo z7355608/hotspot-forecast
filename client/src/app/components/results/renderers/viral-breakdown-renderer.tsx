@@ -88,26 +88,86 @@ function TagPill({ label, color = "gray" }: { label: string; color?: string }) {
 }
 
 /* ------------------------------------------------------------------ */
+/*  Light Fallback View — schema 不匹配时的概要视图                      */
+/* ------------------------------------------------------------------ */
+function LightBreakdownView({ result }: ArtifactRendererProps) {
+  const proofContents = result.supportingContents.slice(0, 3);
+  return (
+    <div className="space-y-4">
+      <p className="text-xs text-gray-500">展示概要视图（未检测到完整爆款拆解数据）</p>
+
+      <TaskSection title="像素级复刻 SOP" description="值得抄的点 + 要避开的坑 + 迁移步骤">
+        <div className="grid gap-3 lg:grid-cols-3">
+          <div className="rounded-2xl bg-emerald-50 px-4 py-4">
+            <div className="mb-2 text-xs font-medium text-emerald-700">✅ 值得抄</div>
+            <ul className="space-y-1.5">
+              {result.bestFor.map((item, i) => (
+                <li key={i} className="flex gap-2 text-sm text-emerald-900">
+                  <span className="mt-0.5 shrink-0 text-emerald-400">✓</span>
+                  <span>{item}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+          <div className="rounded-2xl bg-amber-50 px-4 py-4">
+            <div className="mb-2 text-xs font-medium text-amber-700">⚠️ 迁移时要调整</div>
+            <ul className="space-y-1.5">
+              {result.notFor.map((item, i) => (
+                <li key={i} className="flex gap-2 text-sm text-amber-900">
+                  <span className="mt-0.5 shrink-0 text-amber-400">!</span>
+                  <span>{item}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+          <div className="rounded-2xl bg-blue-50 px-4 py-4">
+            <div className="mb-2 text-xs font-medium text-blue-700">🗺 迁移步骤</div>
+            <ol className="space-y-1.5">
+              {result.continueIf.map((step, i) => (
+                <li key={i} className="flex gap-2 text-sm text-blue-900">
+                  <span className="shrink-0 font-medium text-blue-400">{i + 1}.</span>
+                  <span>{step}</span>
+                </li>
+              ))}
+            </ol>
+          </div>
+        </div>
+      </TaskSection>
+
+      {proofContents.length > 0 && (
+        <TaskSection title="结构证明样本" description="进入这次拆解链的真实样本">
+          <div className="grid gap-3 lg:grid-cols-3">
+            {proofContents.map((item) => (
+              <div
+                key={item.contentId}
+                className="rounded-2xl border border-gray-100 bg-gray-50 px-4 py-4"
+              >
+                <div className="line-clamp-2 break-words text-sm text-gray-900">{item.title}</div>
+                <div className="mt-3 rounded-xl bg-white px-3 py-2 text-xs leading-relaxed text-gray-600">
+                  {item.structureSummary}
+                </div>
+                <p className="mt-3 break-words text-xs leading-relaxed text-gray-500">
+                  {item.whyIncluded}
+                </p>
+              </div>
+            ))}
+          </div>
+        </TaskSection>
+      )}
+    </div>
+  );
+}
+
+/* ------------------------------------------------------------------ */
 /*  Renderer Component                                                  */
 /* ------------------------------------------------------------------ */
 function ViralBreakdownBody({ result }: ArtifactRendererProps) {
-  const raw = result.taskPayload.kind === "viral_breakdown" ? result.taskPayload : null;
+  if (result.taskPayload.kind !== "viral_breakdown") {
+    return <LightBreakdownView result={result} />;
+  }
+  const payload = result.taskPayload;
 
-  const payload = raw ?? {
-    kind: "viral_breakdown" as const,
-    breakdownSummary: result.summary,
-    copyPoints: result.bestFor,
-    avoidPoints: result.notFor,
-    migrationSteps: result.continueIf,
-    proofContents: result.supportingContents.slice(0, 3).map((item) => ({
-      contentId: item.contentId,
-      title: item.title,
-      structureSummary: item.structureSummary,
-      whyIncluded: item.whyIncluded,
-    })),
-  };
-
-  const hasRichData = !!(payload.overallScore || payload.hookAnalysis || payload.rhythmAnalysis);
+  const hasRichData = !!(payload.overallScore != null && payload.hookAnalysis && payload.rhythmAnalysis);
 
   return (
     <div className="space-y-4">
@@ -513,6 +573,7 @@ registerArtifactRenderer({
   artifactType: "breakdown_sheet",
   taskIntent: "viral_breakdown",
   component: ViralBreakdownBody,
+  validatePayload: (r) => r.taskPayload?.kind === "viral_breakdown",
   getHeroMetrics,
   getDeepDiveConfig: getDeepDive,
   getCtaActions,

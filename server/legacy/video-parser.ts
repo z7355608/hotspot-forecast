@@ -15,6 +15,7 @@
  */
 
 import { createModuleLogger } from "./logger.js";
+import { recognizeAudio } from "../services/volc-asr.js";
 
 const log = createModuleLogger("VideoParser");
 import { execFile } from "node:child_process";
@@ -182,59 +183,54 @@ export async function parseVideo(input: string): Promise<ParsedVideoInfo> {
 
 /**
  * 从视频链接提取音频并进行 ASR 语音识别
- * 流程：解析链接 → 下载视频 → ffmpeg 提取音频 → manus-speech-to-text → 返回文案
+ *
+ * 现状：直接走火山引擎大模型录音文件极速版（HTTP API），无需本地下载/ffmpeg/CLI。
+ * 优先使用 parseVideo 返回的 audioUrl（更小更快），audioUrl 缺失时回退到 videoUrl。
+ *
+ * 历史：曾经走 download → ffmpeg → manus-speech-to-text CLI，但该 CLI 在非 Manus 环境
+ * 没有安装，导致拆解流水线 ASR 必失败。已收敛到 services/volc-asr.ts 这一条 ASR 出口。
  */
 export async function transcribeVideo(input: string): Promise<TranscribeResult> {
-  // 第一步：解析视频信息
   const videoInfo = await parseVideo(input);
 
   if (!videoInfo.ok) {
     return { ok: false, error: videoInfo.error, transcript: "" };
   }
 
-  const videoUrl = videoInfo.videoUrl;
-  if (!videoUrl) {
-    return { ok: false, error: "未找到可用的视频地址", transcript: "", videoInfo };
+  // 优先使用音频 URL（更小更快），其次回退到视频 URL
+  const mediaUrl = videoInfo.audioUrl || videoInfo.videoUrl;
+  if (!mediaUrl) {
+    return {
+      ok: false,
+      error: "未找到可用的音频或视频地址",
+      transcript: "",
+      videoInfo,
+    };
   }
 
-  log.info(`开始 ASR 转录: ${videoInfo.title}`);
-
-  // 创建临时目录
-  const tmpDir = join(tmpdir(), "hotspot-video-asr");
-  if (!existsSync(tmpDir)) {
-    mkdirSync(tmpDir, { recursive: true });
-  }
-
-  const timestamp = Date.now();
-  const videoFile = join(tmpDir, `video-${timestamp}.mp4`);
-  const audioFile = join(tmpDir, `audio-${timestamp}.mp3`);
+  log.info(`开始 ASR 转录（火山引擎）: ${videoInfo.title}`);
 
   try {
-    // 第二步：下载视频（最多 50MB，超过截断）
-    await downloadFile(videoUrl, videoFile, DOWNLOAD_TIMEOUT_MS);
-
-    // 第三步：用 ffmpeg 提取音频（前 5 分钟，短视频足够）
-    await extractAudio(videoFile, audioFile);
-
-    // 第四步：调用 manus-speech-to-text 进行 ASR
-    const { stdout } = await execFileAsync(
-      "manus-speech-to-text",
-      [audioFile],
-      { timeout: 120_000 },
-    );
-
-    const transcript = stdout.trim();
-    log.info(`ASR 完成，字符数: ${transcript.length}`);
-
-    return { ok: true, transcript, videoInfo };
+    const asr = await recognizeAudio(mediaUrl);
+    if (!asr.ok || !asr.text) {
+      return {
+        ok: false,
+        error: asr.error ?? "ASR 未返回文本",
+        transcript: "",
+        videoInfo,
+      };
+    }
+    log.info(`ASR 完成，字符数: ${asr.text.length}`);
+    return { ok: true, transcript: asr.text, videoInfo };
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
     log.error({ err: msg }, `ASR 失败`);
-    return { ok: false, error: `语音识别失败: ${msg}`, transcript: "", videoInfo };
-  } finally {
-    // 清理临时文件
-    cleanupFile(videoFile);
-    cleanupFile(audioFile);
+    return {
+      ok: false,
+      error: `语音识别失败: ${msg}`,
+      transcript: "",
+      videoInfo,
+    };
   }
 }
 

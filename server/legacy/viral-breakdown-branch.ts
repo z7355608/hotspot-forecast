@@ -13,8 +13,9 @@ const log = createModuleLogger("ViralBreakdownBranch");
 
 import { randomUUID } from "node:crypto";
 import { parseVideo, transcribeVideo, type ParsedVideoInfo } from "./video-parser.js";
-import { invokeLLM } from "../_core/llm.js";
 import { callLLM } from "./llm-gateway.js";
+import { resolveSystemPrompt } from "./prompt-engine.js";
+import { fetchSingleVideoComments, type SingleVideoCommentInsight } from "./comment-collector.js";
 import { buildPredictionArtifacts } from "../../client/src/app/store/prediction-engine.js";
 import {
   buildAgentContract,
@@ -119,9 +120,32 @@ function extractVideoUrl(draft: PredictionRequestDraft): string | null {
 
 /* ── 判断是否应该走爆款拆解分支 ── */
 
-export function shouldUseViralBreakdownBranch(draft: PredictionRequestDraft): boolean {
+export function shouldUseViralBreakdownBranch(
+  draft: PredictionRequestDraft,
+  intentResult?: { taskIntent: string } | null,
+  parsedInput?: { kind: string } | null,
+): boolean {
+  // 模板/技能强路由（最高优先级，向后兼容）
   if (draft.entryTemplateId === "viral-breakdown") return true;
   if (draft.selectedSkillId?.includes("breakdown")) return true;
+
+  // 是否含有视频 URL（prompt 文本中或 evidenceItems 中）
+  const hasVideoUrl =
+    /https?:\/\/[^\s]+/.test(draft.prompt) ||
+    draft.evidenceItems.some((item) => /^https?:\/\//.test(item.source));
+
+  // 意图明确且含 URL → 自动走拆解分支
+  if (
+    (intentResult?.taskIntent === "viral_breakdown" ||
+      intentResult?.taskIntent === "breakdown_sample") &&
+    hasVideoUrl
+  ) {
+    return true;
+  }
+
+  // parseInput 识别为视频链接 → 自动走拆解分支
+  if (parsedInput?.kind === "url_video" && hasVideoUrl) return true;
+
   return false;
 }
 
@@ -244,12 +268,22 @@ export async function runViralBreakdownBranch(
       ? `\n\n【口播文案（ASR 转录）】\n${transcript}`
       : "\n\n（未能获取到口播文案，请根据封面和元数据推断）";
 
+    // 从 prompt_templates 加载多模态拆解 system prompt（3 个 LLM 调用点共用）
+    const systemPromptText = await resolveSystemPrompt(
+      "viral-breakdown-multimodal-v1",
+      "doubao",
+      {},
+      BREAKDOWN_SYSTEM_PROMPT,
+    );
+
     // 尝试使用多模态（封面图 + 口播文案 + 文本）
     if (videoInfo.coverUrl) {
       try {
-        const resp = await invokeLLM({
+        // forge 弃用 → apollo(P0-A);apollo=gemini-3.1-pro-preview 支持 image + json_schema
+        const resp = await callLLM({
+          modelId: "apollo",
           messages: [
-            { role: "system", content: BREAKDOWN_SYSTEM_PROMPT },
+            { role: "system", content: systemPromptText },
             {
               role: "user",
               content: [
@@ -258,7 +292,7 @@ export async function runViralBreakdownBranch(
               ],
             },
           ],
-          response_format: {
+          responseFormat: {
             type: "json_schema",
             json_schema: {
               name: "viral_breakdown",
@@ -292,16 +326,14 @@ export async function runViralBreakdownBranch(
             },
           },
         });
-        const content = resp.choices[0]?.message?.content;
-        const contentStr = typeof content === "string" ? content : JSON.stringify(content);
-        breakdownResult = JSON.parse(contentStr ?? "{}");
+        breakdownResult = JSON.parse(resp.content || "{}");
         log.info("多模态 LLM 拆解成功");
       } catch (mmErr) {
         log.warn({ err: mmErr }, "多模态 LLM 拆解失败，降级到纯文本模式");
         const textResp = await callLLM({
           modelId: "doubao",
           messages: [
-            { role: "system", content: BREAKDOWN_SYSTEM_PROMPT },
+            { role: "system", content: systemPromptText },
             { role: "user", content: `请拆解以下视频：\n\n${videoMeta}${transcriptSection}\n封面图链接：${videoInfo.coverUrl}${userContext}` },
           ],
           maxTokens: 4096,
@@ -313,7 +345,7 @@ export async function runViralBreakdownBranch(
       const textResp = await callLLM({
         modelId: "doubao",
         messages: [
-          { role: "system", content: BREAKDOWN_SYSTEM_PROMPT },
+          { role: "system", content: systemPromptText },
           { role: "user", content: `请拆解以下视频：\n\n${videoMeta}${transcriptSection}${userContext}` },
         ],
         maxTokens: 4096,

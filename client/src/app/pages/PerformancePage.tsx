@@ -9,7 +9,6 @@ import {
   BarChart3,
   TrendingUp,
   TrendingDown,
-  Eye,
   Heart,
   MessageCircle,
   Share2,
@@ -657,9 +656,8 @@ export function PerformancePage() {
                       {latestPerf && (
                         <div className="mt-3 space-y-2">
                           {/* 核心数据网格 */}
-                          <div className="grid grid-cols-5 gap-2">
+                          <div className="grid grid-cols-4 gap-2">
                             {[
-                              { icon: <Eye className="h-3.5 w-3.5" />, label: "播放", value: latestPerf.viewCount, color: "text-blue-600" },
                               { icon: <Heart className="h-3.5 w-3.5" />, label: "点赞", value: latestPerf.likeCount, color: "text-red-500" },
                               { icon: <MessageCircle className="h-3.5 w-3.5" />, label: "评论", value: latestPerf.commentCount, color: "text-amber-600" },
                               { icon: <Share2 className="h-3.5 w-3.5" />, label: "分享", value: latestPerf.shareCount, color: "text-green-600" },
@@ -679,17 +677,10 @@ export function PerformancePage() {
                             const first = item.performanceData[0];
                             const last = item.performanceData[item.performanceData.length - 1];
                             const likeGrowth = last.likeCount - first.likeCount;
-                            const viewGrowth = last.viewCount - first.viewCount;
                             const commentGrowth = last.commentCount - first.commentCount;
                             return (
                               <div className="flex items-center gap-3 rounded-lg bg-gradient-to-r from-blue-50/50 to-green-50/50 px-3 py-2">
                                 <span className="text-[10px] font-medium text-gray-500">增长趋势</span>
-                                {viewGrowth > 0 && (
-                                  <span className="flex items-center gap-0.5 text-xs text-blue-600">
-                                    <TrendingUp className="h-3 w-3" />
-                                    播放 +{formatNumber(viewGrowth)}
-                                  </span>
-                                )}
                                 {likeGrowth > 0 && (
                                   <span className="flex items-center gap-0.5 text-xs text-red-500">
                                     <TrendingUp className="h-3 w-3" />

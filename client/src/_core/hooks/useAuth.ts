@@ -5,6 +5,7 @@ import { useCallback, useEffect, useMemo } from "react";
 type UseAuthOptions = {
   redirectOnUnauthenticated?: boolean;
   redirectPath?: string;
+  mode?: "redirect" | "modal";
 };
 
 export function useAuth(options?: UseAuthOptions) {
@@ -16,12 +17,15 @@ export function useAuth(options?: UseAuthOptions) {
     }
   );
 
+  const shouldRedirect =
+    options?.mode === "redirect" || options?.redirectOnUnauthenticated === true;
+
   // Redirect to login page when auth check completes and user is not authenticated
   useEffect(() => {
-    if (options?.redirectOnUnauthenticated && !loading && !user) {
+    if (shouldRedirect && !loading && !user) {
       window.location.href = getLoginUrl();
     }
-  }, [options?.redirectOnUnauthenticated, loading, user]);
+  }, [shouldRedirect, loading, user]);
 
   const logoutMutation = trpc.auth.logout.useMutation({
     onSuccess: () => {

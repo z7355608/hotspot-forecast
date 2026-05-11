@@ -7,6 +7,7 @@
  */
 
 import type { IncomingMessage, ServerResponse } from "node:http";
+import { randomUUID } from "node:crypto";
 import { nowIso, buildAppLink, notifySafely, readJsonBody, sendJson } from "../http-server-utils.js";
 import { readConnectorStore, resolveCookieSecret } from "../storage.js";
 import { runLivePrediction, type ProgressEvent } from "../live-predictions.js";
@@ -17,6 +18,12 @@ import {
   recordAnalysisTiming,
   getTimingStats,
 } from "../prediction-cache.js";
+import {
+  createTask,
+  appendProgress,
+  completeTask,
+  failTask,
+} from "../../services/prediction-tasks/task-runner.js";
 
 export async function handlePreparePredictionRequest(
   request: IncomingMessage,
@@ -156,6 +163,16 @@ export async function handleRunLivePredictionStream(
     ? (payload.connectedPlatforms as string[])
     : [];
 
+  // ── 任务持久化(支持「切走再回来」恢复,详见 schema-v14)──
+  // 客户端可通过 x-task-id header 传 taskId(便于本地 localStorage 存活做 resume),
+  // 不传则 server 生成。第一个 SSE 事件 task 把 taskId 回吐给客户端。
+  const headerTaskId = request.headers["x-task-id"];
+  const clientTaskId =
+    typeof headerTaskId === "string" && headerTaskId.length > 0 && headerTaskId.length <= 64
+      ? headerTaskId
+      : null;
+  const taskId = clientTaskId ?? randomUUID();
+
   // ── SSE 响应头 ──
   // 禁用 socket 超时，防止 Node.js 默认 2 分钟超时断开 SSE 连接
   if (request.socket) {
@@ -187,6 +204,9 @@ export async function handleRunLivePredictionStream(
     }
   };
 
+  // ── 把 taskId 第一时间回吐给客户端,客户端持久化到 localStorage 用于 resume ──
+  writeSSEEvent("task", { taskId });
+
   // ── 缓存查询 ──
   const cacheKey = buildCacheKey(prompt, connectedPlatforms);
   const cached = await getCachedPrediction(cacheKey);
@@ -210,15 +230,25 @@ export async function handleRunLivePredictionStream(
   }
 
   // ── 实时分析 + 进度推送 ──
+  // 创建任务行;失败不阻断(降级:即使持久化失败,SSE 仍可工作,只是无法 resume)
+  await createTask(taskId, userOpenId, prompt, payload).catch((err) => {
+    // log 在 task-runner 内部
+    void err;
+  });
+
   const t0 = Date.now();
   const onProgress = (event: ProgressEvent) => {
     writeSSEEvent("progress", event);
+    // tee 到 DB(节流 250ms,失败不阻断 SSE 推送)
+    appendProgress(taskId, event);
   };
 
   try {
     const result = await runLivePrediction(payload as never, onProgress);
     const totalMs = Date.now() - t0;
-    writeSSEEvent("done", result);
+    // 持久化最终结果(在 SSE done 之前,确保客户端切回也能拿到)
+    await completeTask(taskId, result as Record<string, unknown>).catch(() => {});
+    writeSSEEvent("done", { ...result, taskId });
     clearInterval(heartbeatTimer);
     // Small delay to ensure done event is flushed before closing
     await new Promise((r) => setTimeout(r, 50));
@@ -251,7 +281,8 @@ export async function handleRunLivePredictionStream(
   } catch (error) {
     const totalMs = Date.now() - t0;
     const message = error instanceof Error ? error.message : "真实数据分析失败。";
-    writeSSEEvent("error", { message });
+    await failTask(taskId, message).catch(() => {});
+    writeSSEEvent("error", { message, taskId });
     clearInterval(heartbeatTimer);
     await new Promise((r) => setTimeout(r, 50));
     response.end();

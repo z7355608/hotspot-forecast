@@ -12,7 +12,8 @@ import { createModuleLogger } from "./logger.js";
 
 const log = createModuleLogger("TopicStrategy");
 import { randomUUID } from "node:crypto";
-import { invokeLLM } from "../_core/llm";
+import { callLLM } from "./llm-gateway.js";
+import { stripJsonFences } from "./json-extract.js";
 import { getTikHub, postTikHub } from "./tikhub";
 import { llmExtractFromPayload } from "./llm-extract";
 import { runWatchTaskWithFallback } from "./watch-runtime";
@@ -372,7 +373,8 @@ async function generateSearchKeywords(input: TopicStrategyInput): Promise<Search
   // LLM 扩展关键词（如果有用户补充 prompt）
   if (input.userPrompt) {
     try {
-      const resp = await invokeLLM({
+      const resp = await callLLM({
+      modelId: "doubao",
         messages: [
           {
             role: "system",
@@ -391,7 +393,7 @@ async function generateSearchKeywords(input: TopicStrategyInput): Promise<Search
             content: `赛道：${input.track}\n补充描述：${input.userPrompt}`,
           },
         ],
-        response_format: {
+        responseFormat: {
           type: "json_schema",
           json_schema: {
             name: "keywords",
@@ -411,9 +413,7 @@ async function generateSearchKeywords(input: TopicStrategyInput): Promise<Search
           },
         },
       });
-      const rawContent = resp.choices[0].message.content;
-      const contentStr = typeof rawContent === "string" ? rawContent : JSON.stringify(rawContent);
-      const parsed = JSON.parse(contentStr ?? "{}");
+      const parsed = JSON.parse(resp.content || "{}");
       const extraKws: string[] = parsed.keywords ?? [];
       for (const platform of input.platforms) {
         for (const kw of extraKws.slice(0, 1)) {
@@ -555,9 +555,10 @@ async function fetchHotSeed(platform: SupportedPlatform, track: string): Promise
         return countHotSeedMatches(resp.payload, track);
       }
     } else if (platform === "kuaishou") {
+      // 2026-04-29 fetch_hot_search_list 已 404；改用 fetch_kuaishou_hot_list_v2
       const resp = await getTikHub<Record<string, unknown>>(
-        "/api/v1/kuaishou/web/fetch_hot_search_list",
-        {},
+        "/api/v1/kuaishou/web/fetch_kuaishou_hot_list_v2",
+        { board_type: "1" },
       );
       if (resp.ok && resp.payload) {
         return countHotSeedMatches(resp.payload, track);
@@ -698,7 +699,7 @@ async function stage2GenerateDirections(
     .slice(0, 10);
 
   const contentSummary = topContents.map((c) =>
-    `[${PLATFORM_NAMES[c.platform]}] ${c.title} | 点赞:${c.likeCount ?? "?"} 播放:${c.viewCount ?? "?"} 作者粉丝:${c.authorFollowerCount ?? "?"}`
+    `[${PLATFORM_NAMES[c.platform]}] ${c.title} | 点赞:${c.likeCount ?? "?"} 评论:${c.commentCount ?? "?"} 收藏:${c.collectCount ?? "?"} 分享:${c.shareCount ?? "?"} 作者粉丝:${c.authorFollowerCount ?? "?"}`
   ).join("\n");
 
   const accountSummary = topAccounts.map((a) =>
@@ -761,67 +762,20 @@ ${historicalFeedback ? `
 ${historicalFeedback}` : ""}`;
 
   try {
-    const resp = await invokeLLM({
+    // forge 弃用 → doubao(P0-A);doubao 不支持 response_format,用 stripJsonFences 容错
+    const resp = await callLLM({
+      modelId: "doubao",
       messages: [
-        { role: "system", content: "你是一个短视频选题策略专家，只返回 JSON 格式的结构化数据。" },
+        {
+          role: "system",
+          content:
+            "你是一个短视频选题策略专家。严格只输出 JSON 对象,顶层包含 strategySummary(string,100字内) 和 directions(数组),每个 direction 包含 directionName/directionLogic/targetStage/testPlan/trafficPotential(int 1-5)/productionCost(int 1-5)/competitionLevel(int 1-5)/priorityRank(int)/executableTopics(数组,每项 title/angle/hookType/estimatedDuration)。**不要 markdown 围栏,不要解释性文字**。",
+        },
         { role: "user", content: prompt },
       ],
-      response_format: {
-        type: "json_schema",
-        json_schema: {
-          name: "topic_strategy_directions",
-          strict: true,
-          schema: {
-            type: "object",
-            properties: {
-              strategySummary: { type: "string", description: "策略总结（100字以内）" },
-              directions: {
-                type: "array",
-                items: {
-                  type: "object",
-                  properties: {
-                    directionName: { type: "string" },
-                    directionLogic: { type: "string" },
-                    targetStage: { type: "string" },
-                    testPlan: { type: "string" },
-                    trafficPotential: { type: "integer" },
-                    productionCost: { type: "integer" },
-                    competitionLevel: { type: "integer" },
-                    priorityRank: { type: "integer" },
-                    executableTopics: {
-                      type: "array",
-                      items: {
-                        type: "object",
-                        properties: {
-                          title: { type: "string" },
-                          angle: { type: "string" },
-                          hookType: { type: "string" },
-                          estimatedDuration: { type: "string" },
-                        },
-                        required: ["title", "angle", "hookType", "estimatedDuration"],
-                        additionalProperties: false,
-                      },
-                    },
-                  },
-                  required: [
-                    "directionName", "directionLogic", "targetStage", "testPlan",
-                    "trafficPotential", "productionCost", "competitionLevel", "priorityRank",
-                    "executableTopics",
-                  ],
-                  additionalProperties: false,
-                },
-              },
-            },
-            required: ["strategySummary", "directions"],
-            additionalProperties: false,
-          },
-        },
-      },
     });
 
-    const rawContent2 = resp.choices[0].message.content;
-    const contentStr2 = typeof rawContent2 === "string" ? rawContent2 : JSON.stringify(rawContent2);
-    const parsed = JSON.parse(contentStr2 ?? "{}");
+    const parsed = JSON.parse(stripJsonFences(resp.content || "{}"));
     const directions: TopicDirection[] = (parsed.directions ?? []).map((d: TopicDirection, i: number) => ({
       ...d,
       priorityRank: d.priorityRank ?? i + 1,
@@ -1052,7 +1006,8 @@ async function stage4CrossIndustry(
   ).join("\n");
 
   try {
-    const resp = await invokeLLM({
+    const resp = await callLLM({
+      modelId: "doubao",
       messages: [
         {
           role: "system",
@@ -1064,7 +1019,7 @@ async function stage4CrossIndustry(
           content: `目标赛道：${input.track}\n目标账号阶段：${STAGE_LABELS[input.accountStage] ?? input.accountStage}\n\n低粉爆款样本：\n${sampleContents}`,
         },
       ],
-      response_format: {
+      responseFormat: {
         type: "json_schema",
         json_schema: {
           name: "cross_industry_insights",
@@ -1108,9 +1063,7 @@ async function stage4CrossIndustry(
       },
     });
 
-    const rawContent4 = resp.choices[0].message.content;
-    const contentStr4 = typeof rawContent4 === "string" ? rawContent4 : JSON.stringify(rawContent4);
-    const parsed = JSON.parse(contentStr4 ?? "{}");
+    const parsed = JSON.parse(resp.content || "{}");
     const insights: CrossIndustryInsight[] = parsed.insights ?? [];
 
     // 持久化
@@ -1436,7 +1389,8 @@ async function batchSemanticMatch(
   const truncatedTitles = contentTitles.slice(0, maxTitles);
 
   try {
-    const resp = await invokeLLM({
+    const resp = await callLLM({
+      modelId: "doubao",
       messages: [
         {
           role: "system",
@@ -1455,7 +1409,7 @@ ${truncatedTitles.map((t, i) => `${i}. ${t}`).join("\n")}
 对每个方向，返回与之相关的标题编号数组。`,
         },
       ],
-      response_format: {
+      responseFormat: {
         type: "json_schema",
         json_schema: {
           name: "semantic_match",
@@ -1484,9 +1438,7 @@ ${truncatedTitles.map((t, i) => `${i}. ${t}`).join("\n")}
       },
     });
 
-    const rawContent = resp.choices[0].message.content;
-    const contentStr = typeof rawContent === "string" ? rawContent : JSON.stringify(rawContent);
-    const parsed = JSON.parse(contentStr ?? "{}");
+    const parsed = JSON.parse(resp.content || "{}");
     const result: Record<number, number[]> = {};
     for (const m of parsed.matches ?? []) {
       const validIndices = (m.matchedTitleIndices ?? [])
@@ -1550,7 +1502,8 @@ async function evolveDirection(
       parentDirection.directionName,
     ).catch(() => "");
 
-    const resp = await invokeLLM({
+    const resp = await callLLM({
+      modelId: "doubao",
       messages: [
         {
           role: "system",
@@ -1562,7 +1515,7 @@ async function evolveDirection(
           content: `父方向：${parentDirection.directionName}\n核心逻辑：${parentDirection.directionLogic}\n赛道：${input.track}\n账号阶段：${STAGE_LABELS[input.accountStage] ?? input.accountStage}${dirFeedback}`,
         },
       ],
-      response_format: {
+      responseFormat: {
         type: "json_schema",
         json_schema: {
           name: "evolved_directions",
@@ -1614,9 +1567,7 @@ async function evolveDirection(
       },
     });
 
-    const rawContent5 = resp.choices[0].message.content;
-    const contentStr5 = typeof rawContent5 === "string" ? rawContent5 : JSON.stringify(rawContent5);
-    const parsed = JSON.parse(contentStr5 ?? "{}");
+    const parsed = JSON.parse(resp.content || "{}");
     return (parsed.directions ?? []).slice(0, 2);
   } catch (err) {
     log.error({ err: err }, "evolveDirection failed");

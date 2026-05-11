@@ -62,6 +62,7 @@ export function normalizePlan(plan: MembershipPlan): "free" | "plus" | "pro" {
   return "free";
 }
 export type AIModelId = "doubao" | "gpt54" | "claude46";
+export const DEFAULT_AI_MODEL_ID: AIModelId = "gpt54";
 
 export interface AIModelOption {
   id: AIModelId;
@@ -83,7 +84,7 @@ export const AI_MODELS: AIModelOption[] = [
   },
   {
     id: "gpt54",
-    name: "GPT-5.4",
+    name: "GPT-5.5",
     badge: "1.5x",
     multiplier: 1.5,
     requiredPlan: "plus",
@@ -310,15 +311,6 @@ const BASE_CONNECTORS = [
     connected: false,
     lastSync: "未连接",
     dataPoints: "热榜、用户搜索、笔记详情、评论",
-  },
-  {
-    id: "kuaishou",
-    name: "快手",
-    category: "短视频",
-    color: "#FF6600",
-    connected: false,
-    lastSync: "未连接",
-    dataPoints: "搜索、热榜、作品详情、用户信息",
   },
 ];
 
@@ -1091,30 +1083,27 @@ export function createId(prefix = "r") {
 }
 
 export function getModelOption(modelId: AIModelId) {
-  return AI_MODELS.find((item) => item.id === modelId) ?? AI_MODELS[0];
+  return (
+    AI_MODELS.find((item) => item.id === modelId) ??
+    AI_MODELS.find((item) => item.id === DEFAULT_AI_MODEL_ID) ??
+    AI_MODELS[0]
+  );
 }
 
 export function canUseModel(
   membershipPlan: MembershipPlan,
   modelId: AIModelId,
 ) {
-  const option = getModelOption(modelId);
-  const effective = normalizePlan(membershipPlan);
-
-  if (option.requiredPlan === "free") return true;
-  if (option.requiredPlan === "plus") {
-    return effective === "plus" || effective === "pro";
-  }
-  return effective === "pro";
+  void membershipPlan;
+  void modelId;
+  return true;
 }
 
 export function getHighestAvailableModel(
   membershipPlan: MembershipPlan,
 ): AIModelId {
-  const effective = normalizePlan(membershipPlan);
-  if (effective === "pro") return "claude46";
-  if (effective === "plus") return "gpt54";
-  return "doubao";
+  void membershipPlan;
+  return DEFAULT_AI_MODEL_ID;
 }
 
 export function getModelRequiredPlanLabel(modelId: AIModelId) {
@@ -1426,7 +1415,7 @@ export function createBreakdownSampleResultRecord(
     playCount: sample.playCount,
     trackTags: sample.trackTags,
     burstReasons: sample.burstReasons,
-    breakdownSummary: `这条 ${track} 样本的核心竞争力在于「${sample.burstReasons[0]} × ${sample.burstReasons[1] ?? "明确结果"}」的结构组合。${sample.playCount}，互动粉丝比 ${sample.anomaly}倍，适合借鉴的是表达框架和叙事顺序，而不是直接复制素材。`,
+    breakdownSummary: `这条 ${track} 样本的核心竞争力在于「${sample.burstReasons[0]} × ${sample.burstReasons[1] ?? "明确结果"}」的结构组合。互动数据 ${sample.playCount}，互动粉丝比 ${sample.anomaly}倍，适合借鉴的是表达框架和叙事顺序，而不是直接复制素材。`,
     copyPoints: [
       `保留「${sample.burstReasons[0]}」这个爆因，把内容切成更适合你账号的 ${track} 场景`,
       `标题使用"明确对象 + 明确结果"的结构，避免抽象概念`,
@@ -1637,7 +1626,7 @@ export function createBreakdownSampleResultRecord(
     whyNowItems: [
       {
         sourceLabel: "低粉爆款样本",
-        fact: `${sample.platform} 上 ${sample.fansLabel} 账号实现 ${sample.playCount}`,
+        fact: `${sample.platform} 上 ${sample.fansLabel} 账号互动数据达到 ${sample.playCount}`,
         inference: `互动粉丝比 ${sample.anomaly}倍，说明内容结构本身具备传播力，与账号体量关系不大`,
         userImpact: "新号或小号可以直接借鉴这个结构，降低冷启动风险",
         tone: "positive",

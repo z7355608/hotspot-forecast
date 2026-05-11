@@ -1,4 +1,4 @@
-import { int, mediumtext, mysqlEnum, mysqlTable, text, timestamp, varchar } from "drizzle-orm/mysql-core";
+import { datetime, int, mediumtext, mysqlEnum, mysqlTable, text, timestamp, varchar } from "drizzle-orm/mysql-core";
 
 /**
  * Core user table backing auth flow.
@@ -299,3 +299,78 @@ export const dailyCheckins = mysqlTable("daily_checkins", {
 
 export type DailyCheckinItem = typeof dailyCheckins.$inferSelect;
 export type InsertDailyCheckinItem = typeof dailyCheckins.$inferInsert;
+
+/**
+ * 订单表 —— 记录每一笔购买意图，为后续接入真实支付网关预留结构
+ * status: pending(待支付) → paid(已支付) / failed / refunded / cancelled
+ */
+export const orders = mysqlTable("orders", {
+  id: varchar("id", { length: 64 }).primaryKey(),
+  userOpenId: varchar("user_open_id", { length: 64 }).notNull(),
+  orderNo: varchar("order_no", { length: 64 }).notNull().unique(),
+  type: mysqlEnum("type", ["membership", "credit_purchase"]).notNull(),
+  /** 会员订单：plus / pro */
+  plan: varchar("plan", { length: 32 }),
+  /** 会员订单：monthly_once / monthly_auto / yearly */
+  billingCycle: varchar("billing_cycle", { length: 32 }),
+  /** 积分包订单：pkg_100 等 */
+  packageId: varchar("package_id", { length: 32 }),
+  /** 购买后发放积分数 */
+  credits: int("credits").default(0).notNull(),
+  /** 应付金额（分） */
+  amountCents: int("amount_cents").default(0).notNull(),
+  status: mysqlEnum("status", ["pending", "paid", "failed", "refunded", "cancelled"]).default("pending").notNull(),
+  /** 支付渠道：wechat / alipay / apple_pay / mock */
+  paymentMethod: varchar("payment_method", { length: 32 }),
+  /** 第三方支付流水号 */
+  paymentTradeNo: varchar("payment_trade_no", { length: 128 }),
+  paidAt: datetime("paid_at"),
+  /** 订单有效期（未支付超时） */
+  expiredAt: datetime("expired_at").notNull(),
+  description: varchar("description", { length: 256 }).notNull().default(""),
+  createdAt: datetime("created_at").notNull(),
+  updatedAt: datetime("updated_at").notNull(),
+});
+
+export type OrderItem = typeof orders.$inferSelect;
+export type InsertOrderItem = typeof orders.$inferInsert;
+
+/**
+ * 用户登录会话表 —— 用于设置页"登录设备管理"展示与远程登出。
+ * 每次成功登录写一条；JWT payload 中携带 sessionId，
+ * 鉴权时用 sessionId 校验未被 revoke。
+ */
+export const userSessions = mysqlTable("user_sessions", {
+  id: int("id").autoincrement().primaryKey(),
+  userOpenId: varchar("userOpenId", { length: 64 }).notNull(),
+  /** 来访 user-agent 原文（截断 512） */
+  userAgent: varchar("userAgent", { length: 512 }),
+  /** 来访 IP（v4/v6 均可） */
+  ip: varchar("ip", { length: 64 }),
+  /** 登录方式：phone / oauth / etc. */
+  loginMethod: varchar("loginMethod", { length: 32 }),
+  /** 最近活跃时间 */
+  lastActiveAt: timestamp("lastActiveAt").defaultNow().notNull(),
+  /** 被远程下线时间，NULL 表示仍有效 */
+  revokedAt: timestamp("revokedAt"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type UserSessionItem = typeof userSessions.$inferSelect;
+export type InsertUserSessionItem = typeof userSessions.$inferInsert;
+
+/**
+ * 用户偏好表 —— 设置页通知开关等持久化项。
+ * 一个用户一行；不存在则按默认值返回。
+ */
+export const userPreferences = mysqlTable("user_preferences", {
+  userOpenId: varchar("userOpenId", { length: 64 }).primaryKey(),
+  /** 接收产品更新通知（站内/邮件） */
+  productUpdates: int("productUpdates").default(1).notNull(),
+  /** 任务完成邮件通知 */
+  taskCompleteEmail: int("taskCompleteEmail").default(1).notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type UserPreferenceItem = typeof userPreferences.$inferSelect;
+export type InsertUserPreferenceItem = typeof userPreferences.$inferInsert;

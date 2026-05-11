@@ -54,8 +54,8 @@ const ALL_PROMPTS: PromptCard[] = [
   },
   {
     id: "p5",
-    label: "学习百万播放的标题套路",
-    prompt: "分析抖音美食赛道近期百万播放视频的标题规律，总结可复用的框架",
+    label: "学习高互动标题套路",
+    prompt: "分析抖音美食赛道近期高互动视频的标题规律，总结可复用的框架",
     tag: "拆解",
     tagColor: "#FF928A",
   },

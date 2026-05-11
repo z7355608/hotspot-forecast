@@ -116,7 +116,7 @@ export const DIMENSION_PRESETS: Record<string, { label: string; icon: typeof Eye
     { label: "新爆款出现", icon: TrendingUp },
   ],
   content_watch: [
-    { label: "播放量/阅读量趋势", icon: Eye },
+    { label: "互动/阅读趋势", icon: Eye },
     { label: "互动数据变化", icon: Activity },
     { label: "评论区舆情", icon: FileText },
     { label: "分享传播链路", icon: Link2 },

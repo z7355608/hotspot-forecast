@@ -5,15 +5,14 @@
 
 import {
   APP_NOW,
+  DEFAULT_AI_MODEL_ID,
   INITIAL_CONNECTORS,
   INITIAL_NOTIFICATION_CHANNELS,
   INITIAL_STATS,
   INITIAL_TRANSACTIONS,
-  canUseModel,
   createId,
   createResultRecord,
   createSeedResults,
-  getHighestAvailableModel,
   type AIModelId,
   type ConnectorRecord,
   type NotificationChannelRecord,
@@ -79,10 +78,11 @@ export async function probeApiHealth(): Promise<ApiHealthState> {
       services: payload.services,
     };
   } catch (error) {
+    const normalized = normalizeApiError(error, API_BACKEND_UNAVAILABLE_MESSAGE);
     return {
       status: "unavailable",
       checkedAt: new Date().toISOString(),
-      message: normalizeApiError(error, API_BACKEND_UNAVAILABLE_MESSAGE),
+      message: normalized,
       services: {
         livePrediction: false,
         notifications: false,
@@ -96,7 +96,7 @@ export function createBaseGlobalState(mode: AppDataMode = DEFAULT_DATA_MODE): Gl
     dataMode: mode,
     credits: 120,
     membershipPlan: "free",
-    selectedModel: "doubao",
+    selectedModel: DEFAULT_AI_MODEL_ID,
     transactions: INITIAL_TRANSACTIONS,
     monthlySpent: INITIAL_STATS.monthlySpent,
     totalEarned: INITIAL_STATS.totalEarned,
@@ -214,13 +214,17 @@ export function normalizeModeState(
         return stored ? { ...item, ...stored } : item;
       })
     : fallback.notificationChannels;
+  const selectedPlatformIds =
+    Array.isArray(parsed?.selectedPlatformIds) && parsed.selectedPlatformIds.length > 0
+      ? parsed.selectedPlatformIds.filter((id) =>
+          fallback.connectors.some((connector) => connector.id === id),
+        )
+      : ["douyin"];
 
   return {
     connectors,
     // 如果旧用户已保存了多平台选择，保留其选择；新用户默认仅抖音
-    selectedPlatformIds: Array.isArray(parsed?.selectedPlatformIds) && parsed.selectedPlatformIds.length > 0
-      ? parsed.selectedPlatformIds
-      : ["douyin"],
+    selectedPlatformIds: selectedPlatformIds.length > 0 ? selectedPlatformIds : ["douyin"],
     notificationChannels,
     results: Array.isArray(parsed?.results) ? parsed.results : fallback.results,
     savedArtifacts: Array.isArray(parsed?.savedArtifacts)
@@ -279,10 +283,7 @@ export function loadPersistedState() {
       const parsed = JSON.parse(legacyRaw) as Partial<AppState>;
       const fallback = createInitialState("mock");
       const membershipPlan = parsed.membershipPlan ?? fallback.membershipPlan;
-      const selectedModel =
-        parsed.selectedModel && canUseModel(membershipPlan, parsed.selectedModel)
-          ? parsed.selectedModel
-          : getHighestAvailableModel(membershipPlan);
+      const selectedModel = DEFAULT_AI_MODEL_ID;
       const migrated: AppState = {
         ...fallback,
         ...parsed,
@@ -309,10 +310,7 @@ export function loadPersistedState() {
 
     const parsed = JSON.parse(raw) as Partial<GlobalState>;
     const membershipPlan = parsed.membershipPlan ?? fallback.membershipPlan;
-    const selectedModel =
-      parsed.selectedModel && canUseModel(membershipPlan, parsed.selectedModel)
-        ? parsed.selectedModel
-        : getHighestAvailableModel(membershipPlan);
+    const selectedModel = DEFAULT_AI_MODEL_ID;
     const global: GlobalState = {
       ...pickGlobalState(fallback),
       ...parsed,
@@ -619,7 +617,7 @@ export function createMockWatchTaskSummary(
   const dimensionMap: Record<string, string[]> = {
     topic_watch: ["赛道热度", "爆款率", "低粉起号机会"],
     account_watch: ["粉丝增长", "互动率", "内容表现"],
-    content_watch: ["播放量", "互动率", "分享率"],
+    content_watch: ["互动量", "评论反馈", "分享率"],
     validation_watch: ["可复制性", "低粉爆款信号", "内容结构"],
   };
   return {

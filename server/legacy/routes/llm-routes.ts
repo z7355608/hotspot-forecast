@@ -60,7 +60,7 @@ export async function handleLLMChat(request: IncomingMessage, response: ServerRe
 
   const {
     userId,
-    modelId = "doubao",
+    modelId = "gpt54",
     messages,
     baseCost = 0,
     taskLabel = "LLM调用",
@@ -128,7 +128,7 @@ export async function handleLLMStream(request: IncomingMessage, response: Server
 
   const {
     userId,
-    modelId = "doubao",
+    modelId = "gpt54",
     messages,
     baseCost = 0,
     taskLabel = "LLM流式调用",

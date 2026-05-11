@@ -111,3 +111,20 @@ temp/
 
 # Manus version file (auto-generated, not part of source)
 client/public/__manus__/version.json
+
+# Runtime data directory (account bindings / encrypted secrets / cache dumps)
+# Keep README tracked so the doc is discoverable in the repo.
+# Pattern note: `data/` (whole dir) breaks the negation; `data/*` lets it through.
+data/*
+!data/README.md
+
+# Claude Code local state (user-specific settings, worktrees)
+.claude/settings.local.json
+.claude/worktrees/
+
+# Sidelined parallel rewrite — kept on disk for owner decision, not in main history
+# See ADR-0003: hotspot-forecast/ is paused (30+ days no commits)
+hotspot-forecast/
+
+# Project deliverable docs (binary, distribute via cloud links not git)
+*.docx

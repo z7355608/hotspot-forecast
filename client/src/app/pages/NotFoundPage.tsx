@@ -12,7 +12,7 @@ export function NotFoundPage() {
           路由已经接通，但当前地址没有匹配到页面。
         </p>
         <Link
-          to="/"
+          to="/hot-topic-recommendations"
           className="mt-8 inline-flex items-center rounded-xl bg-gray-900 px-5 py-2.5 text-sm text-white transition-colors hover:bg-gray-700"
         >
           返回首页

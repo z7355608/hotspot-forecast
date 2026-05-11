@@ -638,6 +638,10 @@ export function AIWorkbench({
             <textarea
               ref={textareaRef}
               value={inputValue}
+              spellCheck={false}
+              autoComplete="off"
+              autoCorrect="off"
+              autoCapitalize="off"
               onFocus={() => {
                 // Mark E1 tooltip on first focus
                 if (!tooltipsSeen["e1_workbench_focus"]) {

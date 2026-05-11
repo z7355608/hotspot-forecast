@@ -100,6 +100,13 @@ export async function fetchResultArtifact(artifactId: string) {
   return parseApiResponse<{ item: SavedResultArtifactDetail }>(response);
 }
 
+export async function deleteResultArtifact(artifactId: string) {
+  const response = await apiFetch(`/api/result-artifacts/${artifactId}`, {
+    method: "DELETE",
+  });
+  return parseApiResponse<{ artifactId: string; deleted: true }>(response);
+}
+
 export async function saveResultArtifact(payload: {
   snapshot: Record<string, unknown>;
   createWatch?: boolean;

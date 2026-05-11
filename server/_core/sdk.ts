@@ -22,6 +22,7 @@ export type SessionPayload = {
   openId: string;
   appId: string;
   name: string;
+  sessionId?: number;
 };
 
 const EXCHANGE_TOKEN_PATH = `/webdev.v1.WebDevAuthPublicService/ExchangeToken`;
@@ -166,13 +167,14 @@ class SDKServer {
    */
   async createSessionToken(
     openId: string,
-    options: { expiresInMs?: number; name?: string } = {}
+    options: { expiresInMs?: number; name?: string; sessionId?: number } = {}
   ): Promise<string> {
     return this.signSession(
       {
         openId,
         appId: ENV.appId,
         name: options.name || "",
+        sessionId: options.sessionId,
       },
       options
     );
@@ -187,11 +189,16 @@ class SDKServer {
     const expirationSeconds = Math.floor((issuedAt + expiresInMs) / 1000);
     const secretKey = this.getSessionSecret();
 
-    return new SignJWT({
+    const claims: Record<string, unknown> = {
       openId: payload.openId,
       appId: payload.appId,
       name: payload.name,
-    })
+    };
+    if (typeof payload.sessionId === "number") {
+      claims.sessionId = payload.sessionId;
+    }
+
+    return new SignJWT(claims)
       .setProtectedHeader({ alg: "HS256", typ: "JWT" })
       .setExpirationTime(expirationSeconds)
       .sign(secretKey);
@@ -199,7 +206,7 @@ class SDKServer {
 
   async verifySession(
     cookieValue: string | undefined | null
-  ): Promise<{ openId: string; appId: string; name: string } | null> {
+  ): Promise<{ openId: string; appId: string; name: string; sessionId?: number } | null> {
     if (!cookieValue) {
       console.warn("[Auth] Missing session cookie");
       return null;
@@ -210,7 +217,7 @@ class SDKServer {
       const { payload } = await jwtVerify(cookieValue, secretKey, {
         algorithms: ["HS256"],
       });
-      const { openId, appId, name } = payload as Record<string, unknown>;
+      const { openId, appId, name, sessionId } = payload as Record<string, unknown>;
 
       if (
         !isNonEmptyString(openId) ||
@@ -225,6 +232,7 @@ class SDKServer {
         openId,
         appId,
         name,
+        sessionId: typeof sessionId === "number" ? sessionId : undefined,
       };
     } catch (error) {
       console.warn("[Auth] Session verification failed", String(error));
@@ -257,6 +265,12 @@ class SDKServer {
   }
 
   async authenticateRequest(req: Request): Promise<User> {
+    return (await this.authenticateRequestWithSession(req)).user;
+  }
+
+  async authenticateRequestWithSession(
+    req: Request
+  ): Promise<{ user: User; sessionId?: number }> {
     // Regular authentication flow
     const cookies = this.parseCookies(req.headers.cookie);
     const sessionCookie = cookies.get(COOKIE_NAME);
@@ -264,6 +278,16 @@ class SDKServer {
 
     if (!session) {
       throw ForbiddenError("Invalid session cookie");
+    }
+
+    // 校验 sessionId 是否被远程下线（老 token 没 sessionId 直接放行）
+    if (typeof session.sessionId === "number") {
+      const stillValid = await db.isUserSessionActive(session.sessionId, session.openId);
+      if (!stillValid) {
+        throw ForbiddenError("Session revoked");
+      }
+      // 异步刷新 lastActiveAt，不阻塞请求
+      void db.touchUserSession(session.sessionId).catch(() => {});
     }
 
     const sessionUserId = session.openId;
@@ -303,10 +327,10 @@ class SDKServer {
       });
       // Return the updated user so the response is stable
       const updatedUser = await db.getUserByOpenId(user.openId);
-      return updatedUser ?? user;
+      return { user: updatedUser ?? user, sessionId: session.sessionId };
     }
 
-    return user;
+    return { user, sessionId: session.sessionId };
   }
 }
 

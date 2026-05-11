@@ -9,8 +9,8 @@ import {
 } from "react";
 import {
   APP_NOW,
+  DEFAULT_AI_MODEL_ID,
   LOW_FOLLOWER_SAMPLES,
-  canUseModel,
   normalizePlan,
   createId,
   createResultRecord,
@@ -21,12 +21,10 @@ import {
   getAnalysisInfo,
   getBreakdownActionResult,
   getHomepageAnalysisCost,
-  getHighestAvailableModel,
   getModelOption,
   getQueryType,
   getSampleById,
   inferResultScoreLabel,
-  type AIModelId,
   type BreakdownActionId,
   type BreakdownGeneratedResult,
   type ConnectorRecord,
@@ -46,6 +44,7 @@ import {
   type ConnectorServerRecord,
 } from "../lib/connectors-api";
 import {
+  deleteResultArtifact as deleteResultArtifactRequest,
   ensureArtifactWatch as ensureArtifactWatchRequest,
   fetchResultArtifacts as fetchResultArtifactsRequest,
   fetchWatchTasks as fetchWatchTasksRequest,
@@ -60,6 +59,15 @@ import {
   runLivePredictionStream,
   type ProgressEvent,
 } from "../lib/live-predictions-api";
+import {
+  generateTaskId,
+  persistActiveTaskId,
+  clearActiveTaskId,
+  readActiveTaskId,
+  fetchTaskSnapshot,
+  pollTaskUntilDone,
+  type TaskSnapshot,
+} from "../lib/task-recovery";
 import {
   bindNotificationChannel as bindNotificationChannelRequest,
   fetchNotificationChannels as fetchNotificationChannelsRequest,
@@ -151,11 +159,10 @@ interface AppStoreValue {
   notificationChannels: NotificationChannelRecord[];
   featuredSamples: LowFollowerSample[];
   lowFollowerSamples: LowFollowerSample[];
-  setSelectedModel: (modelId: AIModelId) => boolean;
   refreshApiHealth: (force?: boolean) => Promise<ApiHealthState>;
   startAnalysis: (request: PredictionRequestDraft, dryRun?: boolean, onProgress?: (event: ProgressEvent) => void) => Promise<ActionResult>;
   addResultFollowUp: (resultId: string, prompt: string, cost: number) => ActionResult;
-  removeResult: (resultId: string) => void;
+  removeResult: (resultId: string) => Promise<void>;
   connectConnector: (connectorId: string, binding: ConnectorBindingInput) => Promise<void>;
   disconnectConnector: (connectorId: string) => Promise<void>;
   syncConnectorProfile: (connectorId: string) => Promise<void>;
@@ -322,6 +329,70 @@ export function AppStoreProvider({ children }: { children: ReactNode }) {
     persistStateSnapshot(state);
   }, [state]);
 
+  // 进行中的预测任务恢复:用户在等待时切走 → 再切回 → 这里检测 localStorage
+  // 里的 active task,从 server 拉快照,完成后注入到 results[]。详见
+  // client/src/app/lib/task-recovery.ts + server/legacy/database/schema-v14。
+  useEffect(() => {
+    const activeTask = readActiveTaskId();
+    if (!activeTask) return undefined;
+
+    let cancelled = false;
+    const handleSnapshot = (snap: TaskSnapshot) => {
+      if (cancelled) return;
+      if (snap.status === "done" && snap.result) {
+        const payload = snap.result;
+        const nextResult = buildLiveResult(
+          activeTask.request,
+          state.selectedModel,
+          state.connectors,
+          payload.result,
+          (payload.run?.runtimeMeta ?? payload.runtimeMeta) as Record<string, unknown> | undefined,
+          payload.run?.degradeFlags ?? payload.degradeFlags,
+          state.userProfile,
+          (payload.result as Record<string, unknown>)?.taskPayload as Record<string, unknown> | undefined,
+        );
+        const now = new Date().toISOString();
+        setState((current) => {
+          // 防重复:同 run.id 已存在则跳过
+          if (current.results.some((r) => r.id === nextResult.id)) return current;
+          return {
+            ...current,
+            results: [{ ...nextResult, createdAt: now, updatedAt: now }, ...current.results],
+          };
+        });
+        clearActiveTaskId();
+      } else if (snap.status === "error" || snap.status === "cancelled") {
+        clearActiveTaskId();
+      }
+    };
+
+    let poller: { stop: () => void } | null = null;
+    void fetchTaskSnapshot(activeTask.taskId)
+      .then((snap) => {
+        if (cancelled) return;
+        if (!snap) {
+          clearActiveTaskId();
+          return;
+        }
+        if (snap.status === "done" || snap.status === "error" || snap.status === "cancelled") {
+          handleSnapshot(snap);
+        } else {
+          // running:启动轮询直到完成
+          poller = pollTaskUntilDone(activeTask.taskId, handleSnapshot, { intervalMs: 3_000 });
+        }
+      })
+      .catch(() => {
+        // 网络错误不阻断,下次 mount 再试
+      });
+
+    return () => {
+      cancelled = true;
+      poller?.stop();
+    };
+    // 仅 mount 时触发一次;state.* 故意不放依赖,避免重复触发恢复
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   useEffect(() => {
     if (state.dataMode !== "live") return undefined;
     let active = true;
@@ -428,18 +499,6 @@ export function AppStoreProvider({ children }: { children: ReactNode }) {
     return [transaction, ...current.transactions].slice(0, 20);
   };
 
-  const setSelectedModel = (modelId: AIModelId) => {
-    if (!canUseModel(state.membershipPlan, modelId)) {
-      return false;
-    }
-
-    setState((current) => ({
-      ...current,
-      selectedModel: modelId,
-    }));
-    return true;
-  };
-
   const setDataMode = (mode: AppDataMode) => {
     if (mode === state.dataMode) return;
     setState((current) => {
@@ -484,12 +543,19 @@ export function AppStoreProvider({ children }: { children: ReactNode }) {
       return { ok: true, resultId: "", cost: chargedCost };
     }
 
+    // 生成 task_id 并持久化到 localStorage,用于「切走再回来」恢复。
+    // 详见 client/src/app/lib/task-recovery.ts + server schema-v14。
+    const taskId = generateTaskId();
+    if (state.dataMode === "live") {
+      persistActiveTaskId(taskId, request);
+    }
+
     try {
       let nextResult: ResultRecord;
       if (state.dataMode === "live") {
         await ensureLiveBackendReady("livePrediction");
         const payload = onProgress
-          ? await runLivePredictionStream(request, onProgress)
+          ? await runLivePredictionStream(request, onProgress, { taskId })
           : await runLivePrediction(request);
         nextResult = buildLiveResult(
           request,
@@ -557,12 +623,17 @@ export function AppStoreProvider({ children }: { children: ReactNode }) {
         });
       }
 
+      // 成功:清除 active task_id(任务已结束,无需 resume)
+      clearActiveTaskId();
+
       return {
         ok: true,
         resultId: nextResult.id,
         cost: chargedCost,
       };
     } catch (error) {
+      // 失败:同样清除 active task_id(避免下次切回还试图 resume 一个失败的)
+      clearActiveTaskId();
       return {
         ok: false,
         shortfall: 0,
@@ -630,11 +701,33 @@ export function AppStoreProvider({ children }: { children: ReactNode }) {
     return { ok: true, resultId, cost: chargedCost };
   };
 
-  const removeResult = (resultId: string) => {
-    setState((current) => ({
-      ...current,
-      results: current.results.filter((item) => item.id !== resultId),
-    }));
+  /**
+   * 删除一条历史记录。
+   * 入参可以是本地 result.id、服务端 artifactId 或 clientResultId —— 函数会同时清理本地 results
+   * 和 savedArtifacts，再调用服务端软删除（mock 模式跳过服务端调用）。
+   */
+  const removeResult = async (resultId: string) => {
+    let serverArtifactId: string | undefined;
+    setState((current) => {
+      const matchedArtifact =
+        current.savedArtifacts.find((a) => a.artifactId === resultId) ??
+        current.savedArtifacts.find((a) => a.clientResultId === resultId);
+      serverArtifactId = matchedArtifact?.artifactId;
+      return {
+        ...current,
+        results: current.results.filter((item) => item.id !== resultId),
+        savedArtifacts: current.savedArtifacts.filter(
+          (a) => a.artifactId !== resultId && a.clientResultId !== resultId,
+        ),
+      };
+    });
+    if (state.dataMode === "live" && serverArtifactId) {
+      try {
+        await deleteResultArtifactRequest(serverArtifactId);
+      } catch {
+        // 删除失败时,下一次轮询会重新拉回该 artifact —— UI 会显示，符合"操作未生效"的隐含语义
+      }
+    }
   };
 
   const saveResultArtifact = async (
@@ -1128,9 +1221,7 @@ export function AppStoreProvider({ children }: { children: ReactNode }) {
     setState((current) => ({
       ...current,
       membershipPlan: plan,
-      selectedModel: canUseModel(plan, current.selectedModel)
-        ? current.selectedModel
-        : getHighestAvailableModel(plan),
+      selectedModel: DEFAULT_AI_MODEL_ID,
       transactions: addTransaction(
         current,
         {
@@ -1290,9 +1381,10 @@ export function AppStoreProvider({ children }: { children: ReactNode }) {
       : item.followerCount >= 1000
         ? `${(item.followerCount / 1000).toFixed(1)}k粉`
         : `${item.followerCount}粉`;
-    const playCount = item.viewCount >= 10000
-      ? `${(item.viewCount / 10000).toFixed(1)}万`
-      : `${item.viewCount}`;
+    const interactionCount = item.likeCount + item.commentCount + item.shareCount + item.saveCount;
+    const playCount = interactionCount >= 10000
+      ? `${(interactionCount / 10000).toFixed(1)}万互动`
+      : `${interactionCount}互动`;
 
     const sample: LowFollowerSample = {
       id: item.id,
@@ -1555,7 +1647,6 @@ export function AppStoreProvider({ children }: { children: ReactNode }) {
     lowFollowerSamples: state.dataMode === "mock" ? LOW_FOLLOWER_SAMPLES : [],
     savedArtifacts: state.savedArtifacts,
     watchTasks: state.watchTasks,
-    setSelectedModel,
     refreshApiHealth,
     startAnalysis,
     addResultFollowUp,

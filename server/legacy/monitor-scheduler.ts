@@ -19,6 +19,11 @@ const ksLog = createModuleLogger("KS-Comment-Probe");
 import { runAutoTagging } from "./low-follower-tagger.js";
 import { runWeeklyTopicRefresh } from "./weekly-topic-refresh.js";
 import { runPerformanceCollection } from "./performance-tracker.js";
+import {
+  runVideoStatsCollection,
+  cleanupOldVideoStatsHistory,
+} from "../services/video-stats-collector.js";
+import { runDueIndustryAccuracyChecks } from "../services/industry-accuracy-eval.js";
 import { randomUUID } from "node:crypto";
 import {
   readWatchTaskStore,
@@ -359,7 +364,11 @@ let dailyCronJob: ReturnType<typeof cron.schedule> | null = null;
 let ksCommentProbeCronJob: ReturnType<typeof cron.schedule> | null = null;
 let weeklyTopicCronJob: ReturnType<typeof cron.schedule> | null = null;
 let performanceCollectionCronJob: ReturnType<typeof cron.schedule> | null = null;
+let videoStatsMorningCronJob: ReturnType<typeof cron.schedule> | null = null;
+let videoStatsEveningCronJob: ReturnType<typeof cron.schedule> | null = null;
+let videoStatsCleanupCronJob: ReturnType<typeof cron.schedule> | null = null;
 let membershipDowngradeCronJob: ReturnType<typeof cron.schedule> | null = null;
+let industryAccuracyCronJob: ReturnType<typeof cron.schedule> | null = null;
 
 /**
  * 启动调度器
@@ -430,6 +439,44 @@ export function startScheduler(): void {
     });
   });
 
+  // 视频级时间序列采集：每天 06:00 + 18:00 各一次
+  // 时间点选在创作者两个决策窗前（"今天发什么"早晨思考、"明天发什么"晚饭后准备），
+  // 让用户在打开页面前 ~1h 数据已经采完，看到的"过去 12h 播放增量"是新鲜的。
+  // 详见 services/video-stats-collector.ts 顶部注释。
+  videoStatsMorningCronJob = cron.schedule("0 6 * * *", () => {
+    log.info("触发视频时序采集（早 06:00）...");
+    runVideoStatsCollection()
+      .then((result) => {
+        log.info(result, "视频时序采集（早）完成");
+      })
+      .catch((err) => {
+        log.error({ err }, "视频时序采集（早）失败");
+      });
+  });
+  videoStatsEveningCronJob = cron.schedule("0 18 * * *", () => {
+    log.info("触发视频时序采集（晚 18:00）...");
+    runVideoStatsCollection()
+      .then((result) => {
+        log.info(result, "视频时序采集（晚）完成");
+      })
+      .catch((err) => {
+        log.error({ err }, "视频时序采集（晚）失败");
+      });
+  });
+
+  // 视频时序数据清理：每周日凌晨 03:00 清理 30 天前的 video_stats_history
+  // 防止表无限增长（150 候选 × 2/天 × 30 天 ≈ 9000 行的稳态目标）
+  videoStatsCleanupCronJob = cron.schedule("0 3 * * 0", () => {
+    log.info("触发 video_stats_history 旧数据清理...");
+    cleanupOldVideoStatsHistory(30)
+      .then((result) => {
+        log.info(result, "video_stats_history 清理完成");
+      })
+      .catch((err) => {
+        log.error({ err }, "video_stats_history 清理失败");
+      });
+  });
+
   // 注册会员到期自动降级任务（每小时执行一次）
   membershipDowngradeCronJob = cron.schedule("30 * * * *", () => {
     log.info("触发会员到期降级扫描...");
@@ -444,12 +491,28 @@ export function startScheduler(): void {
     });
   });
 
+  // 行业词准确率验证：只扫描已经启动的评估批次，不自动创建新批次。
+  industryAccuracyCronJob = cron.schedule("*/30 * * * *", () => {
+    runDueIndustryAccuracyChecks({ maxCheckpoints: 6 })
+      .then((result) => {
+        if (result.dueCheckpoints > 0 || result.completedCheckpoints > 0 || result.failedCheckpoints > 0) {
+          log.info(result, "行业词准确率检查点扫描完成");
+        }
+      })
+      .catch((err) => {
+        log.error({ err }, "行业词准确率检查点扫描失败");
+      });
+  });
+
   log.info("调度器已启动，扫描间隔: 每10分钟");
   log.info("低粉爆款每日刷新: 凌晨2:00");
   log.info("快手评论接口周检测: 每周一凌晨3:00");
   log.info("每周选题推荐刷新: 每周一早上8:00");
   log.info("效果追踪数据采集: 每4小时");
+  log.info("视频时序采集: 每天 06:00 / 18:00");
+  log.info("视频时序数据清理（30 天前）: 每周日 03:00");
   log.info("会员到期降级扫描: 每小时");
+  log.info("行业词准确率验证检查点扫描: 每30分钟");
 }
 
 /**
@@ -478,9 +541,25 @@ export function stopScheduler(): void {
     performanceCollectionCronJob.stop();
     performanceCollectionCronJob = null;
   }
+  if (videoStatsMorningCronJob) {
+    videoStatsMorningCronJob.stop();
+    videoStatsMorningCronJob = null;
+  }
+  if (videoStatsEveningCronJob) {
+    videoStatsEveningCronJob.stop();
+    videoStatsEveningCronJob = null;
+  }
+  if (videoStatsCleanupCronJob) {
+    videoStatsCleanupCronJob.stop();
+    videoStatsCleanupCronJob = null;
+  }
   if (membershipDowngradeCronJob) {
     membershipDowngradeCronJob.stop();
     membershipDowngradeCronJob = null;
+  }
+  if (industryAccuracyCronJob) {
+    industryAccuracyCronJob.stop();
+    industryAccuracyCronJob = null;
   }
   log.info("调度器已停止");
 }

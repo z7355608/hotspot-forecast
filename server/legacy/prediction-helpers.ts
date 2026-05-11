@@ -25,6 +25,7 @@ import type {
   SupportedPlatform,
   WatchTaskType,
 } from "./types.js";
+import { pickDouyinCoverFallback } from "../services/cover-url-fallback.js";
 
 /* ── Re-exported Types ── */
 
@@ -438,6 +439,10 @@ export function extractContents(
       }
       const directCover = record.cover_url ?? record.thumbnail_url ?? record.cover;
       if (typeof directCover === "string" && directCover.startsWith("http")) return directCover;
+      if (platform === "douyin" && contentId) {
+        const fb = pickDouyinCoverFallback(contentId);
+        if (fb) return fb;
+      }
       return null;
     })();
     contents.set(contentId, {
@@ -508,6 +513,281 @@ export function dedupeById<T extends { accountId?: string; contentId?: string; i
   return [...map.values()];
 }
 
+const SAMPLE_QUALITY_MAX_AGE_MS = 30 * 24 * 60 * 60 * 1000;
+const SAMPLE_QUALITY_FRESH_AGE_MS = 7 * 24 * 60 * 60 * 1000;
+const SAMPLE_QUALITY_MIN_SCORE = 60;
+const SAMPLE_QUALITY_BORDERLINE_SCORE = 50;
+
+export type ContentSampleQualityLevel = "accepted" | "borderline" | "rejected";
+
+export interface ContentSampleQualityDecision {
+  contentId: string;
+  qualityScore: number;
+  level: ContentSampleQualityLevel;
+  accepted: boolean;
+  reasons: string[];
+  hardRejectReasons: string[];
+  interactionCount: number;
+  positiveMetricCount: number;
+  ageDays: number | null;
+  hasViewCount: boolean;
+  hasFollowerCount: boolean;
+}
+
+export interface ContentSampleQualityGateResult {
+  selected: ExtractedContent[];
+  accepted: ExtractedContent[];
+  borderline: ExtractedContent[];
+  rejected: ExtractedContent[];
+  decisions: ContentSampleQualityDecision[];
+  mode: "strict" | "relaxed" | "insufficient";
+}
+
+function positiveNumber(value: number | null | undefined) {
+  return typeof value === "number" && Number.isFinite(value) && value > 0 ? value : 0;
+}
+
+export function getContentInteractionCount(content: Pick<ExtractedContent, "viewCount" | "likeCount" | "commentCount" | "shareCount" | "collectCount">) {
+  return (
+    positiveNumber(content.viewCount) +
+    positiveNumber(content.likeCount) +
+    positiveNumber(content.commentCount) +
+    positiveNumber(content.shareCount) +
+    positiveNumber(content.collectCount)
+  );
+}
+
+export function evaluateContentSampleQuality(
+  content: Partial<ExtractedContent>,
+  nowMs = Date.now(),
+): ContentSampleQualityDecision {
+  const reasons: string[] = [];
+  const hardRejectReasons: string[] = [];
+  const title = typeof content.title === "string" ? content.title.trim() : "";
+  const contentId = typeof content.contentId === "string" ? content.contentId.trim() : "";
+  const urlOnlyTitle = /^https?:\/\/\S+$/i.test(title);
+  const cjkCount = (title.match(/[\u4e00-\u9fff]/g) ?? []).length;
+  const latinTokenCount = (title.match(/[A-Za-z0-9]{2,}/g) ?? []).length;
+  const meaningfulText = !urlOnlyTitle && (cjkCount >= 4 || latinTokenCount >= 4 || title.length >= 12);
+  const interactionCount = getContentInteractionCount({
+    viewCount: content.viewCount ?? null,
+    likeCount: content.likeCount ?? null,
+    commentCount: content.commentCount ?? null,
+    shareCount: content.shareCount ?? null,
+    collectCount: content.collectCount ?? null,
+  });
+  const positiveMetricCount = [
+    content.viewCount,
+    content.likeCount,
+    content.commentCount,
+    content.shareCount,
+    content.collectCount,
+  ].filter((value) => positiveNumber(value ?? null) > 0).length;
+
+  let score = 0;
+  if (contentId) score += 10;
+  else hardRejectReasons.push("缺少内容ID");
+
+  if (title.length >= 12) score += 18;
+  else if (title.length >= 8) score += 10;
+  else hardRejectReasons.push("标题信息不足");
+
+  if (meaningfulText) score += 6;
+  else hardRejectReasons.push("标题缺少可判断语义");
+
+  if (urlOnlyTitle) hardRejectReasons.push("标题为纯链接");
+
+  if (content.platform) score += 4;
+  if (content.authorName && content.authorName !== "未知作者") score += 8;
+  else reasons.push("缺少作者信息");
+
+  let ageDays: number | null = null;
+  if (content.publishedAt) {
+    const publishedAtMs = new Date(content.publishedAt).getTime();
+    if (Number.isFinite(publishedAtMs)) {
+      const ageMs = nowMs - publishedAtMs;
+      ageDays = Math.max(0, Math.round(ageMs / (24 * 60 * 60 * 1000)));
+      if (ageMs <= SAMPLE_QUALITY_FRESH_AGE_MS) score += 20;
+      else if (ageMs <= SAMPLE_QUALITY_MAX_AGE_MS) score += 12;
+      else hardRejectReasons.push("发布时间超过30天");
+    } else {
+      score += 6;
+      reasons.push("发布时间不可解析");
+    }
+  } else {
+    score += 6;
+    reasons.push("缺少发布时间");
+  }
+
+  if (interactionCount > 0) score += 25;
+  else hardRejectReasons.push("缺少点赞/评论/收藏/分享互动数据");
+
+  if (positiveMetricCount >= 3) score += 10;
+  else if (positiveMetricCount >= 2) score += 7;
+  else if (positiveMetricCount === 1) score += 3;
+
+  if (positiveNumber(content.viewCount ?? null) > 0) score += 6;
+  else reasons.push("缺少公开浏览字段，已改用互动数据判断");
+
+  if (positiveNumber(content.authorFollowerCount ?? null) > 0) score += 8;
+  else reasons.push("缺少粉丝数字段");
+
+  if (content.coverUrl) score += 3;
+  if (content.contentUrl) score += 2;
+
+  const qualityScore = clamp(score);
+  const accepted = hardRejectReasons.length === 0 && qualityScore >= SAMPLE_QUALITY_MIN_SCORE;
+  const level: ContentSampleQualityLevel = accepted
+    ? "accepted"
+    : hardRejectReasons.length === 0 && qualityScore >= SAMPLE_QUALITY_BORDERLINE_SCORE
+      ? "borderline"
+      : "rejected";
+
+  return {
+    contentId,
+    qualityScore,
+    level,
+    accepted,
+    reasons,
+    hardRejectReasons,
+    interactionCount,
+    positiveMetricCount,
+    ageDays,
+    hasViewCount: positiveNumber(content.viewCount ?? null) > 0,
+    hasFollowerCount: positiveNumber(content.authorFollowerCount ?? null) > 0,
+  };
+}
+
+export function filterContentsBySampleQuality(
+  contents: ExtractedContent[],
+  options: {
+    minAccepted?: number;
+    limit?: number;
+    nowMs?: number;
+  } = {},
+): ContentSampleQualityGateResult {
+  const minAccepted = options.minAccepted ?? 3;
+  const limit = options.limit ?? contents.length;
+  const nowMs = options.nowMs ?? Date.now();
+  const rows = contents.map((content) => ({
+    content,
+    decision: evaluateContentSampleQuality(content, nowMs),
+  }));
+  const acceptedRows = rows.filter((row) => row.decision.level === "accepted");
+  const borderlineRows = rows.filter((row) => row.decision.level === "borderline");
+  const rejectedRows = rows.filter((row) => row.decision.level === "rejected");
+  const relaxedRows = [...acceptedRows, ...borderlineRows];
+  const mode: ContentSampleQualityGateResult["mode"] =
+    acceptedRows.length >= minAccepted
+      ? "strict"
+      : relaxedRows.length >= minAccepted
+        ? "relaxed"
+        : "insufficient";
+  const selectedRows = mode === "strict" ? acceptedRows : relaxedRows;
+
+  return {
+    selected: selectedRows.map((row) => row.content).slice(0, limit),
+    accepted: acceptedRows.map((row) => row.content),
+    borderline: borderlineRows.map((row) => row.content),
+    rejected: rejectedRows.map((row) => row.content),
+    decisions: rows.map((row) => row.decision),
+    mode,
+  };
+}
+
+export interface TrackSpecificContentFilterResult {
+  selected: ExtractedContent[];
+  rejected: Array<{
+    content: ExtractedContent;
+    reason: string;
+  }>;
+}
+
+function textIncludesAny(value: string, patterns: RegExp[]): boolean {
+  return patterns.some((pattern) => pattern.test(value));
+}
+
+const CATERING_LEAD_GEN_PATTERNS = [
+  /加盟费|加盟电话|加盟官网|加盟条件|加盟多少钱/u,
+  /招商|代理|总部|保证金|品牌使用费|技术培训费/u,
+  /一城一店|留[一1]|私信|咨询|名额有限/u,
+  /排行榜|项目推荐|加盟店推荐|最火加盟|快招/u,
+];
+
+const CATERING_INVESTIGATION_PATTERNS = [
+  /避坑|骗局|套路|揭秘|曝光|虚假|投诉|被骗/u,
+  /亏|倒闭|闭店|复盘|真实|成本|利润|回本/u,
+  /小白别|别再|水太深|割韭菜/u,
+];
+
+const FITNESS_HARD_MIRACLE_PATTERNS = [
+  /睡觉也能燃脂|躺着瘦|不运动也能瘦|不节食也能瘦/u,
+  /暴瘦|包瘦|燃脂神器|减肥药|代餐/u,
+];
+
+const FITNESS_SOFT_MIRACLE_PATTERNS = [
+  /月瘦\d+/u,
+  /轻松瘦|快速减肥|一天瘦|三天瘦/u,
+];
+
+const FITNESS_CONCRETE_PATTERNS = [
+  /动作|组|分钟|跟练|无器械|居家|训练|计划/u,
+  /体脂率|热量|饮食|食谱|蛋白|碳水/u,
+  /实测|第\d+天|变化|心率|膝盖|恢复/u,
+];
+
+function shouldRejectByTrackSpecificRules(content: ExtractedContent, contextText: string): string | null {
+  const title = `${content.title ?? ""} ${content.keywordTokens?.join(" ") ?? ""}`.trim();
+  if (!title) return null;
+
+  if (/餐饮|加盟|开店|小吃|奶茶|快招/u.test(contextText)) {
+    const looksLikeLeadGen = textIncludesAny(title, CATERING_LEAD_GEN_PATTERNS);
+    const hasInvestigationValue = textIncludesAny(title, CATERING_INVESTIGATION_PATTERNS);
+    if (looksLikeLeadGen && !hasInvestigationValue) {
+      return "餐饮加盟赛道剔除纯招商/留资/排行榜型低质样本";
+    }
+  }
+
+  if (/健身|减脂|减肥|体脂|训练/u.test(contextText)) {
+    const hasHardMiracleClaim = textIncludesAny(title, FITNESS_HARD_MIRACLE_PATTERNS);
+    if (hasHardMiracleClaim) {
+      return "健身减脂赛道剔除夸张承诺型低质样本";
+    }
+
+    const looksLikeMiracleClaim = textIncludesAny(title, FITNESS_SOFT_MIRACLE_PATTERNS);
+    const hasConcreteMethod = textIncludesAny(title, FITNESS_CONCRETE_PATTERNS);
+    if (looksLikeMiracleClaim && !hasConcreteMethod) {
+      return "健身减脂赛道剔除夸张承诺型低质样本";
+    }
+  }
+
+  return null;
+}
+
+export function filterContentsByTrackSpecificRules(
+  contents: ExtractedContent[],
+  context: {
+    track?: string | null;
+    prompt?: string | null;
+    seedTopic?: string | null;
+  },
+): TrackSpecificContentFilterResult {
+  const contextText = `${context.track ?? ""} ${context.prompt ?? ""} ${context.seedTopic ?? ""}`;
+  const selected: ExtractedContent[] = [];
+  const rejected: TrackSpecificContentFilterResult["rejected"] = [];
+
+  for (const content of contents) {
+    const reason = shouldRejectByTrackSpecificRules(content, contextText);
+    if (reason) {
+      rejected.push({ content, reason });
+    } else {
+      selected.push(content);
+    }
+  }
+
+  return { selected, rejected };
+}
+
 export function mapLowFollowerEvidence(contents: ExtractedContent[]): ExtractedLowFollowerEvidence[] {
   return contents
     .filter((item) => item.authorFollowerCount !== null && item.authorFollowerCount > 0 && item.authorFollowerCount <= 10_000)
@@ -515,13 +795,11 @@ export function mapLowFollowerEvidence(contents: ExtractedContent[]): ExtractedL
     .map((item) => {
       const fans = Math.max(item.authorFollowerCount ?? 1, 1);
 
-      // 互动指标降级链：播放量 > 点赞量 > 评论量+收藏量
+      // 互动指标降级链：点赞量 > 评论量+收藏量+分享量。
+      // TikHub 不稳定提供播放量，因此低粉证据不再把 viewCount 作为展示口径。
       let engagementCount = 0;
       let engagementLabel = "";
-      if (item.viewCount != null && item.viewCount > 0) {
-        engagementCount = item.viewCount;
-        engagementLabel = `${item.viewCount.toLocaleString("zh-CN")} 播放`;
-      } else if (item.likeCount != null && item.likeCount > 0) {
+      if (item.likeCount != null && item.likeCount > 0) {
         engagementCount = item.likeCount;
         engagementLabel = `${item.likeCount.toLocaleString("zh-CN")} 点赞`;
       } else {

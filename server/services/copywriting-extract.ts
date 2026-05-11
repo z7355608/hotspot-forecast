@@ -7,7 +7,8 @@
  *   3. 调用 LLM 优化文案 → 返回结构化的优质文案
  */
 
-import { invokeLLM } from "../_core/llm";
+import { callLLM } from "../legacy/llm-gateway";
+import { stripJsonFences } from "../legacy/json-extract";
 import { recognizeAudio, type ASRResult } from "./volc-asr";
 
 /* ─────────────────────────────────────────────
@@ -259,34 +260,19 @@ ${rawTranscript.slice(0, 5000)}${rawTranscript.length > 5000 ? "\n\n（文案较
 请对这段文案进行优化和结构化分析。`;
 
   try {
-    const response = await invokeLLM({
+    // forge 弃用 → doubao(P0-A);doubao 不支持 response_format,用 stripJsonFences 容错
+    const enhancedSystem =
+      systemPrompt +
+      "\n\n严格只输出 JSON 对象,字段:optimizedCopy(string)/structureAnalysis(string)/hooks(string[])/ctaPatterns(string[])/keyPhrases(string[])。不要 markdown 围栏,不要解释性文字。";
+    const response = await callLLM({
+      modelId: "doubao",
       messages: [
-        { role: "system", content: systemPrompt },
+        { role: "system", content: enhancedSystem },
         { role: "user", content: userPrompt },
       ],
-      response_format: {
-        type: "json_schema",
-        json_schema: {
-          name: "copywriting_analysis",
-          strict: true,
-          schema: {
-            type: "object",
-            properties: {
-              optimizedCopy: { type: "string", description: "优化后的完整文案" },
-              structureAnalysis: { type: "string", description: "文案结构分析" },
-              hooks: { type: "array", items: { type: "string" }, description: "钩子句式列表" },
-              ctaPatterns: { type: "array", items: { type: "string" }, description: "CTA模式列表" },
-              keyPhrases: { type: "array", items: { type: "string" }, description: "关键金句列表" },
-            },
-            required: ["optimizedCopy", "structureAnalysis", "hooks", "ctaPatterns", "keyPhrases"],
-            additionalProperties: false,
-          },
-        },
-      },
     });
 
-    const rawContent = response.choices?.[0]?.message?.content ?? "";
-    const content = typeof rawContent === "string" ? rawContent : JSON.stringify(rawContent);
+    const content = stripJsonFences(response.content);
     const parsed = JSON.parse(content);
 
     return {

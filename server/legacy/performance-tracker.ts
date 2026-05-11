@@ -24,7 +24,7 @@ const CHECKPOINTS = [
   { label: "7d", hoursAfter: 168 },
 ];
 
-interface FreshStats {
+export interface FreshStats {
   viewCount: number;
   likeCount: number;
   commentCount: number;
@@ -46,8 +46,11 @@ function extractNestedValue(obj: unknown, key: string): unknown {
   return null;
 }
 
-/** 从 TikHub 获取视频最新数据 */
-async function fetchVideoStats(
+/**
+ * 从 TikHub 获取视频最新数据快照（三平台统一）。
+ * 导出供 video-stats-collector.ts 复用，避免重复实现 TikHub 字段提取逻辑。
+ */
+export async function fetchVideoStats(
   platform: string,
   contentId: string,
 ): Promise<FreshStats | null> {

@@ -18,7 +18,9 @@
 import { createModuleLogger } from "./logger.js";
 
 const log = createModuleLogger("LowFollowerTagger");
-import { invokeLLM } from "../_core/llm";
+import { callLLM } from "./llm-gateway.js";
+import { stripJsonFences } from "./json-extract.js";
+import { resolveSystemPrompt } from "./prompt-engine.js";
 import { execute, query } from "./database.js";
 import type { RowDataPacket } from "./database.js";
 
@@ -135,56 +137,40 @@ async function tagBatchWithLLM(
 
 ${sampleDescs}
 
-请输出 JSON 数组，每项格式：
+请输出 JSON,顶层 key 为 "items",值为数组,每项字段:
 {
-  "id": "样本ID",
-  "content_form": "内容形式",
+  "id": "样本ID(必须与输入的 [...] 内一致)",
+  "content_form": "内容形式(枚举内选)",
   "track_tags": ["赛道标签1", "赛道标签2"],
   "burst_reasons": ["爆款原因1", "爆款原因2"],
   "newbie_friendly": 0-100,
-  "suggestion": "一句话复制建议"
-}`;
+  "suggestion": "一句话复制建议(20-40字)"
+}
 
-  const response = await invokeLLM({
+**输出格式(严格)**:
+- 必须是单个 JSON 对象,不要 markdown 围栏(\`\`\`),不要解释性文字,直接输出 JSON
+- items 数组长度必须等于输入条数,id 一一对应`;
+
+  const taggerSystemPrompt = await resolveSystemPrompt(
+    "low-follower-tagging-v1",
+    "doubao",
+    { batchSize: String(batch.length) },
+    TAGGER_SYSTEM_PROMPT,
+  );
+  // 切到 doubao(thinking 默认关,与 prefilter 一致;forge 401 已废弃)。
+  // Doubao endpoint 不支持 response_format,靠 prompt + 解析容错。
+  const response = await callLLM({
+    modelId: "doubao",
     messages: [
-      { role: "system", content: TAGGER_SYSTEM_PROMPT },
+      { role: "system", content: taggerSystemPrompt },
       { role: "user", content: userPrompt },
     ],
-    response_format: {
-      type: "json_schema",
-      json_schema: {
-        name: "tagging_results",
-        strict: true,
-        schema: {
-          type: "object",
-          properties: {
-            items: {
-              type: "array",
-              items: {
-                type: "object",
-                properties: {
-                  id: { type: "string" },
-                  content_form: { type: "string" },
-                  track_tags: { type: "array", items: { type: "string" } },
-                  burst_reasons: { type: "array", items: { type: "string" } },
-                  newbie_friendly: { type: "number" },
-                  suggestion: { type: "string" },
-                },
-                required: ["id", "content_form", "track_tags", "burst_reasons", "newbie_friendly", "suggestion"],
-                additionalProperties: false,
-              },
-            },
-          },
-          required: ["items"],
-          additionalProperties: false,
-        },
-      },
-    },
+    temperature: 0.2,
+    maxTokens: 2000,
   });
 
-  const content = response.choices?.[0]?.message?.content;
-  const text = typeof content === "string" ? content : "";
-  const parsed = JSON.parse(text) as {
+  const cleaned = stripJsonFences(response.content || "{}");
+  const parsed = JSON.parse(cleaned) as {
     items: Array<{
       id: string;
       content_form: string;

@@ -56,12 +56,12 @@ const TRUSTED_CREATORS = [
 /* ─── Showcase videos ─── */
 const SHOWCASE_CATEGORIES = ["全部", "美妆", "美食", "职场", "宠物", "生活"];
 const SHOWCASE_VIDEOS = [
-  { title: "我用超市 9.9 元的产品化了一个全妆", factor: "7.5x", category: "美妆", views: "32.8万", img: "https://images.unsplash.com/photo-1596462502278-27bfdc403348?w=400&h=225&fit=crop" },
-  { title: "小镇上 5 元一碗的面，我吃了 20 年", factor: "8.2x", category: "美食", views: "31.2万", img: "https://images.unsplash.com/photo-1555126634-323283e090fa?w=400&h=225&fit=crop" },
-  { title: "我入职第一天就想跑路，后来…", factor: "7.1x", category: "职场", views: "28.4万", img: "https://images.unsplash.com/photo-1521737711867-e3b97375f902?w=400&h=225&fit=crop" },
-  { title: "我家狗子听到洗澡两个字的反应", factor: "9.1x", category: "宠物", views: "45.2万", img: "https://images.unsplash.com/photo-1587300003388-59208cc962cb?w=400&h=225&fit=crop" },
-  { title: "租房改造花了 200 元，房东看了都想加租", factor: "5.9x", category: "生活", views: "21.5万", img: "https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=400&h=225&fit=crop" },
-  { title: "全网最简单的电饭煲食谱，懒人必学", factor: "7.8x", category: "美食", views: "38.4万", img: "https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=400&h=225&fit=crop" },
+  { title: "我用超市 9.9 元的产品化了一个全妆", factor: "7.5x", category: "美妆", interactions: "3.2万", img: "https://images.unsplash.com/photo-1596462502278-27bfdc403348?w=400&h=225&fit=crop" },
+  { title: "小镇上 5 元一碗的面，我吃了 20 年", factor: "8.2x", category: "美食", interactions: "2.8万", img: "https://images.unsplash.com/photo-1555126634-323283e090fa?w=400&h=225&fit=crop" },
+  { title: "我入职第一天就想跑路，后来…", factor: "7.1x", category: "职场", interactions: "2.4万", img: "https://images.unsplash.com/photo-1521737711867-e3b97375f902?w=400&h=225&fit=crop" },
+  { title: "我家狗子听到洗澡两个字的反应", factor: "9.1x", category: "宠物", interactions: "4.1万", img: "https://images.unsplash.com/photo-1587300003388-59208cc962cb?w=400&h=225&fit=crop" },
+  { title: "租房改造花了 200 元，房东看了都想加租", factor: "5.9x", category: "生活", interactions: "1.9万", img: "https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=400&h=225&fit=crop" },
+  { title: "全网最简单的电饭煲食谱，懒人必学", factor: "7.8x", category: "美食", interactions: "3.6万", img: "https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=400&h=225&fit=crop" },
 ];
 
 /* ─── Features ─── */
@@ -76,7 +76,7 @@ const FEATURES = [
   {
     icon: Search,
     title: "低粉爆款发现",
-    desc: "实时抓取全平台低粉高播放异常样本，拆解爆因和可迁移结构，帮你找到可复制的爆款路径。",
+    desc: "实时抓取全平台低粉高互动异常样本，拆解爆因和可迁移结构，帮你找到可复制的爆款路径。",
     color: "from-amber-500 to-orange-600",
     link: "/low-follower-opportunities",
   },
@@ -92,7 +92,7 @@ const FEATURES = [
 /* ─── Testimonials ─── */
 const TESTIMONIALS = [
   { text: "用了爆款预测 Agent 之后，我的选题效率提升了 10 倍，再也不用靠感觉做内容了。", author: "小鱼同学", role: "美妆博主 · 12万粉", stars: 5 },
-  { text: "低粉爆款功能帮我找到了 3 个可复制的内容结构，第一条视频就破了 50 万播放。", author: "阿杰说职场", role: "职场博主 · 8万粉", stars: 5 },
+  { text: "低粉爆款功能帮我找到了 3 个可复制的内容结构，第一条视频互动明显破圈。", author: "阿杰说职场", role: "职场博主 · 8万粉", stars: 5 },
   { text: "智能监控让我比同行早 24 小时发现趋势变化，这就是信息差。", author: "探食小分队", role: "美食博主 · 25万粉", stars: 5 },
   { text: "从选题到文案到拍摄提纲，一个工具全搞定，省了我至少 3 个小时。", author: "猫奴日记", role: "宠物博主 · 6万粉", stars: 5 },
 ];
@@ -142,7 +142,7 @@ const PRICING_PLANS = [
 
 /* ─── FAQ ─── */
 const FAQ_ITEMS = [
-  { q: "爆款预测Agent 是什么？", a: "爆款预测Agent 是一款 AI 驱动的内容创作辅助工具，通过分析全平台爆款数据，帮助创作者做出更科学的内容决策。它包含爆款预测、低粉爆款发现、智能监控等核心功能。" },
+  { q: "爆款预测agent 是什么？", a: "爆款预测agent 是一款 AI 驱动的内容创作辅助工具，通过分析全平台爆款数据，帮助创作者做出更科学的内容决策。它包含爆款预测、低粉爆款发现、智能监控等核心功能。" },
   { q: "免费版有什么限制？", a: "免费版每天可以使用 1 次爆款预测 Agent，浏览低粉爆款库的前 5 条数据，获得 60 积分体验额度。升级后可解锁全部功能和更多积分。" },
   { q: "积分是怎么消耗的？", a: "积分用于消费 AI 生成的深度内容，例如翻拍脚本（60积分）、文案模式提取（30积分）、选题策略（40积分）等。每月会根据套餐自动充值。" },
   { q: "支持哪些平台的数据？", a: "目前支持抖音和小红书两大平台的数据分析，后续会陆续接入快手、B站、视频号等平台。" },
@@ -274,7 +274,7 @@ export function LandingPage() {
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-sm font-bold text-white">
               AI
             </div>
-            <span className="text-lg font-bold text-gray-900">爆款预测Agent</span>
+            <span className="text-lg font-bold text-gray-900">爆款预测agent</span>
           </div>
           <div className="hidden items-center gap-8 md:flex">
             <a href="#features" className="text-sm text-gray-600 transition hover:text-gray-900">功能</a>
@@ -432,7 +432,7 @@ export function LandingPage() {
                   <h3 className="text-sm font-medium text-gray-900 line-clamp-2">{v.title}</h3>
                   <div className="mt-2 flex items-center gap-2 text-xs text-gray-400">
                     <span className="rounded bg-gray-100 px-1.5 py-0.5 text-gray-500">{v.category}</span>
-                    <span>{v.views}次播放</span>
+                    <span>{v.interactions}互动</span>
                   </div>
                 </div>
               </div>
@@ -528,7 +528,7 @@ export function LandingPage() {
               怎么说
             </h2>
             <p className="mx-auto mt-4 max-w-xl text-gray-500">
-              已有超过 <strong><AnimatedCounter /></strong> 名创作者使用爆款预测Agent 提升创作效率
+              已有超过 <strong><AnimatedCounter /></strong> 名创作者使用爆款预测agent 提升创作效率
             </p>
           </div>
 
@@ -746,7 +746,7 @@ export function LandingPage() {
                 <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-sm font-bold text-white">
                   AI
                 </div>
-                <span className="text-lg font-bold text-gray-900">爆款预测Agent</span>
+                <span className="text-lg font-bold text-gray-900">爆款预测agent</span>
               </div>
               <p className="mt-4 text-sm leading-relaxed text-gray-400">
                 AI 驱动的内容决策引擎，帮助创作者做出更科学的内容决策。
@@ -781,7 +781,7 @@ export function LandingPage() {
           </div>
 
           <div className="mt-12 border-t border-gray-100 pt-8 text-center text-sm text-gray-400">
-            © {new Date().getFullYear()} 爆款预测Agent. All rights reserved.
+            © {new Date().getFullYear()} 爆款预测agent. All rights reserved.
           </div>
         </div>
       </footer>
