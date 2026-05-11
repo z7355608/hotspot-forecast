@@ -15,6 +15,11 @@ import {
   Zap,
 } from "lucide-react";
 import { ImageWithFallback } from "../components/figma/ImageWithFallback";
+import {
+  InAppVideoPlayerModal,
+  InAppVideoPlayBadge,
+  type InAppVideoSource,
+} from "../components/InAppVideoPlayerModal";
 import { PaywallModal } from "../components/PaywallModal";
 import { getProxiedImageUrl } from "../lib/media-proxy";
 import { useAppStore } from "../store/app-store";
@@ -63,6 +68,24 @@ export type LowFollowerItem = {
    */
   interactionDelta?: number;
 };
+
+function toInAppVideoSource(item: LowFollowerItem): InAppVideoSource {
+  return {
+    id: item.id,
+    workId: item.videoId || item.id,
+    videoId: item.videoId,
+    title: stripHashtags(item.title) || item.title || "未命名样本",
+    authorName: item.authorName,
+    platform: item.platform,
+    contentUrl: item.contentUrl,
+    coverUrl: item.coverUrl,
+    publishedAt: item.publishedAt,
+    likeCount: item.likeCount,
+    commentCount: item.commentCount,
+    saveCount: item.saveCount,
+    shareCount: item.shareCount,
+  };
+}
 
 /**
  * 默认推荐时间窗（天）。低于此天数的样本才进入榜单，避免陈旧爆款长期占榜。
@@ -457,6 +480,7 @@ export function HotTopicRecommendationsPage() {
   const navigate = useNavigate();
   const [platform, setPlatform] = useState<string>("douyin");
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [playerVideo, setPlayerVideo] = useState<InAppVideoSource | null>(null);
   const breakdownRef = useRef<HTMLDivElement | null>(null);
 
   /* ------------------------ 积分余额 ------------------------ */
@@ -815,18 +839,13 @@ export function HotTopicRecommendationsPage() {
               </div>
 
               <div className="grid gap-4 md:grid-cols-[140px_minmax(0,1.1fr)_minmax(0,1fr)]">
-                {/*
-                 * 缩略图：点击在新标签页打开平台原视频
-                 *   - 有 contentUrl 时整张封面变成可点击 a，hover 出现"播放"覆盖层
-                 *   - 没有 contentUrl 时退化为静态占位
-                 */}
+                {/* 缩略图：点击在系统内弹窗播放，并同步加载评论区。 */}
                 {featured.contentUrl ? (
-                  <a
-                    href={featured.contentUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    title="在新标签页打开原视频"
-                    className="group/cover relative aspect-[3/4] overflow-hidden rounded-lg bg-gray-100"
+                  <button
+                    type="button"
+                    onClick={() => setPlayerVideo(toInAppVideoSource(featured))}
+                    title="在系统内查看视频和评论"
+                    className="group/cover relative block aspect-[3/4] w-full overflow-hidden rounded-lg bg-gray-100 text-left"
                   >
                     {featuredCoverUrl ? (
                       <ImageWithFallback
@@ -843,12 +862,11 @@ export function HotTopicRecommendationsPage() {
                     <div className="absolute inset-0 flex items-center justify-center bg-black/0 transition-colors duration-200 group-hover/cover:bg-black/40">
                       <PlayCircle className="h-10 w-10 text-white opacity-0 drop-shadow-lg transition-opacity duration-200 group-hover/cover:opacity-100" />
                     </div>
-                    {/* 始终可见的角标提示，让用户知道封面是可点击的 */}
-                    <span className="absolute bottom-1.5 right-1.5 flex items-center gap-0.5 rounded bg-black/60 px-1.5 py-0.5 text-[10px] font-medium text-white backdrop-blur-sm">
-                      <PlayCircle className="h-2.5 w-2.5" />
-                      看原视频
+                    <InAppVideoPlayBadge />
+                    <span className="absolute bottom-2 left-2 rounded bg-black/60 px-2 py-1 text-[10px] font-medium text-white backdrop-blur-sm">
+                      站内播放
                     </span>
-                  </a>
+                  </button>
                 ) : (
                   <div className="relative aspect-[3/4] overflow-hidden rounded-lg bg-gray-100">
                     {featuredCoverUrl ? (
@@ -1179,6 +1197,9 @@ export function HotTopicRecommendationsPage() {
           }
         }}
       />
+      {playerVideo && (
+        <InAppVideoPlayerModal video={playerVideo} onClose={() => setPlayerVideo(null)} />
+      )}
     </div>
   );
 }

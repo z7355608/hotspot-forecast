@@ -21,6 +21,10 @@ import {
   Scissors,
 } from "lucide-react";
 import { ImageWithFallback } from "../components/figma/ImageWithFallback";
+import {
+  InAppVideoPlayerModal,
+  type InAppVideoSource,
+} from "../components/InAppVideoPlayerModal";
 import { trpc } from "@/lib/trpc";
 import { useAppStore } from "../store/app-store";
 import { normalizePlan } from "../store/app-data";
@@ -86,6 +90,24 @@ interface LowFollowerItem {
   createdAt: string;
   lastRefreshedAt: string | null;
   scoreUpdatedAt: string | null;
+}
+
+function toInAppVideoSource(item: LowFollowerItem): InAppVideoSource {
+  return {
+    id: item.id,
+    workId: item.videoId || item.id,
+    videoId: item.videoId,
+    title: item.title || "未命名样本",
+    authorName: item.authorName,
+    platform: item.platform,
+    contentUrl: item.contentUrl,
+    coverUrl: item.coverUrl,
+    publishedAt: item.publishedAt,
+    likeCount: item.likeCount,
+    commentCount: item.commentCount,
+    saveCount: item.saveCount,
+    shareCount: item.shareCount,
+  };
 }
 
 /* ------------------------------------------------------------------ */
@@ -257,7 +279,7 @@ function VideoCard({
   const totalInteraction = item.likeCount + item.commentCount + item.shareCount + item.saveCount;
   const coverUrl = getProxiedImageUrl(item.coverUrl);
   return (
-    <div className="group cursor-pointer" onClick={onClick}>
+    <div className={`group ${item.contentUrl ? "cursor-pointer" : "cursor-default"}`} onClick={onClick}>
       {/* 封面 */}
       <div className="relative aspect-video overflow-hidden rounded-xl bg-gray-100">
         {coverUrl ? (
@@ -292,6 +314,16 @@ function VideoCard({
         )}
         {/* 平台徽章 */}
         <PlatformBadge platform={item.platform} />
+        {item.contentUrl && (
+          <div className="absolute inset-0 flex items-center justify-center bg-black/0 transition-colors duration-200 group-hover:bg-black/35">
+            <span className="flex h-11 w-11 scale-95 items-center justify-center rounded-full bg-white/95 text-gray-950 opacity-0 shadow-lg transition duration-200 group-hover:scale-100 group-hover:opacity-100">
+              <Film className="ml-0.5 h-5 w-5" />
+            </span>
+            <span className="absolute bottom-2 left-2 rounded bg-black/60 px-2 py-1 text-[10px] font-medium text-white opacity-0 backdrop-blur-sm transition-opacity duration-200 group-hover:opacity-100">
+              站内播放
+            </span>
+          </div>
+        )}
       </div>
 
       {/* 信息区 */}
@@ -451,6 +483,7 @@ export function LowFollowerPage() {
   const [breakdownData, setBreakdownData] = useState<BreakdownData | null>(null);
   const [breakdownVideoInfo, setBreakdownVideoInfo] = useState<BreakdownVideoInfo | null>(null);
   const [breakdownError, setBreakdownError] = useState<string | null>(null);
+  const [playerVideo, setPlayerVideo] = useState<InAppVideoSource | null>(null);
   const breakdownMutation = trpc.copywriting.viralBreakdown.useMutation();
 
   /* ---- 筛选状态 ---- */
@@ -819,7 +852,7 @@ export function LowFollowerPage() {
               item={item}
               isMember={isMember}
               onClick={() => {
-                if (item.contentUrl) window.open(item.contentUrl, "_blank");
+                if (item.contentUrl) setPlayerVideo(toInAppVideoSource(item));
               }}
               onBreakdown={() => toBreakdown(item)}
             />
@@ -968,6 +1001,9 @@ export function LowFollowerPage() {
             )}
           </div>
         </div>
+      )}
+      {playerVideo && (
+        <InAppVideoPlayerModal video={playerVideo} onClose={() => setPlayerVideo(null)} />
       )}
     </div>
   );
