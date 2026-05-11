@@ -17,6 +17,8 @@
  * ═══════════════════════════════════════════════════════════════
  */
 
+import { buildCommercialQualityConditions } from "./low-follower-commercial-quality";
+
 export type LowFollowerSource = "seed_topic" | "billboard" | "search";
 
 export interface SourceFieldSpec {
@@ -72,6 +74,7 @@ export function buildValidSampleConditions(): string[] {
   }
 
   conditions.push("viral_score_trend != 'expired'");
+  conditions.push(...buildCommercialQualityConditions());
   return conditions;
 }
 

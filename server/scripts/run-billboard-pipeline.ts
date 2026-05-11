@@ -33,6 +33,7 @@ import {
   prefilterBillboardSamples,
   type PrefilterInput,
 } from "../services/low-follower-billboard-prefilter";
+import { assessLowFollowerCommercialQuality } from "../legacy/low-follower-commercial-quality";
 import { createModuleLogger } from "../legacy/logger";
 
 const log = createModuleLogger("LFBillboardPipeline");
@@ -182,12 +183,38 @@ async function main() {
   }
 
   const { results, batchesAttempted, batchesFailed } = await prefilterBillboardSamples(prefilterInputs);
-  const passed = results.filter((r) => r.isTargetAudience);
+  const llmPassed = results.filter((r) => r.isTargetAudience);
+  const commercialRejected = llmPassed.filter((r) => {
+    const item = dedup.get(r.platformId);
+    const quality = assessLowFollowerCommercialQuality({
+      source: "billboard",
+      title: item?.item_title ?? "",
+      hashtags: extractHashtags(item?.item_title ?? ""),
+      trackTags: r.industrySubRefined ? [r.industrySubRefined] : [],
+      prefilterReason: r.reason,
+      seedTopic: "billboard",
+    });
+    return !quality.accepted;
+  });
+  const commercialRejectedIds = new Set(commercialRejected.map((r) => r.platformId));
+  const passed = llmPassed.filter((r) => !commercialRejectedIds.has(r.platformId));
   const passRate = totalCandidates > 0 ? passed.length / totalCandidates : 0;
   console.log(
     `  ✓ 预检查完成:批 ${batchesAttempted}(失败 ${batchesFailed}),通过 ${passed.length}/${totalCandidates}` +
-      ` (${(passRate * 100).toFixed(1)}%)`,
+      ` (${(passRate * 100).toFixed(1)}%),商业化规则拦截 ${commercialRejected.length} 条`,
   );
+  for (const r of commercialRejected.slice(0, 5)) {
+    const item = dedup.get(r.platformId);
+    const quality = assessLowFollowerCommercialQuality({
+      source: "billboard",
+      title: item?.item_title ?? "",
+      hashtags: extractHashtags(item?.item_title ?? ""),
+      trackTags: r.industrySubRefined ? [r.industrySubRefined] : [],
+      prefilterReason: r.reason,
+      seedTopic: "billboard",
+    });
+    console.log(`    - 商业化拦截 [${r.platformId}] ${item?.item_title?.slice(0, 42)} | ${quality.reasons.join("；")}`);
+  }
 
   if (passRate < PASS_RATE_ALERT_THRESHOLD) {
     log.error(

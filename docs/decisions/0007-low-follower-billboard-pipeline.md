@@ -201,6 +201,16 @@ PM 检查 7 条入库数据时发现 **2 个数据完整性问题**,触发 3 项
 
 **关于 router 的 `(source='billboard' OR ...)` 绕过 hack**(§4 §2):**保留**。理由:入库 → backfill 是 2 步,中间有时间差;backfill 可能因 TikHub API 错或 video_id 失效失败。保留 OR 让未补到的 billboard 样本也能展示——LLM prefilter 已保证语义干净,interaction 数缺失的展示问题相对小。
 
+### 四次追加修复(2026-05-11,商业化原则闸门)
+
+PM review 发现:少量样本虽然满足“低粉高互动 / 易复刻”,但属于搞笑娱乐、抽象整活、猎奇吃法、朋友精神状态等内容。它们能带来泛娱乐互动,但无法沉淀账号定位、信任或转化,不符合低粉爆款库的商业化推荐原则。
+
+修复:
+1. 新增共享商业化闸门 `low-follower-commercial-quality.ts`,确定性排除搞笑娱乐、猎奇/暗网/重口/吃瓜、抽象整活、强 IP/直播回放、纯趣味日常等样本。
+2. `low-follower-source-rules.ts` 的 router 查询默认叠加该闸门,历史不合规样本即使还在表里也不再推荐。
+3. `run-billboard-pipeline.ts` / `run-search-pipeline.ts` 在 LLM 预检查通过后再跑商业化闸门,防止 LLM 把“可模仿但不适合商业化”的内容放进入库链路。
+4. 旧 `seed_topic` 样本必须具备 `newbie_friendly >= 60` 且已打出赛道标签才允许展示;未完成商业化标签校准的旧样本默认隐藏。
+
 ---
 
 ## 相关

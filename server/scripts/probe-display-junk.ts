@@ -1,9 +1,11 @@
 /** 探针:模拟 low-follower router 的 WHERE,看含"猎奇/暗网/重口/吃瓜"等关键词的样本来自哪个 source/trend */
 import "dotenv/config";
 import { query } from "../legacy/database";
+import { buildValidSampleClause } from "../legacy/low-follower-source-rules";
 
 async function main() {
-  const junkRe = "猎奇|暗网|重口|吃瓜|娜塔莎|轻松熊|卡戴珊|周皮格";
+  const validClause = buildValidSampleClause();
+  const junkRe = "猎奇|暗网|重口|吃瓜|娜塔莎|轻松熊|卡戴珊|周皮格|搞笑娱乐|抽象|精神状态|地球online|直播回放";
   const rows = await query<any[]>(
     `SELECT
        id, source, viral_score_trend, viral_score,
@@ -11,10 +13,7 @@ async function main() {
        JSON_UNQUOTE(track_tags) AS track_tags,
        seed_topic
      FROM low_follower_samples
-     WHERE author_followers > 0
-       AND (source = 'billboard' OR (video_comments IS NOT NULL AND video_comments > 0))
-       AND (source = 'billboard' OR (video_collects IS NOT NULL AND video_collects > 0))
-       AND viral_score_trend != 'expired'
+     WHERE ${validClause}
        AND (
          video_title REGEXP ?
          OR seed_topic REGEXP ?
@@ -29,10 +28,7 @@ async function main() {
   const summary = await query<any[]>(
     `SELECT source, viral_score_trend, COUNT(*) AS c
      FROM low_follower_samples
-     WHERE author_followers > 0
-       AND (source = 'billboard' OR (video_comments IS NOT NULL AND video_comments > 0))
-       AND (source = 'billboard' OR (video_collects IS NOT NULL AND video_collects > 0))
-       AND viral_score_trend != 'expired'
+     WHERE ${validClause}
      GROUP BY source, viral_score_trend
      ORDER BY source, viral_score_trend`,
   );

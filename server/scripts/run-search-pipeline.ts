@@ -20,6 +20,7 @@ import {
   SEARCH_EXTRA_INSTRUCTIONS,
   type PrefilterInput,
 } from "../services/low-follower-billboard-prefilter";
+import { assessLowFollowerCommercialQuality } from "../legacy/low-follower-commercial-quality";
 import {
   searchVideosByKeyword,
   enrichSearchSamples,
@@ -196,12 +197,38 @@ async function main() {
     prefilterInputs,
     SEARCH_EXTRA_INSTRUCTIONS,
   );
-  const passed = results.filter((r) => r.isTargetAudience);
+  const llmPassed = results.filter((r) => r.isTargetAudience);
+  const commercialRejected = llmPassed.filter((r) => {
+    const e = enrichedMap.get(r.platformId);
+    const quality = assessLowFollowerCommercialQuality({
+      source: "search",
+      title: e?.desc ?? "",
+      hashtags: e?.hashtags ?? [],
+      trackTags: [e?.industry, e?.contentType, r.industrySubRefined].filter(Boolean) as string[],
+      prefilterReason: r.reason,
+      seedTopic: e ? `search:${e.fromKeyword}` : "search",
+    });
+    return !quality.accepted;
+  });
+  const commercialRejectedIds = new Set(commercialRejected.map((r) => r.platformId));
+  const passed = llmPassed.filter((r) => !commercialRejectedIds.has(r.platformId));
   const passRate = totalEnriched > 0 ? passed.length / totalEnriched : 0;
   console.log(
     `  ✓ 预检查完成:批 ${batchesAttempted}(失败 ${batchesFailed}),通过 ${passed.length}/${totalEnriched}` +
-      ` (${(passRate * 100).toFixed(1)}%)`,
+      ` (${(passRate * 100).toFixed(1)}%),商业化规则拦截 ${commercialRejected.length} 条`,
   );
+  for (const r of commercialRejected.slice(0, 5)) {
+    const e = enrichedMap.get(r.platformId);
+    const quality = assessLowFollowerCommercialQuality({
+      source: "search",
+      title: e?.desc ?? "",
+      hashtags: e?.hashtags ?? [],
+      trackTags: [e?.industry, e?.contentType, r.industrySubRefined].filter(Boolean) as string[],
+      prefilterReason: r.reason,
+      seedTopic: e ? `search:${e.fromKeyword}` : "search",
+    });
+    console.log(`    - 商业化拦截 [${r.platformId}] ${e?.desc.slice(0, 42)} | ${quality.reasons.join("；")}`);
+  }
   if (passRate < PASS_RATE_ALERT_THRESHOLD) {
     log.error(
       { passRate, total: totalEnriched, passed: passed.length, threshold: PASS_RATE_ALERT_THRESHOLD },
