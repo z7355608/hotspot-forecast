@@ -2,7 +2,6 @@ import { useEffect, useMemo, useState } from "react";
 import {
   AlertTriangle,
   BadgeCheck,
-  BarChart3,
   Check,
   Copy,
   ChevronRight,
@@ -13,7 +12,6 @@ import {
   MessageCircle,
   Play,
   Scissors,
-  ShieldCheck,
   Sparkles,
   Target,
   TrendingUp,
@@ -81,21 +79,6 @@ interface CopyPlan {
   shots: string[];
   coverText?: string;
   commentGuide?: string;
-}
-
-interface GeneratedScriptResult {
-  title?: string;
-  openingHook?: string;
-  fullVoiceoverScript?: string;
-  storyboard: string[];
-  shotList: string[];
-  coverText?: string;
-  commentGuide?: string;
-  coverImagePrompt?: string;
-  coverImageUrl?: string | null;
-  coverImageB64?: string | null;
-  coverImageError?: string;
-  model?: string;
 }
 
 type RewriteStyle = "conversational" | "xiaohongshu" | "douyin";
@@ -648,14 +631,6 @@ function normalizeAlgorithmFriendlyScore(payload: ViralBreakdownTaskPayload) {
   return items.filter(Boolean) as WorkspaceData["algorithmFriendlyScore"];
 }
 
-function splitActionText(item: string) {
-  const [label, ...rest] = item.split(/[：:]/);
-  return {
-    label: rest.length ? label.trim() : item,
-    detail: rest.length ? rest.join("：").trim() : "",
-  };
-}
-
 function normalizeBreakdownResult(
   result: ResultRecord,
   payload: ViralBreakdownTaskPayload
@@ -767,9 +742,16 @@ function normalizeBreakdownResult(
   };
 }
 
-function openCtaEditor(ctaId: string) {
+function openCtaEditor(
+  ctaId: string,
+  directionContext?: {
+    title: string;
+    description: string;
+    tags?: string[];
+  }
+) {
   window.dispatchEvent(
-    new CustomEvent("open-cta-editor", { detail: { ctaId } })
+    new CustomEvent("open-cta-editor", { detail: { ctaId, directionContext } })
   );
 }
 
@@ -805,50 +787,6 @@ function markdownList(items: string[]) {
   return items.map((item, index) => `${index + 1}. ${item}`).join("\n");
 }
 
-function buildGeneratedScriptMarkdown({
-  script,
-  plan,
-  data,
-}: {
-  script: GeneratedScriptResult;
-  plan?: CopyPlan;
-  data: WorkspaceData;
-}) {
-  const imageMarkdown = script.coverImageUrl
-    ? `\n\n![封面图](${script.coverImageUrl})`
-    : "";
-  const sourceTitle = data.videoInfo.title || "本次爆款拆解";
-  return `# 完整口播脚本
-
-> 来源：${sourceTitle}${plan?.label ? ` · ${plan.label}` : ""}
-
-## 标题
-${markdownText(script.title || plan?.title)}
-
-## 开头 3 秒钩子
-${markdownText(script.openingHook || plan?.hook)}
-
-## 完整口播稿
-${markdownText(script.fullVoiceoverScript)}
-
-## 分镜脚本
-${markdownList(script.storyboard)}
-
-## 拍摄执行清单
-${markdownList(script.shotList)}
-
-## 封面文案
-${markdownText(script.coverText || plan?.coverText)}${imageMarkdown}
-
-## 评论区引导
-${markdownText(script.commentGuide || plan?.commentGuide)}
-
-## 封面图提示词
-${markdownText(script.coverImagePrompt)}
-${script.coverImageError ? `\n\n> 封面图暂未生成成功：${script.coverImageError}` : ""}
-${script.model ? `\n\n---\n模型：${script.model}` : ""}`;
-}
-
 function buildRewrittenScriptMarkdown({
   script,
   plan,
@@ -874,24 +812,6 @@ ${markdownList(script.styleNotes)}
 ${script.model ? `\n\n---\n模型：${script.model}` : ""}`;
 }
 
-function normalizeGeneratedScript(raw: unknown): GeneratedScriptResult {
-  const record = toRecord(raw) ?? {};
-  return {
-    title: cleanUnknownText(record.title),
-    openingHook: cleanUnknownText(record.openingHook),
-    fullVoiceoverScript: cleanUnknownText(record.fullVoiceoverScript),
-    storyboard: Array.isArray(record.storyboard) ? compactTextList(record.storyboard) : [],
-    shotList: Array.isArray(record.shotList) ? compactTextList(record.shotList) : [],
-    coverText: cleanUnknownText(record.coverText),
-    commentGuide: cleanUnknownText(record.commentGuide),
-    coverImagePrompt: cleanUnknownText(record.coverImagePrompt),
-    coverImageUrl: cleanUnknownText(record.coverImageUrl) ?? null,
-    coverImageB64: cleanUnknownText(record.coverImageB64) ?? null,
-    coverImageError: cleanUnknownText(record.coverImageError),
-    model: cleanUnknownText(record.model),
-  };
-}
-
 function normalizeRewrittenScript(
   raw: unknown,
   planId?: string,
@@ -911,18 +831,6 @@ function normalizeRewrittenScript(
       : [],
     model: cleanUnknownText(record.model),
   };
-}
-
-function toneClasses(tone: Tone) {
-  const map: Record<Tone, string> = {
-    emerald: "border-emerald-100 bg-emerald-50 text-emerald-800",
-    blue: "border-blue-100 bg-blue-50 text-blue-800",
-    amber: "border-amber-100 bg-amber-50 text-amber-800",
-    violet: "border-violet-100 bg-violet-50 text-violet-800",
-    rose: "border-rose-100 bg-rose-50 text-rose-800",
-    gray: "border-gray-100 bg-gray-50 text-gray-800",
-  };
-  return map[tone];
 }
 
 function accountIconLabel(label: string) {
@@ -968,11 +876,6 @@ function dedupeList(items: string[]) {
 
 function takeTopItems(items: string[], count: number) {
   return dedupeList(items).slice(0, count);
-}
-
-function isLongText(text?: string, maxLength = 120) {
-  if (!text) return false;
-  return text.length > maxLength || text.split("\n").length > 3;
 }
 
 function lineClampClass(maxLines: number) {
@@ -1033,8 +936,6 @@ function ExpandableText({
   text,
   maxLines = 3,
   className = "",
-  buttonClassName = "",
-  expandLabel = "展开查看",
 }: {
   text?: string;
   maxLines?: number;
@@ -1042,29 +943,14 @@ function ExpandableText({
   buttonClassName?: string;
   expandLabel?: string;
 }) {
-  const [expanded, setExpanded] = useState(false);
   if (!text) return null;
-  const foldThreshold =
-    maxLines <= 2 ? 56 : maxLines === 3 ? 88 : maxLines === 4 ? 140 : 110;
-  const shouldFold = isLongText(text, foldThreshold);
   return (
     <div className="min-w-0">
       <div
-        className={`whitespace-pre-wrap break-words [overflow-wrap:anywhere] ${
-          shouldFold && !expanded ? lineClampClass(maxLines) : ""
-        } ${className}`}
+        className={`whitespace-pre-wrap break-words [overflow-wrap:anywhere] ${className}`}
       >
         {text}
       </div>
-      {shouldFold && (
-        <button
-          type="button"
-          onClick={() => setExpanded(value => !value)}
-          className={`mt-2 text-xs font-semibold text-violet-700 transition hover:text-violet-900 ${buttonClassName}`}
-        >
-          {expanded ? "收起" : expandLabel}
-        </button>
-      )}
     </div>
   );
 }
@@ -1091,7 +977,6 @@ function CompactText({
 
 function ExpandableList({
   items,
-  maxItems = 3,
   ordered,
   className = "",
   renderItem,
@@ -1102,16 +987,13 @@ function ExpandableList({
   className?: string;
   renderItem?: (item: string, index: number) => React.ReactNode;
 }) {
-  const [expanded, setExpanded] = useState(false);
   const normalized = dedupeList(items);
   if (normalized.length === 0) return null;
-  const visibleItems = expanded ? normalized : normalized.slice(0, maxItems);
-  const hiddenCount = Math.max(0, normalized.length - maxItems);
   const Tag = ordered ? "ol" : "div";
   return (
     <div className="min-w-0">
       <Tag className={className}>
-        {visibleItems.map((item, index) =>
+        {normalized.map((item, index) =>
           renderItem ? (
             renderItem(item, index)
           ) : (
@@ -1125,15 +1007,6 @@ function ExpandableList({
           )
         )}
       </Tag>
-      {hiddenCount > 0 && (
-        <button
-          type="button"
-          onClick={() => setExpanded(value => !value)}
-          className="mt-3 text-xs font-semibold text-violet-700 transition hover:text-violet-900"
-        >
-          {expanded ? "收起" : `展开剩余 ${hiddenCount} 条`}
-        </button>
-      )}
     </div>
   );
 }
@@ -1623,15 +1496,13 @@ function HeroVideoSummary({ data }: { data: WorkspaceData }) {
 
 function HeroActions({
   onGenerateScript,
-  isGeneratingScript,
 }: {
   onGenerateScript: (selectedPlanId?: string) => void;
-  isGeneratingScript: boolean;
 }) {
   const actions = [
     {
-      title: isGeneratingScript ? "正在生成口播脚本" : "生成完整口播脚本",
-      desc: "保留爆点结构，直接生成 60 秒口播",
+      title: "生成完整口播脚本",
+      desc: "打开编辑器，按爆款结构继续生成",
       icon: Sparkles,
       highlight: true,
       onClick: () => onGenerateScript(),
@@ -1661,12 +1532,11 @@ function HeroActions({
             key={action.title}
             type="button"
             onClick={action.onClick}
-            disabled={action.highlight && isGeneratingScript}
             className={`group flex items-center gap-4 rounded-[24px] border p-4 text-left shadow-sm transition hover:-translate-y-1 hover:shadow-xl sm:p-5 ${
               action.highlight
                 ? "border-violet-200 bg-gradient-to-br from-violet-600 via-indigo-600 to-blue-600 text-white shadow-violet-200"
                 : "border-gray-100 bg-white text-gray-900 hover:border-blue-200 hover:bg-blue-50"
-            } disabled:cursor-wait disabled:opacity-75`}
+            }`}
           >
             <span
               className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl ${
@@ -1699,11 +1569,9 @@ function HeroActions({
 function RightCreationPanel({
   data,
   onGenerateScript,
-  isGeneratingScript,
 }: {
   data: WorkspaceData;
   onGenerateScript: (selectedPlanId?: string) => void;
-  isGeneratingScript: boolean;
 }) {
   const secondaryActions = [
     {
@@ -1805,8 +1673,7 @@ function RightCreationPanel({
         <button
           type="button"
           onClick={() => onGenerateScript()}
-          disabled={isGeneratingScript}
-          className="group flex w-full items-center justify-between rounded-3xl border border-violet-500 bg-gradient-to-r from-violet-600 to-blue-600 px-4 py-4 text-left text-white shadow-lg shadow-violet-200 transition hover:-translate-y-0.5 hover:shadow-xl disabled:cursor-wait disabled:opacity-75"
+          className="group flex w-full items-center justify-between rounded-3xl border border-violet-500 bg-gradient-to-r from-violet-600 to-blue-600 px-4 py-4 text-left text-white shadow-lg shadow-violet-200 transition hover:-translate-y-0.5 hover:shadow-xl"
         >
           <span className="flex min-w-0 items-center gap-3">
             <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-white/16 text-white">
@@ -1814,7 +1681,7 @@ function RightCreationPanel({
             </span>
             <span className="min-w-0">
               <span className="block break-words text-sm font-semibold [overflow-wrap:anywhere]">
-                {isGeneratingScript ? "正在生成口播脚本" : "生成完整口播脚本"}
+                生成完整口播脚本
               </span>
               <span className="mt-0.5 block text-xs text-violet-100">
                 直接拿去改、拿去拍
@@ -2314,14 +2181,12 @@ function CopyPlanTabs({
   data,
   onGenerateScript,
   onRewriteScript,
-  isGeneratingScript,
   isRewritingScript,
   rewritingStyle,
 }: {
   data: WorkspaceData;
   onGenerateScript: (selectedPlanId?: string) => void;
   onRewriteScript: (selectedPlanId: string, rewriteStyle: RewriteStyle) => void;
-  isGeneratingScript: boolean;
   isRewritingScript: boolean;
   rewritingStyle?: RewriteStyle | null;
 }) {
@@ -2343,7 +2208,7 @@ function CopyPlanTabs({
           <EmptyModule
             text="本次拆解暂未生成可拍方案。"
             description="你可以重新发起拆解，或点击生成脚本入口继续创作。"
-            actionLabel={isGeneratingScript ? "正在生成完整口播脚本" : "生成完整口播脚本"}
+            actionLabel="生成完整口播脚本"
             onAction={() => onGenerateScript()}
             compact
           />
@@ -2433,10 +2298,9 @@ function CopyPlanTabs({
                     <button
                       type="button"
                       onClick={() => onGenerateScript(activePlan.id)}
-                      disabled={isGeneratingScript}
-                      className="rounded-full bg-emerald-600 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-emerald-700 disabled:cursor-wait disabled:opacity-70"
+                      className="rounded-full bg-emerald-600 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-emerald-700"
                     >
-                      {isGeneratingScript ? "正在生成" : "生成 60 秒完整版"}
+                      生成 60 秒完整版
                     </button>
                     {rewriteActions.map(action => (
                       <button
@@ -2490,7 +2354,7 @@ function CopyPlanTabs({
               icon={Sparkles}
               className="w-full min-h-[56px]"
             >
-              {isGeneratingScript ? "正在生成完整脚本" : "生成完整 60 秒口播脚本"}
+              生成完整 60 秒口播脚本
             </PrimaryButton>
           </div>
         </div>
@@ -2624,377 +2488,6 @@ function ListCard({
   );
 }
 
-function buildDeepInsights(data: WorkspaceData) {
-  const insights: string[] = [];
-  const firstEmotion = data.emotionStages[0];
-  if (firstEmotion?.emotion || firstEmotion?.videoAction || firstEmotion?.copyAdvice) {
-    insights.push(
-      [
-        firstEmotion.time ? `${firstEmotion.time}：` : "",
-        firstEmotion.emotion ? `用户情绪是「${firstEmotion.emotion}」` : "",
-        firstEmotion.videoAction ? `，视频动作是「${firstEmotion.videoAction}」` : "",
-        firstEmotion.copyAdvice ? `，复制时可以「${firstEmotion.copyAdvice}」` : "",
-      ].join("")
-    );
-  }
-  const firstInteraction = data.interactionAnalysis[0];
-  if (firstInteraction?.detail || firstInteraction?.label) {
-    insights.push(
-      `${firstInteraction.label}：${firstInteraction.detail || firstInteraction.value}`
-    );
-  }
-  const firstPitfall = data.avoidPitfalls[0];
-  if (firstPitfall) {
-    insights.push(`复制时先避开：${firstPitfall}`);
-  }
-  const firstKeep = data.copyDecision?.keep?.[0];
-  if (firstKeep) {
-    insights.push(`你最该先学的是：${firstKeep}`);
-  }
-  return takeTopItems(insights.filter(Boolean), 3);
-}
-
-function DeepAnalysisSection({ data }: { data: WorkspaceData }) {
-  const hasEmotion = data.emotionCurve.length > 0 || data.emotionStages.length > 0;
-  const hasAudience = data.audienceMotivation.length > 0;
-  const hasInteraction = data.interactionAnalysis.length > 0;
-  const hasAlgorithm = data.algorithmFriendlyScore.length > 0;
-  const hasPitfalls = data.avoidPitfalls.length > 0;
-  const insights = buildDeepInsights(data);
-  const [expanded, setExpanded] = useState(false);
-  if (
-    !hasEmotion &&
-    !hasAudience &&
-    !hasInteraction &&
-    !hasAlgorithm &&
-    !hasPitfalls
-  ) {
-    return null;
-  }
-  return (
-    <section className="rounded-[28px] border border-gray-100 bg-white p-5 shadow-sm sm:p-6">
-      <div className="mb-6 flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
-        <div>
-          <h2 className="text-2xl font-semibold tracking-normal text-gray-950">
-            为什么能火
-          </h2>
-          <p className="mt-1 text-sm text-gray-500">
-            先看能直接指导复拍的洞察，完整情绪、动机和算法细节可展开查看。
-          </p>
-        </div>
-        <button
-          type="button"
-          onClick={() => setExpanded(value => !value)}
-          className="w-fit rounded-full bg-gray-950 px-4 py-2 text-xs font-semibold text-white transition hover:bg-gray-800"
-        >
-          {expanded ? "收起完整分析" : "展开完整分析"}
-        </button>
-      </div>
-      {insights.length > 0 && (
-        <div className="mb-5 rounded-[26px] border border-violet-100 bg-violet-50/70 p-5">
-          <div className="mb-3 text-sm font-semibold text-violet-900">
-            本条视频的关键洞察
-          </div>
-          <ExpandableList
-            items={insights}
-            maxItems={3}
-            className="grid gap-3 md:grid-cols-3"
-            renderItem={(item, index) => (
-              <div
-                key={`${item}-${index}`}
-                className="rounded-2xl bg-white px-4 py-3 text-sm leading-6 text-gray-700 shadow-sm"
-              >
-                <span className="mb-2 inline-flex h-6 w-6 items-center justify-center rounded-full bg-violet-600 text-xs font-semibold text-white">
-                  {index + 1}
-                </span>
-                <ExpandableText text={item} maxLines={3} />
-              </div>
-            )}
-          />
-        </div>
-      )}
-      {expanded && (
-        <div className="grid min-w-0 gap-5 xl:grid-cols-2">
-          {hasEmotion && (
-            <div className="min-w-0 xl:col-span-2">
-              <EmotionCurveCard data={data} />
-            </div>
-          )}
-          {hasAudience && <AudienceMotivationCard data={data} />}
-          {hasInteraction && <InteractionAnalysisCard data={data} />}
-          {hasAlgorithm && <AlgorithmFriendlyCard data={data} />}
-          {hasPitfalls && <AvoidPitfallsCard data={data} />}
-        </div>
-      )}
-    </section>
-  );
-}
-
-function EmotionCurveCard({ data }: { data: WorkspaceData }) {
-  const [showAllCurve, setShowAllCurve] = useState(false);
-  const [showAllStages, setShowAllStages] = useState(false);
-  const visibleCurve = showAllCurve ? data.emotionCurve : data.emotionCurve.slice(0, 3);
-  const visibleStages = showAllStages ? data.emotionStages : data.emotionStages.slice(0, 3);
-  return (
-    <div className="min-w-0 overflow-hidden rounded-[26px] border border-gray-100 bg-gray-50 p-4">
-      <div className="mb-3 flex items-center gap-2 text-sm font-semibold text-gray-950">
-        <BarChart3 className="h-4 w-4 text-blue-600" />
-        情绪曲线
-      </div>
-      {data.emotionCurve.length > 0 && (
-        <>
-          <div className="relative mb-3 grid min-w-0 gap-3 overflow-hidden rounded-3xl bg-white p-3 lg:grid-cols-[180px_minmax(0,1fr)] lg:items-center">
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_10%,rgba(99,102,241,0.12),transparent_30%),radial-gradient(circle_at_86%_18%,rgba(16,185,129,0.10),transparent_28%)]" />
-            <svg viewBox="0 0 420 112" className="relative h-12 w-full">
-              <path
-                d="M10 74 C52 34, 88 80, 132 44 S214 28, 254 56 S330 78, 410 24"
-                fill="none"
-                stroke="#6366f1"
-                strokeWidth="4"
-                strokeLinecap="round"
-              />
-              <path
-                d="M10 74 C52 34, 88 80, 132 44 S214 28, 254 56 S330 78, 410 24"
-                fill="none"
-                stroke="#c4b5fd"
-                strokeWidth="10"
-                strokeLinecap="round"
-                opacity="0.25"
-              />
-            </svg>
-            <div className="relative grid gap-2 sm:grid-cols-3">
-              {visibleCurve.map((item, index) => (
-                <div
-                  key={`${item.emotion}-node-${item.time}`}
-                  className="rounded-2xl border border-violet-100 bg-white/86 px-3 py-2 shadow-sm"
-                >
-                  <div className="flex items-center gap-2">
-                    <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-violet-600 text-[11px] font-semibold text-white">
-                      {index + 1}
-                    </span>
-                    <div className="min-w-0">
-                      <div className="truncate text-xs font-semibold text-gray-950">
-                        {item.emotion}
-                      </div>
-                      <div className="text-[11px] text-gray-400">{item.time}</div>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-          <div className="grid gap-2 md:grid-cols-3">
-            {visibleCurve.map(item => (
-              <div
-                key={`${item.emotion}-${item.time}`}
-                className="rounded-2xl bg-white px-3 py-2"
-              >
-                <div className="text-xs font-semibold text-gray-900">
-                  {item.emotion} · {item.time}
-                </div>
-                <ExpandableText
-                  text={item.videoMove}
-                  maxLines={2}
-                  className="mt-1 text-xs leading-5 text-gray-500"
-                />
-                <ExpandableText
-                  text={item.copyAdvice}
-                  maxLines={2}
-                  className="mt-2 text-xs font-semibold leading-5 text-blue-700"
-                />
-              </div>
-            ))}
-          </div>
-          {data.emotionCurve.length > 3 && (
-            <button
-              type="button"
-              onClick={() => setShowAllCurve(value => !value)}
-              className="mt-3 text-xs font-semibold text-violet-700 transition hover:text-violet-900"
-            >
-              {showAllCurve ? "收起" : `展开剩余 ${data.emotionCurve.length - 3} 条`}
-            </button>
-          )}
-        </>
-      )}
-      {data.emotionStages.length > 0 && (
-        <div className="mt-4 overflow-x-auto rounded-3xl border border-gray-100 bg-white">
-        <div className="min-w-[720px]">
-          <div className="grid grid-cols-[0.9fr_0.8fr_0.8fr_1.3fr_1.2fr] gap-0 border-b border-gray-100 bg-gray-50 px-4 py-3 text-xs font-semibold text-gray-500">
-            <span>阶段</span>
-            <span>时间</span>
-            <span>用户情绪</span>
-            <span>视频动作</span>
-            <span>复制建议</span>
-          </div>
-          {visibleStages.map(item => (
-            <div
-              key={`${item.stage}-${item.time}`}
-              className="grid grid-cols-[0.9fr_0.8fr_0.8fr_1.3fr_1.2fr] gap-0 border-b border-gray-50 px-4 py-3 text-xs leading-5 last:border-b-0"
-            >
-              <span className="font-semibold text-gray-900">{item.stage}</span>
-              <span className="text-gray-500">{item.time}</span>
-              <span className="font-semibold text-amber-700">
-                {item.emotion}
-              </span>
-              <span className="text-gray-600">
-                <ExpandableText text={item.videoAction} maxLines={2} />
-              </span>
-              <span className="font-semibold text-blue-700">
-                <ExpandableText text={item.copyAdvice} maxLines={2} />
-              </span>
-            </div>
-          ))}
-        </div>
-        {data.emotionStages.length > 3 && (
-          <button
-            type="button"
-            onClick={() => setShowAllStages(value => !value)}
-            className="px-4 py-3 text-xs font-semibold text-violet-700 transition hover:text-violet-900"
-          >
-            {showAllStages ? "收起" : `展开剩余 ${data.emotionStages.length - 3} 条`}
-          </button>
-        )}
-      </div>
-      )}
-    </div>
-  );
-}
-
-function AudienceMotivationCard({ data }: { data: WorkspaceData }) {
-  return (
-    <SimpleAnalysisCard icon={Target} title="受众动机">
-      <ExpandableList
-        items={data.audienceMotivation}
-        maxItems={2}
-        className="space-y-2"
-        renderItem={(item, index) => (
-          <div key={`${item}-${index}`} className="rounded-2xl bg-white px-3 py-3">
-            <div className="flex items-center gap-2 text-sm font-semibold text-gray-900">
-              <Sparkles className="h-3.5 w-3.5 text-violet-500" />
-              {splitActionText(item).label}
-            </div>
-            {splitActionText(item).detail && (
-              <ExpandableText
-                text={splitActionText(item).detail}
-                maxLines={2}
-                className="mt-1 pl-5 text-xs leading-5 text-gray-500"
-              />
-            )}
-          </div>
-        )}
-      />
-    </SimpleAnalysisCard>
-  );
-}
-
-function InteractionAnalysisCard({ data }: { data: WorkspaceData }) {
-  return (
-    <SimpleAnalysisCard icon={MessageCircle} title="互动与传播">
-      <div className="space-y-2">
-        <ExpandableList
-          items={data.interactionAnalysis.map(
-            item => `${item.label}：${item.value}${item.detail ? `；${item.detail}` : ""}`
-          )}
-          maxItems={2}
-          className="space-y-2"
-          renderItem={(itemText, index) => {
-            const item = data.interactionAnalysis[index];
-            return (
-          <div
-            key={`${item?.label ?? itemText}-${index}`}
-            className={`rounded-2xl border px-3 py-2 ${toneClasses(item.tone)}`}
-          >
-            <div className="flex items-center justify-between text-xs font-semibold">
-              <span>{item.label}</span>
-              <span>{item.value}</span>
-            </div>
-            <ExpandableText
-              text={item.detail}
-              maxLines={2}
-              className="mt-1 text-xs leading-5 text-gray-600"
-            />
-          </div>
-            );
-          }}
-        />
-      </div>
-    </SimpleAnalysisCard>
-  );
-}
-
-function AlgorithmFriendlyCard({ data }: { data: WorkspaceData }) {
-  return (
-    <SimpleAnalysisCard icon={ShieldCheck} title="算法友好度">
-      <ExpandableList
-        items={data.algorithmFriendlyScore.map(
-          item => `${item.label}：${item.value}${item.detail ? `；${item.detail}` : ""}`
-        )}
-        maxItems={2}
-        className="space-y-2"
-        renderItem={(itemText, index) => {
-          const item = data.algorithmFriendlyScore[index];
-          return (
-          <div key={`${item?.label ?? itemText}-${index}`} className="rounded-2xl bg-white px-3 py-2">
-            <div className="flex items-center justify-between text-xs font-semibold text-gray-900">
-              <span>{item.label}</span>
-              <span className="text-emerald-600">{item.value}</span>
-            </div>
-            <ExpandableText
-              text={item.detail}
-              maxLines={2}
-              className="mt-1 text-xs leading-5 text-gray-500"
-            />
-          </div>
-          );
-        }}
-      />
-    </SimpleAnalysisCard>
-  );
-}
-
-function AvoidPitfallsCard({ data }: { data: WorkspaceData }) {
-  return (
-    <SimpleAnalysisCard icon={AlertTriangle} title="复制时要避开的坑">
-      <ExpandableList
-        items={data.avoidPitfalls}
-        maxItems={2}
-        className="space-y-2"
-        renderItem={(item, index) => (
-          <div
-            key={`${item}-${index}`}
-            className="flex gap-2 rounded-2xl bg-white px-3 py-2 text-sm leading-6 text-gray-700"
-          >
-            <AlertTriangle className="mt-1 h-3.5 w-3.5 shrink-0 text-amber-500" />
-            <ExpandableText text={item} maxLines={2} />
-          </div>
-        )}
-      />
-    </SimpleAnalysisCard>
-  );
-}
-
-function SimpleAnalysisCard({
-  icon: Icon,
-  title,
-  children,
-}: {
-  icon: typeof Sparkles;
-  title: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <div className="rounded-[26px] border border-gray-100 bg-gray-50 p-5">
-      <div className="mb-4 flex items-center gap-2 text-sm font-semibold text-gray-950">
-        <span className="flex h-9 w-9 items-center justify-center rounded-2xl bg-white text-blue-600 shadow-sm">
-          <Icon className="h-4 w-4" />
-        </span>
-        {title}
-      </div>
-      {children}
-    </div>
-  );
-}
-
 function ActionStatusToast({ message }: { message?: string | null }) {
   if (!message) return null;
   return (
@@ -3033,7 +2526,6 @@ function ViralBreakdownBody({ result }: ArtifactRendererProps) {
     [result, payload]
   );
   const [actionStatus, setActionStatus] = useState<string | null>(null);
-  const [isGeneratingScript, setIsGeneratingScript] = useState(false);
   const [isRewritingScript, setIsRewritingScript] = useState(false);
   const [rewritingStyle, setRewritingStyle] = useState<RewriteStyle | null>(null);
   const effectiveData = data;
@@ -3055,52 +2547,23 @@ function ViralBreakdownBody({ result }: ArtifactRendererProps) {
     return () => window.removeEventListener("viral-breakdown-copy", handleCopyToast);
   }, []);
 
-  const handleGenerateScript = async (selectedPlanId?: string) => {
-    if (isGeneratingScript) return;
+  const handleGenerateScript = (selectedPlanId?: string) => {
     const selectedPlan =
       data.copyPlans.find(plan => plan.id === selectedPlanId) ?? data.copyPlans[0];
-    setIsGeneratingScript(true);
-    setActionStatus("正在生成完整口播脚本和 image 模型封面预览...");
-    try {
-      const response = await fetch("/api/viral-breakdown/complete-script", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "same-origin",
-        body: JSON.stringify({
-          taskPayload: payload,
-          selectedPlanId,
-          resultTitle: result.title,
-          query: result.query,
-        }),
-      });
-      const json = (await response.json()) as {
-        ok?: boolean;
-        script?: unknown;
-        error?: string;
-      };
-      if (!response.ok || !json.ok) {
-        throw new Error(json.error || "生成完整口播脚本失败");
-      }
-      const script = normalizeGeneratedScript(json.script);
-      openResultEditor({
-        title: "完整口播脚本",
-        subtitle: "已统一放入编辑器，可继续修改、复制或导出。",
-        markdown: buildGeneratedScriptMarkdown({
-          script,
-          plan: selectedPlan,
-          data,
-        }),
-      });
-      setActionStatus(
-        script.coverImageUrl || script.coverImageB64
-          ? "完整口播脚本和封面图已放入编辑器。"
-          : "完整口播脚本已放入编辑器，封面图暂未生成成功。"
-      );
-    } catch (err) {
-      setActionStatus(err instanceof Error ? err.message : "生成完整口播脚本失败");
-    } finally {
-      setIsGeneratingScript(false);
-    }
+    openCtaEditor(
+      "remake_script",
+      selectedPlan
+        ? {
+            title: selectedPlan.title || selectedPlan.label,
+            description: [
+              selectedPlan.accountType,
+              selectedPlan.hook,
+              selectedPlan.shortScript,
+            ].filter(Boolean).join("；"),
+            tags: [selectedPlan.label, selectedPlan.accountType].filter(Boolean) as string[],
+          }
+        : undefined
+    );
   };
 
   const handleRewriteScript = async (
@@ -3166,7 +2629,6 @@ function ViralBreakdownBody({ result }: ArtifactRendererProps) {
         <RightCreationPanel
           data={effectiveData}
           onGenerateScript={handleGenerateScript}
-          isGeneratingScript={isGeneratingScript}
         />
       }
     >
@@ -3174,13 +2636,11 @@ function ViralBreakdownBody({ result }: ArtifactRendererProps) {
       <HeroVideoSummary data={effectiveData} />
       <HeroActions
         onGenerateScript={handleGenerateScript}
-        isGeneratingScript={isGeneratingScript}
       />
       <CopyPlanTabs
         data={effectiveData}
         onGenerateScript={handleGenerateScript}
         onRewriteScript={handleRewriteScript}
-        isGeneratingScript={isGeneratingScript}
         isRewritingScript={isRewritingScript}
         rewritingStyle={rewritingStyle}
       />
@@ -3188,7 +2648,6 @@ function ViralBreakdownBody({ result }: ArtifactRendererProps) {
         data={effectiveData}
       />
       <ViralFormulaBlock data={effectiveData} />
-      <DeepAnalysisSection data={effectiveData} />
     </ResultPageLayout>
   );
 }

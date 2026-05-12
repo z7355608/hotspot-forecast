@@ -332,14 +332,15 @@ export function ResultsView({
 
   /* ---- Handlers ---- */
   const handleConsume = (cost: number, label: string) => {
+    const chargedCost = getChargedCost(cost, state.selectedModel);
     const action = addResultFollowUp(result.id, label, cost);
     if (!action.ok) {
       setShortfall(action.shortfall);
       setPaywallContext({
         actionLabel: label,
-        requiredCredits: cost,
+        requiredCredits: chargedCost,
         shortfall: action.shortfall,
-        contextDescription: `继续「${label}」需要 ${cost} 积分`,
+        contextDescription: `继续「${label}」需要 ${chargedCost} 积分`,
       });
       setPendingAction(() => () => {
         const retry = addResultFollowUp(result.id, label, cost);
@@ -397,8 +398,7 @@ export function ResultsView({
       return;
     }
 
-    const chargedCost = getChargedCost(ctaAction.cost, state.selectedModel);
-    const consumeResult = handleConsume(chargedCost, ctaAction.prompt);
+    const consumeResult = handleConsume(ctaAction.cost, ctaAction.prompt);
     if (!consumeResult.ok) return;
 
     setEditorTitle(directionContext ? `${ctaAction.title}：${directionContext.title}` : ctaAction.title);
@@ -549,7 +549,7 @@ export function ResultsView({
           actionId: ctaAction.id,
           modelId: state.selectedModel,
           context,
-          baseCost: chargedCost,
+          baseCost: ctaAction.cost,
         },
       });
       setEditorMarkdown(""); // 清空 mock markdown

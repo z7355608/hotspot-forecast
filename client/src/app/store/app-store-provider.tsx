@@ -657,7 +657,21 @@ export function AppStoreProvider({ children }: { children: ReactNode }) {
 
     const target = state.results.find((item) => item.id === resultId);
     if (!target) {
-      return { ok: false, shortfall: chargedCost };
+      setState((current) => ({
+        ...current,
+        credits: current.credits - chargedCost,
+        monthlySpent: current.monthlySpent + chargedCost,
+        transactions: addTransaction(
+          current,
+          {
+            type: "deduct",
+            desc: `结果页继续创作：${prompt.slice(0, 12)} · ${modelName}`,
+            amount: -chargedCost,
+          },
+          now,
+        ),
+      }));
+      return { ok: true, resultId, cost: chargedCost };
     }
 
     // live 模式下，生成一个占位结果，实际内容由 CozeEditorDrawer 通过 SSE 流式生成
