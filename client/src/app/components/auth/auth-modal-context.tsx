@@ -7,6 +7,7 @@ import {
   useState,
   type ReactNode,
 } from "react";
+import { useLocation } from "react-router-dom";
 import { useAuth } from "@/_core/hooks/useAuth";
 
 type AuthModalView = "closed" | "welcome" | "login";
@@ -23,7 +24,9 @@ const AuthModalContext = createContext<AuthModalContextValue | null>(null);
 
 export function AuthModalProvider({ children }: { children: ReactNode }) {
   const { user, loading } = useAuth({ mode: "modal" });
+  const location = useLocation();
   const [view, setView] = useState<AuthModalView>("closed");
+  const isResultsRoute = location.pathname.startsWith("/results/");
 
   // Auto-open welcome on initial unauth, auto-close once authenticated.
   // This effect is the single source of truth for view changes driven by auth state —
@@ -31,11 +34,15 @@ export function AuthModalProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (loading) return;
     if (!user) {
+      if (isResultsRoute) {
+        setView((prev) => (prev === "welcome" ? "closed" : prev));
+        return;
+      }
       setView((prev) => (prev === "closed" ? "welcome" : prev));
     } else {
       setView("closed");
     }
-  }, [loading, user]);
+  }, [isResultsRoute, loading, user]);
 
   const openLogin = useCallback(() => setView("login"), []);
   const openWelcome = useCallback(() => setView("welcome"), []);

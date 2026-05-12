@@ -39,6 +39,11 @@ import {
   handleFeishuStatus,
 } from "./routes/notification-routes.js";
 import {
+  handleGenerateViralBreakdownScript,
+  handleRegenerateViralBreakdownTimeline,
+  handleRewriteViralBreakdownScript,
+} from "./routes/viral-breakdown-action-routes.js";
+import {
   handleLLMHealth,
   handleGetCredits,
   handleLLMChat,
@@ -417,6 +422,18 @@ async function _handleApiRequest(request: IncomingMessage, response: ServerRespo
     if (request.method === "POST" && url.pathname === "/api/breakdown/action") {
       const body = await readJsonBody<BreakdownActionRequest>(request);
       await handleBreakdownAction(request, response, body);
+      return;
+    }
+    if (request.method === "POST" && url.pathname === "/api/viral-breakdown/complete-script") {
+      await handleGenerateViralBreakdownScript(request, response);
+      return;
+    }
+    if (request.method === "POST" && url.pathname === "/api/viral-breakdown/rewrite-script") {
+      await handleRewriteViralBreakdownScript(request, response);
+      return;
+    }
+    if (request.method === "POST" && url.pathname === "/api/viral-breakdown/deep-timeline") {
+      await handleRegenerateViralBreakdownTimeline(request, response);
       return;
     }
 

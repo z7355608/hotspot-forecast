@@ -28,7 +28,7 @@ import {
   RotateCcw,
   Zap,
 } from "lucide-react";
-import { getModelOption, type ResultRecord, getChargedCost } from "../../store/app-data";
+import { getModelOption, type AIModelId, type ResultRecord, getChargedCost } from "../../store/app-data";
 import { useAppStore } from "../../store/app-store";
 import { PlaceholderFollowUp } from "./results-shared";
 import { ConnectorsGuideBanner } from "../ConnectorsGuideBanner";
@@ -53,7 +53,7 @@ function RegistryCtaActionsPanel({
 }: {
   actions: CtaActionConfig[];
   credits: number;
-  modelId: "doubao" | "gpt54" | "claude46";
+  modelId: AIModelId;
   onConsume: (cost: number, label: string) => { ok: boolean; shortfall?: number };
   onCtaAction?: (action: CtaActionConfig) => void;
 }) {
@@ -212,6 +212,7 @@ export function ResultsView({
   const [editorTitle, setEditorTitle] = useState("");
   const [editorSubtitle, setEditorSubtitle] = useState("");
   const [editorMarkdown, setEditorMarkdown] = useState("");
+  const [editorStaticMarkdown, setEditorStaticMarkdown] = useState("");
   const [editorExpanded, setEditorExpanded] = useState(false);
   /**
    * live 模式下，向 CozeEditorDrawer 传入真实 SSE 请求配置。
@@ -286,6 +287,28 @@ export function ResultsView({
   useEffect(() => {
     const handler = (e: Event) => {
       const detail = (e as CustomEvent).detail ?? {};
+      const directMarkdown =
+        typeof detail.staticMarkdown === "string"
+          ? detail.staticMarkdown
+          : typeof detail.markdown === "string"
+            ? detail.markdown
+            : "";
+      if (directMarkdown) {
+        setEditorTitle(
+          typeof detail.editorTitle === "string" ? detail.editorTitle : "下一步生成结果"
+        );
+        setEditorSubtitle(
+          typeof detail.editorSubtitle === "string"
+            ? detail.editorSubtitle
+            : "已统一放入编辑器，可继续修改、复制或导出。"
+        );
+        setEditorExpanded(Boolean(detail.expanded));
+        setEditorStreamPayload(null);
+        setEditorMarkdown("");
+        setEditorStaticMarkdown(directMarkdown);
+        setEditorOpen(true);
+        return;
+      }
       let action: (typeof ctaActions)[number] | undefined;
       // 优先通过 ctaId 匹配，确保不同 score 下 CTA 顺序变化时仍能正确触发
       if (detail.ctaId) {
@@ -354,6 +377,7 @@ export function ResultsView({
           baseCost: cost,
         },
       });
+      setEditorStaticMarkdown("");
       setEditorMarkdown("");
       setEditorOpen(true);
     }
@@ -380,6 +404,7 @@ export function ResultsView({
     setEditorTitle(directionContext ? `${ctaAction.title}：${directionContext.title}` : ctaAction.title);
     setEditorSubtitle(directionContext?.description || ctaAction.description);
     setEditorExpanded(false);
+    setEditorStaticMarkdown("");
 
     if (dataMode === "live") {
       // live 模式：构建真实 SSE 请求体，向后端发起流式调用
@@ -533,6 +558,7 @@ export function ResultsView({
       const dirSuffix = directionContext ? `（围绕「${directionContext.title}」方向）` : "";
       const md = generateCtaMarkdown(ctaAction.id, ctaAction.title, ctaAction.prompt + dirSuffix, result);
       setEditorMarkdown(md);
+      setEditorStaticMarkdown("");
       setEditorStreamPayload(null); // 确保清空
     }
 
@@ -571,11 +597,13 @@ export function ResultsView({
           baseCost: item.cost,
         },
       });
+      setEditorStaticMarkdown("");
       setEditorMarkdown("");
     } else {
       // mock 模式：本地生成 markdown
       const md = generateFollowUpMarkdown(item.label, item.result, result);
       setEditorMarkdown(md);
+      setEditorStaticMarkdown("");
       setEditorStreamPayload(null);
     }
 
@@ -840,7 +868,8 @@ export function ResultsView({
         onClose={() => setEditorOpen(false)}
         title={editorTitle}
         subtitle={editorSubtitle}
-        markdown={editorStreamPayload ? undefined : editorMarkdown}
+        markdown={editorStreamPayload || editorStaticMarkdown ? undefined : editorMarkdown}
+        staticMarkdown={editorStaticMarkdown || undefined}
         streamPayload={editorStreamPayload ?? undefined}
         generatingLabel="AI 正在生成内容..."
         completeLabel="内容生成完成"

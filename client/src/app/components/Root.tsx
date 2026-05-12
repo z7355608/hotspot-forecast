@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Outlet, useNavigation } from "react-router-dom";
+import { Outlet, useLocation, useNavigation } from "react-router-dom";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { Header } from "./Header";
 import {
@@ -29,6 +29,7 @@ function AuthLoadingSkeleton() {
 /** Inner shell — needs OnboardingProvider above it */
 function AppShell() {
   const navigation = useNavigation();
+  const location = useLocation();
   const isNavigating = navigation.state === "loading";
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const [inviteOpen, setInviteOpen] = useState(false);
@@ -37,6 +38,8 @@ function AppShell() {
 
   const { user, loading } = useAuth({ mode: "modal" });
   const { welcomeCompleted } = useOnboarding();
+  const isResultsRoute = location.pathname.startsWith("/results/");
+  const shouldGateUnauthContent = !user && !isResultsRoute;
 
   if (loading) return <AuthLoadingSkeleton />;
   // When unauthenticated, still render the shell underneath so AuthModalProvider can overlay.
@@ -44,7 +47,7 @@ function AppShell() {
   return (
     <div className="min-h-screen bg-gray-50 lg:flex">
       {/* Welcome Flow gate — only after login */}
-      {user && !welcomeCompleted && <WelcomeFlow />}
+      {user && !welcomeCompleted && !isResultsRoute && <WelcomeFlow />}
 
       <Sidebar onOpenInvite={() => setInviteOpen(true)} />
       <MobileNavDrawer
@@ -60,14 +63,14 @@ function AppShell() {
         />
         <main
           className={`relative min-w-0 flex-1 overflow-x-hidden transition-opacity duration-[280ms] ${
-            !user ? "pointer-events-none select-none" : ""
+            shouldGateUnauthContent ? "pointer-events-none select-none" : ""
           }`}
           style={{ opacity: isNavigating ? 0.45 : 1 }}
         >
           <div
-            aria-hidden={!user}
+            aria-hidden={shouldGateUnauthContent}
             style={
-              !user
+              shouldGateUnauthContent
                 ? {
                     filter: "blur(7px) saturate(0.6)",
                     opacity: 0.55,
@@ -81,7 +84,7 @@ function AppShell() {
           </div>
 
           {/* Unauth content gradient mask + locked badge */}
-          {!user && (
+          {shouldGateUnauthContent && (
             <>
               <div
                 aria-hidden="true"

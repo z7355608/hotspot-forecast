@@ -622,6 +622,148 @@ export interface TrendWatchTaskPayload {
 export interface ViralBreakdownTaskPayload {
   kind: "viral_breakdown";
   breakdownSummary: string;
+  videoInfo?: {
+    coverUrl?: string | null;
+    sourceUrl?: string;
+    title?: string;
+    platform?: string;
+    publishTime?: string;
+    duration?: string;
+    likeCount?: string;
+    collectCount?: string;
+    commentCount?: string;
+    shareCount?: string;
+    completionRate?: string;
+    interactionRate?: string;
+  };
+  copyScore?: number;
+  copyLevel?: "高" | "中" | "低";
+  breakdownValue?: "高" | "中" | "低";
+  imitationAdvice?: string;
+  copyDecision?: {
+    score?: number;
+    level?: string;
+    suggestion?: string;
+    priority?: string;
+    keepPoints?: string[];
+    replacePoints?: string[];
+    keep?: string[];
+    replace?: string[];
+    suitableAccounts?: string[];
+    unsuitableAccounts?: string[];
+    suitablePlatforms?: string[];
+  };
+  coreConclusion?: string;
+  recommendedCopyPoints?: Array<
+    | string
+    | {
+        title?: string;
+        description?: string;
+        action?: string;
+      }
+  >;
+  notRecommendedPoints?: Array<
+    | string
+    | {
+        title?: string;
+        description?: string;
+        reason?: string;
+      }
+  >;
+  suitableAccounts?: string[];
+  unsuitableAccounts?: string[];
+  suitablePlatforms?: string[];
+  timelineAnalysis?: Array<{
+    timeRange?: string;
+    stage?: string;
+    time?: string;
+    title?: string;
+    frameUrl?: string | null;
+    subtitle?: string;
+    role?: string;
+    userMindset?: string;
+    copyMethod?: string;
+    visualSummary?: string;
+    subtitleSummary?: string;
+    narrationSummary?: string;
+    userPsychology?: string[];
+    viralFunction?: string;
+  }>;
+  viralFormula?: string[];
+  viralFormulaDetail?: {
+    original?: string[];
+    reusable?: string[];
+    explanation?: string;
+  };
+  formulaSummary?: string;
+  copyPlans?: Array<{
+    id?: string;
+    label?: string;
+    name?: string;
+    accountType?: string;
+    suitableAccount?: string;
+    title?: string;
+    hook?: string;
+    openingHook?: string;
+    shortScript?: string;
+    outline?: string[];
+    shots?: string[];
+    storyboard?: string[];
+    coverText?: string;
+    commentGuide?: string;
+  }>;
+  emotionCurve?: Array<{
+    emotion: string;
+    time: string;
+    videoMove: string;
+    copyAdvice: string;
+  }>;
+  emotionStages?: Array<{
+    stage: string;
+    time?: string;
+    timeRange?: string;
+    emotion: string;
+    videoAction: string;
+    copyAdvice: string;
+  }>;
+  audienceMotivation?: Array<
+    | string
+    | {
+        title?: string;
+        description?: string;
+      }
+  >;
+  interactionAnalysis?: Array<{
+    title?: string;
+    description?: string;
+    trigger?: string;
+    label?: string;
+    value?: string;
+    detail?: string;
+    tone?: "emerald" | "blue" | "amber" | "violet" | "rose" | "gray";
+  }>;
+  algorithmFriendlyScore?:
+    | Array<{
+        label?: string;
+        value?: string;
+        detail?: string;
+        title?: string;
+        description?: string;
+        score?: number;
+      }>
+    | {
+        score?: number;
+        reasons?: string[];
+        suggestions?: string[];
+      };
+  avoidPitfalls?: Array<
+    | string
+    | {
+        title?: string;
+        description?: string;
+      }
+  >;
+  corePlay?: string;
   overallScore?: number;
   scoreDimensions?: {
     logic: number;
